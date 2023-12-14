@@ -1,0 +1,14 @@
+.envrc
+.hie
+.hspec-failures
+/.stack-work/
+<
+Session.vim
+dist-newstyle
+tags
+tags.mtime
+.vscode/
+.DS_Store
+tags
+tags.lock
+cabal.project.local

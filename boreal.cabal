@@ -1,0 +1,114 @@
+cabal-version:      3.6
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: d1b805c36a026c1fda3917546e854f9bf651c2cbee8d6a554ee634440d8eb9c8
+
+name:               boreal
+version:            0.1.0.0
+license-file:       LICENSE
+build-type:         Simple
+extra-source-files:
+  ChangeLog.md
+  README.md
+
+common rts-options
+  ghc-options: -rtsopts
+
+common ghc-options
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
+    -fhide-source-paths -Wno-unused-do-bind -fshow-hole-constraints
+    -Wno-unticked-promoted-constructors -Werror=unused-imports
+    -fdicts-strict -fmax-worker-args=16 -fspec-constr-recursive=16
+    -Wunused-packages
+
+  default-language:   GHC2021
+  default-extensions:
+    ApplicativeDo
+    BangPatterns
+    DataKinds
+    DerivingStrategies
+    FlexibleInstances
+    FunctionalDependencies
+    GeneralizedNewtypeDeriving
+    LambdaCase
+    MultiParamTypeClasses
+    NamedFieldPuns
+    OverloadedRecordDot
+    OverloadedStrings
+    PatternGuards
+    TupleSections
+    ViewPatterns
+
+library
+  import:             ghc-options
+
+  -- cabal-fmt: expand src/
+  exposed-modules:    
+  other-modules:      Paths_boreal
+  hs-source-dirs:     src
+  build-tool-depends:
+    , alex:alex    ^>=3.4
+    , happy:happy  ^>=1.20
+
+  build-depends:
+    , array
+    , atomic-counter
+    , base                         >=4.7 && <5
+    , containers
+    , effectful-core
+    , megaparsec
+    , mtl
+    , multiset
+    , parsec
+    , pretty-simple
+    , prettyprinter
+    , prettyprinter-ansi-terminal
+    , text
+    , vector
+
+  default-language:   GHC2021
+
+executable boreal
+  import:           ghc-options
+  import:           rts-options
+  main-is:          Main.hs
+  other-modules:    Paths_boreal
+  hs-source-dirs:   app
+  build-depends:
+    , array
+    , base                         >=4.7 && <5
+    , boreal
+    , containers
+    , directory
+    , filepath
+    , parsec
+    , prettyprinter-ansi-terminal
+    , text
+
+  default-language: GHC2021
+
+test-suite boreal-test
+  import:         ghc-options
+  import:         rts-options
+  type:           exitcode-stdio-1.0
+  main-is:        Main.hs
+  other-modules:
+  hs-source-dirs: test
+  build-depends:
+    , base            >=4.7 && <5
+    , boreal
+    , containers
+    , effectful-core
+    , pretty-simple
+    , PyF
+    , tasty
+    , tasty-focus
+    , tasty-golden
+    , tasty-hunit
+    , text
+    , vector
