@@ -45,33 +45,27 @@ common ghc-options
     ViewPatterns
 
 library
-  import:             ghc-options
+  import:           ghc-options
 
   -- cabal-fmt: expand src/
-  exposed-modules:    
-  other-modules:      Paths_boreal
-  hs-source-dirs:     src
-  build-tool-depends:
-    , alex:alex    ^>=3.4
-    , happy:happy  ^>=1.20
+  exposed-modules:
+    Boreal.Frontend.Lexer
+    Boreal.Frontend.Parser
 
+  other-modules:    Paths_boreal
+  hs-source-dirs:   src
   build-depends:
-    , array
     , atomic-counter
     , base                         >=4.7 && <5
     , containers
-    , effectful-core
-    , megaparsec
-    , mtl
-    , multiset
-    , parsec
     , pretty-simple
     , prettyprinter
     , prettyprinter-ansi-terminal
     , text
+    , text-display
     , vector
 
-  default-language:   GHC2021
+  default-language: GHC2021
 
 executable boreal
   import:           ghc-options
@@ -80,7 +74,6 @@ executable boreal
   other-modules:    Paths_boreal
   hs-source-dirs:   app
   build-depends:
-    , array
     , base                         >=4.7 && <5
     , boreal
     , containers
@@ -98,6 +91,9 @@ test-suite boreal-test
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
+    BorealTest.LexerTest
+    BorealTest.ParserTest
+    Utils
   hs-source-dirs: test
   build-depends:
     , base            >=4.7 && <5
@@ -111,4 +107,5 @@ test-suite boreal-test
     , tasty-golden
     , tasty-hunit
     , text
+    , text-display
     , vector

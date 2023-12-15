@@ -24,7 +24,7 @@ lint: ## Run the code linter (HLint)
 
 style: ## Run the code styler (stylish-haskell)
 	@cabal-fmt -i *.cabal
-	@find src test/Spec.hs test/Test.hs test/Compiler -name "*.hs" | xargs -P $(PROCS) -I {} fourmolu -q --mode inplace {}
+	@find src -name "*.hs" | xargs -P $(PROCS) -I {} fourmolu -q --mode inplace {}
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.* ?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
