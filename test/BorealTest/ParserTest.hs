@@ -5,7 +5,7 @@ import Test.Tasty
 
 import Boreal.Frontend.Lexer (lexText)
 import Boreal.Frontend.Parser
-import Utils
+-- import Utils
 
 spec :: TestTree
 spec = testGroup "Parser"
@@ -16,7 +16,7 @@ spec = testGroup "Parser"
 testParseExpression :: Assertion
 testParseExpression = do
   let expression = "1 + 2 * 3" 
-  parsed <- assertRight $ parseExpression $ lexText expression
+  let parsed = parseExpression (lexText expression) Nothing 0 
   assertEqual 
     "An simple expression can be parsed"
     (BorealAtom "c")
@@ -25,8 +25,8 @@ testParseExpression = do
 testRestituteExpression :: Assertion
 testRestituteExpression = do
   let expression = "1 + 2 * 3" 
-  parsed <- assertRight $ parseExpression $ lexText expression
+  let parsed = parseExpression (lexText expression) Nothing 0
   assertEqual 
     "An simple expression can be parsed"
-    (restitute parsed)
     expression
+    (restitute parsed)

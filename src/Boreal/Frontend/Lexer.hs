@@ -9,6 +9,7 @@ module Boreal.Frontend.Lexer
   , Name (..)
   , Stream (..)
   , nextToken
+  , peekToken
   ) where
 
 import Data.Function ((&))
@@ -36,9 +37,15 @@ instance Display Token where
 
 newtype TokenKind = TokenKind Text
   deriving newtype (Eq, Ord, Show)
+  deriving
+    (Display)
+    via (ShowInstance TokenKind)
 
 newtype Name = Name Text
   deriving newtype (Eq, Ord, Show)
+  deriving
+    (Display)
+    via (ShowInstance Name)
 
 data Stream = Stream
   { accumulatedWhitespace :: Vector Token
@@ -52,8 +59,8 @@ data Stream = Stream
 lexText :: Text -> Stream
 lexText text =
   text
-    & Text.foldr'
-      ( \c acc ->
+    & Text.foldl'
+      ( \acc c ->
           if
               | c `elem` ['a' .. 'z'] -> Vector.snoc acc (Atom c)
               | c `elem` ['A' .. 'Z'] -> Vector.snoc acc (Atom c)
@@ -69,4 +76,10 @@ nextToken :: Stream -> (Token, Stream)
 nextToken stream =
   case Vector.uncons stream.input of
     Nothing -> (EOF, stream)
-    Just (hd, tl) -> (hd, Stream tl stream.accumulatedWhitespace)
+    Just (hd, tl) -> (hd, Stream stream.accumulatedWhitespace tl)
+
+peekToken :: Stream -> Token
+peekToken stream =
+  case Vector.uncons stream.input of
+    Nothing -> EOF
+    Just (hd, _) -> hd

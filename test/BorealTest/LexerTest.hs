@@ -17,5 +17,5 @@ testLexExpression = do
   let s1 = lexText "1 + 2 * 3" 
   assertEqual 
     "Expected lexing" 
-    (Stream Vector.empty [Atom '3',Whitespace,Op '*',Whitespace,Atom '2',Whitespace,Op '+',Whitespace,Atom '1'])
+    (Stream Vector.empty [Atom '1',Whitespace,Op '+',Whitespace,Atom '2',Whitespace,Op '*',Whitespace,Atom '3'])
     s1
