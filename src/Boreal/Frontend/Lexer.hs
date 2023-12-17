@@ -40,10 +40,11 @@ newtype TokenKind = TokenKind Text
     via (ShowInstance TokenKind)
 
 newtype Name = Name Text
-  deriving newtype (Eq, Ord, Show)
+  deriving newtype (Eq, Ord)
+  deriving stock (Show)
   deriving
     (Display)
-    via (ShowInstance Name)
+    via Text
 
 data Stream = Stream
   { accumulatedWhitespace :: Vector Token

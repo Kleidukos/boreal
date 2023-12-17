@@ -2,6 +2,8 @@ module Boreal.Frontend.Parser.Types where
 
 import Data.Function ((&))
 import Data.Text (Text)
+import Data.Text.Display
+import Data.Text.Lazy.Builder (Builder)
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
 import Data.Word
@@ -32,6 +34,26 @@ data Expression
       (Vector Token)
       -- ^ Value on file with preceding whitespace & newlines
   deriving stock (Eq, Ord, Show)
+
+instance Display Expression where
+  displayBuilder expr = go mempty expr
+    where
+      go :: Builder -> Expression -> Builder
+      go acc = \case
+        BorealAtom t -> acc <> (displayBuilder t)
+        BorealIdent name rawTokens
+          | rawTokens == Vector.empty -> displayBuilder name
+          | otherwise ->
+              Vector.init rawTokens
+                & fmap displayBuilder
+                & Vector.foldMap' id
+        BorealNode name args
+          | isBinOp name ->
+              displayBuilder (Vector.head ((traceShow $ "args: " <> show args) args))
+                <> (displayBuilder name)
+                <> Vector.foldMap displayBuilder (Vector.tail args)
+          | otherwise ->
+              displayBuilder name <> Vector.foldMap displayBuilder args
 
 runParser :: Text -> Parser Expression -> Expression
 runParser input action =
@@ -79,3 +101,10 @@ traceState :: Parser ()
 traceState = do
   state <- State.get @Stream
   traceShowM state
+
+resetTrailingSpaces :: Parser ()
+resetTrailingSpaces =
+  State.modify (\stream -> stream{accumulatedWhitespace = Vector.empty})
+
+isBinOp :: Name -> Bool
+isBinOp (Name t) = t `elem` ["+", "-", "*", "/"]
