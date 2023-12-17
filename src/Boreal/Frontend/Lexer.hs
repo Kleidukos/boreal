@@ -8,8 +8,6 @@ module Boreal.Frontend.Lexer
   , TokenKind (..)
   , Name (..)
   , Stream (..)
-  , nextToken
-  , peekToken
   ) where
 
 import Data.Function ((&))
@@ -71,15 +69,3 @@ lexText text =
       )
       Vector.empty
     & Stream Vector.empty
-
-nextToken :: Stream -> (Token, Stream)
-nextToken stream =
-  case Vector.uncons stream.input of
-    Nothing -> (EOF, stream)
-    Just (hd, tl) -> (hd, Stream stream.accumulatedWhitespace tl)
-
-peekToken :: Stream -> Token
-peekToken stream =
-  case Vector.uncons stream.input of
-    Nothing -> EOF
-    Just (hd, _) -> hd

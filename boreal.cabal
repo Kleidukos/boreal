@@ -51,6 +51,7 @@ library
   exposed-modules:
     Boreal.Frontend.Lexer
     Boreal.Frontend.Parser
+    Boreal.Frontend.Parser.Types
 
   other-modules:    Paths_boreal
   hs-source-dirs:   src
@@ -58,6 +59,7 @@ library
     , atomic-counter
     , base                         >=4.7 && <5
     , containers
+    , effectful-core
     , pretty-simple
     , prettyprinter
     , prettyprinter-ansi-terminal

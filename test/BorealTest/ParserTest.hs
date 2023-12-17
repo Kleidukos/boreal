@@ -3,9 +3,8 @@ module BorealTest.ParserTest where
 import Test.Tasty.HUnit
 import Test.Tasty
 
-import Boreal.Frontend.Lexer (lexText)
 import Boreal.Frontend.Parser
--- import Utils
+import Boreal.Frontend.Parser.Types
 
 spec :: TestTree
 spec = testGroup "Parser"
@@ -16,7 +15,7 @@ spec = testGroup "Parser"
 testParseExpression :: Assertion
 testParseExpression = do
   let expression = "1 + 2 * 3" 
-  let parsed = parseExpression (lexText expression) Nothing 0 
+  let parsed = runParser expression (parseExpression Nothing 0) 
   assertEqual 
     "An simple expression can be parsed"
     (BorealAtom "c")
@@ -25,7 +24,7 @@ testParseExpression = do
 testRestituteExpression :: Assertion
 testRestituteExpression = do
   let expression = "1 + 2 * 3" 
-  let parsed = parseExpression (lexText expression) Nothing 0
+  let parsed = runParser expression (parseExpression Nothing 0) 
   assertEqual 
     "An simple expression can be parsed"
     expression
