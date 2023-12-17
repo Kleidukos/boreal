@@ -34,11 +34,15 @@ parseExpression mExpression minBindingPower =
         Newline ->
           parseExpression Nothing minBindingPower
         (Op op) -> do
+          stream <- State.get @Stream
           let rightBindingPower = prefixBindingPower op
           rhs <- parseExpression (Nothing) rightBindingPower
+          let trailing = stream.accumulatedWhitespace
+          resetTrailingSpaces
           pure $
             BorealNode
               (Name $ Text.singleton op)
+              trailing
               (Vector.fromList [rhs])
         e -> error ("bad token: " <> show e)
 
@@ -58,12 +62,16 @@ proceedWithStream lhs minBindingPower =
       if leftBindingPower < minBindingPower
         then pure lhs
         else do
+          stream <- State.get @Stream
           skipToken
           rhs <- parseExpression Nothing rightBindingPower
+          let trailing = stream.accumulatedWhitespace
           let lhs' =
                 BorealNode
                   (Name $ Text.singleton o)
+                  trailing
                   (Vector.fromList [lhs, rhs])
+          resetTrailingSpaces
           parseExpression (Just lhs') minBindingPower
     e -> do
       error ("Bad token: " <> show e)

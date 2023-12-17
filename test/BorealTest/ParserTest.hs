@@ -2,7 +2,7 @@
 
 module BorealTest.ParserTest where
 
--- import Data.Text.Display
+import Data.Text.Display
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -19,7 +19,11 @@ spec =
     , testCase "Parse mix of numerical operators and function aplication" testParseMixNumericalAndFunApplication
     , testCase "Parse unary operator" testParseUnaryOperator
     , testCase "Parse unary operator and function application" testParseUnaryOperatorAndFunctionAplication
-    -- , testCase "Restitute an expression" testRestituteExpression
+    , testGroup
+        "Restitution"
+        [ testCase "Restitute an ident" testRestituteIdent
+        , testCase "Restitute a node" testRestituteNode
+        ]
     ]
 
 testParseNumericalExpression :: Assertion
@@ -30,15 +34,13 @@ testParseNumericalExpression = do
     "A simple expression can be parsed"
     ( BorealNode
         (Name "+")
+        [Whitespace]
         [ BorealIdent (Name "1") []
         , BorealNode
             (Name "*")
-            [ BorealIdent
-                (Name "2")
-                [Whitespace]
-            , BorealIdent
-                (Name "3")
-                [Whitespace]
+            [Whitespace]
+            [ BorealIdent (Name "2") [Whitespace]
+            , BorealIdent (Name "3") [Whitespace]
             ]
         ]
     )
@@ -52,9 +54,11 @@ testParseFunctionApplication = do
     "A simple expression can be parsed"
     ( BorealNode
         (Name "⋅")
+        []
         [ BorealIdent (Name "f") []
         , BorealNode
             (Name "⋅")
+            []
             [ BorealIdent (Name "g") [Whitespace]
             , BorealIdent (Name "h") [Whitespace]
             ]
@@ -70,23 +74,24 @@ testParseMixNumericalAndFunApplication = do
     "A simple expression can be parsed"
     ( BorealNode
         (Name "+")
+        []
         [ BorealNode
             (Name "+")
+            []
             [ BorealIdent (Name "1") [Whitespace]
             , BorealIdent (Name "2") [Whitespace]
             ]
         , BorealNode
             (Name "*")
+            []
             [ BorealNode
                 (Name "*")
+                []
                 [ BorealNode
                     (Name "⋅")
+                    []
                     [ BorealIdent (Name "f") [Whitespace]
-                    , BorealNode
-                        (Name "⋅")
-                        [ BorealIdent (Name "g") [Whitespace]
-                        , BorealIdent (Name "h") [Whitespace]
-                        ]
+                    , BorealNode (Name "⋅") [] [BorealIdent (Name "g") [Whitespace], BorealIdent (Name "h") [Whitespace]]
                     ]
                 , BorealIdent (Name "3") [Whitespace]
                 ]
@@ -104,8 +109,10 @@ testParseUnaryOperator = do
     "A simple expression can be parsed"
     ( BorealNode
         (Name "-")
+        []
         [ BorealNode
             (Name "-")
+            []
             [ BorealIdent (Name "1") []
             ]
         ]
@@ -120,10 +127,13 @@ testParseUnaryOperatorAndFunctionAplication = do
     "A simple expression can be parsed"
     ( BorealNode
         (Name "-")
+        []
         [ BorealNode
             (Name "-")
+            []
             [ BorealNode
                 (Name "⋅")
+                []
                 [ BorealIdent (Name "f") []
                 , BorealIdent (Name "g") [Whitespace]
                 ]
@@ -132,12 +142,20 @@ testParseUnaryOperatorAndFunctionAplication = do
     )
     parsed
 
--- testRestituteExpression :: Assertion
--- testRestituteExpression = do
---   let expression = "1 + 2 * 3"
---   let parsed = runParser expression (parseExpression Nothing 0)
---   assertEqual
---     "A simple expression can be parsed"
---     expression
---     (display parsed)
---
+testRestituteIdent :: Assertion
+testRestituteIdent = do
+  let expression = "1"
+  let parsed = runParser expression (parseExpression Nothing 0)
+  assertEqual
+    "An ident can be restituted"
+    expression
+    (display parsed)
+
+testRestituteNode :: Assertion
+testRestituteNode = do
+  let expression = "1 + 2"
+  let parsed = runParser expression (parseExpression Nothing 0)
+  assertEqual
+    "A node can be restituted"
+    expression
+    (display parsed)

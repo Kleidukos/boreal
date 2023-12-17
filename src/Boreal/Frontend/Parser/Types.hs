@@ -26,6 +26,8 @@ data Expression
   = BorealNode
       Name
       -- ^ Name
+      (Vector Token)
+      -- ^ Value on file with preceding whitespace & newlines
       (Vector Expression)
       -- ^ Arguments
   | BorealAtom Text
@@ -48,11 +50,16 @@ instance Display Expression where
               Vector.init rawTokens
                 & fmap displayBuilder
                 & Vector.foldMap' id
-        BorealNode name args
+        BorealNode name trailing args
           | isBinOp name ->
-              displayBuilder (Vector.head args)
-                <> (displayBuilder name)
-                <> Vector.foldMap displayBuilder (Vector.tail args)
+              let trailing' =
+                    Vector.init trailing
+                      & fmap displayBuilder
+                      & Vector.foldMap' id
+               in displayBuilder (Vector.head args)
+                    <> trailing'
+                    <> (displayBuilder name)
+                    <> Vector.foldMap displayBuilder (Vector.tail args)
           | otherwise ->
               displayBuilder name <> Vector.foldMap displayBuilder args
 
