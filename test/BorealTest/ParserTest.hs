@@ -130,7 +130,7 @@ testParseUnaryOperatorAndFunctionAplication = do
   let expression = "--f ⋅ g"
   let parsed = runParser expression (parseExpression Nothing 0)
   assertEqual
-    "A simple expression can be parsed"
+    (Text.unpack $ "Parse " <> expression)
     ( BorealNode
         (Name "-")
         []

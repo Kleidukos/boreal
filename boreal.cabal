@@ -90,6 +90,7 @@ executable boreal
 test-suite boreal-test
   import:         ghc-options
   import:         rts-options
+  ghc-options: -Wno-unused-packages
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
@@ -101,13 +102,9 @@ test-suite boreal-test
   build-depends:
     , base            >=4.7 && <5
     , boreal
-    , containers
-    , effectful-core
-    , pretty-simple
     , PyF
     , tasty
     , tasty-focus
-    , tasty-golden
     , tasty-hunit
     , text
     , text-display
