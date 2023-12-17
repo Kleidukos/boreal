@@ -12,6 +12,7 @@ import Debug.Trace
 import Effectful
 import Effectful.State.Static.Local (State)
 import Effectful.State.Static.Local qualified as State
+import GHC.Stack
 
 import Boreal.Frontend.Lexer
 
@@ -43,7 +44,7 @@ instance Display Expression where
     where
       go :: Builder -> Expression -> Builder
       go acc = \case
-        BorealAtom t -> acc <> (displayBuilder t)
+        BorealAtom t -> acc <> displayBuilder t
         BorealIdent name rawTokens
           | rawTokens == Vector.empty -> displayBuilder name
           | otherwise ->
@@ -53,12 +54,12 @@ instance Display Expression where
         BorealNode name trailing args
           | isBinOp name ->
               let trailing' =
-                    Vector.init trailing
+                    trailing
                       & fmap displayBuilder
                       & Vector.foldMap' id
                in displayBuilder (Vector.head args)
                     <> trailing'
-                    <> (displayBuilder name)
+                    <> displayBuilder name
                     <> Vector.foldMap displayBuilder (Vector.tail args)
           | otherwise ->
               displayBuilder name <> Vector.foldMap displayBuilder args
@@ -87,7 +88,7 @@ nextToken = do
           State.put (stream{accumulatedWhitespace = newAccumulatedWhitespace, input = tl})
           pure hd
         _ -> do
-          State.put $ Stream stream.accumulatedWhitespace tl
+          State.put $ Stream{accumulatedWhitespace = stream.accumulatedWhitespace, input = tl}
           pure hd
 
 -- | Observe the next token without removing it from the stream
@@ -103,10 +104,13 @@ peekToken = do
 skipToken :: Parser ()
 skipToken = void nextToken
 
-traceState :: Parser ()
+traceState :: (HasCallStack) => Parser ()
 traceState = do
+  let myCallStack = callStack
   state <- State.get @Stream
   traceShowM state
+  traceM (prettyCallStack myCallStack)
+  traceM "--------------"
 
 resetTrailingSpaces :: Parser ()
 resetTrailingSpaces =

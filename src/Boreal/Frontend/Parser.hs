@@ -11,9 +11,9 @@ import Boreal.Frontend.Lexer
 import Boreal.Frontend.Parser.Types
 
 parseExpression :: (HasCallStack) => Maybe Expression -> BindingPower -> Parser Expression
-parseExpression mExpression minBindingPower =
+parseExpression mExpression minBindingPower = do
   case mExpression of
-    Just expr ->
+    Just expr -> do
       proceedWithStream expr minBindingPower
     Nothing -> do
       t <- nextToken
@@ -27,7 +27,9 @@ parseExpression mExpression minBindingPower =
                     | c `elem` ['A' .. 'Z'] -> (BorealIdent (Name $ Text.singleton c) trailing)
                     | c `elem` ['0' .. '9'] -> (BorealIdent (Name $ Text.singleton c) trailing)
                     | otherwise -> error "blah"
+
           resetTrailingSpaces
+
           proceedWithStream expr minBindingPower
         Whitespace ->
           parseExpression Nothing minBindingPower
@@ -36,7 +38,7 @@ parseExpression mExpression minBindingPower =
         (Op op) -> do
           stream <- State.get @Stream
           let rightBindingPower = prefixBindingPower op
-          rhs <- parseExpression (Nothing) rightBindingPower
+          rhs <- parseExpression Nothing rightBindingPower
           let trailing = stream.accumulatedWhitespace
           resetTrailingSpaces
           pure $
@@ -58,20 +60,22 @@ proceedWithStream lhs minBindingPower =
       proceedWithStream lhs minBindingPower
     Op o -> do
       let (leftBindingPower, rightBindingPower) = infixBindingPower o
-      resetTrailingSpaces
       if leftBindingPower < minBindingPower
         then pure lhs
         else do
           stream <- State.get @Stream
           skipToken
-          rhs <- parseExpression Nothing rightBindingPower
+          rhs <- do
+            resetTrailingSpaces
+            parseExpression Nothing rightBindingPower
           let trailing = stream.accumulatedWhitespace
+          resetTrailingSpaces
+
           let lhs' =
                 BorealNode
                   (Name $ Text.singleton o)
                   trailing
                   (Vector.fromList [lhs, rhs])
-          resetTrailingSpaces
           parseExpression (Just lhs') minBindingPower
     e -> do
       error ("Bad token: " <> show e)
@@ -87,6 +91,4 @@ infixBindingPower c =
 
 prefixBindingPower :: (HasCallStack) => Char -> BindingPower
 prefixBindingPower c =
-  if
-      | c `elem` ['+', '-'] -> 5
-      | otherwise -> error $ "Bad op: " <> show c
+  if c `elem` ['+', '-'] then 5 else error $ "Bad op: " <> show c
