@@ -2,7 +2,6 @@
 
 module Boreal.Frontend.Parser where
 
-import Control.Monad (void)
 import Data.Function ((&))
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -19,42 +18,62 @@ parseExpression mExpression minBindingPower =
   case traceShowId mExpression of
     Just expr ->
       proceedWithStream expr minBindingPower
-    Nothing ->
-      nextToken >>= \case
-        Whitespace -> do
-          stream <- State.get
-          let newAccumulatedWhitespace = Vector.snoc stream.accumulatedWhitespace Whitespace
-          State.put (stream{accumulatedWhitespace = newAccumulatedWhitespace})
-          parseExpression Nothing minBindingPower
-        Newline -> do
-          stream <- State.get
-          let newAccumulatedWhitespace = Vector.snoc stream.accumulatedWhitespace Newline
-          State.put (stream{accumulatedWhitespace = newAccumulatedWhitespace})
-          parseExpression Nothing minBindingPower
-        (Op c) -> error $ "Got the operation: " <> show c
-        EOF -> error "Got EOF!"
+    Nothing -> do
+      t <- nextToken
+      traceM $ "Handling token: " <> show t
+      case t of
         (Atom a) -> do
           let atom = BorealAtom $ Text.singleton a
           proceedWithStream atom minBindingPower
+        c -> error $ "Got the token: " <> show c
 
 proceedWithStream :: Expression -> BindingPower -> Parser Expression
 proceedWithStream lhs minBindingPower =
   peekToken >>= \case
     EOF -> pure lhs
-    Whitespace ->
-      parseExpression Nothing minBindingPower
-    Newline ->
-      parseExpression Nothing minBindingPower
+    Whitespace -> do
+      traceM "Proceeding with Whitespace"
+      traceState
+      skipToken
+      proceedWithStream lhs minBindingPower
+    Newline -> do
+      traceM "Proceeding with Newline"
+      traceState
+      skipToken
+      proceedWithStream lhs minBindingPower
     Op o -> do
+      traceM $ "Proceeding with Operation: " <> show o
       stream <- State.get @Stream
       let op = BorealIdent (Name (Text.singleton o)) (stream.accumulatedWhitespace)
       let (leftBindingPower, rightBindingPower) = infixBindingPower o
       if leftBindingPower < minBindingPower
-        then pure lhs
+        then do
+          traceM $
+            "Left binding power of "
+              <> show o
+              <> " ("
+              <> show leftBindingPower
+              <> ") "
+              <> "is smaller than minimum binding power ("
+              <> show minBindingPower
+              <> ")"
+          pure lhs
         else do
-          void nextToken
+          traceM $
+            "Left binding power of "
+              <> show o
+              <> " ("
+              <> show leftBindingPower
+              <> ") "
+              <> "is greater than minimum binding power ("
+              <> show minBindingPower
+              <> ")"
+          skipToken
           rhs <- parseExpression Nothing rightBindingPower
-          let lhs' = BorealNode (Name $ Text.singleton o) (traceShowId (Vector.fromList [op, lhs, rhs]))
+          let lhs' =
+                BorealNode
+                  (Name $ Text.singleton o)
+                  (traceShowId (Vector.fromList [op, lhs, rhs]))
           parseExpression (Just lhs') minBindingPower
     e -> error ("Bad token: " <> show e)
 

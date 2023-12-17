@@ -7,3 +7,5 @@ with-compiler: ghc-9.8.1
 tests: True
 
 test-show-details: direct
+
+documentation: true
