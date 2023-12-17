@@ -1,5 +1,6 @@
 module Boreal.Frontend.Parser.Types where
 
+import Control.Monad (void)
 import Data.Function ((&))
 import Data.Text (Text)
 import Data.Text.Display
@@ -49,7 +50,7 @@ instance Display Expression where
                 & Vector.foldMap' id
         BorealNode name args
           | isBinOp name ->
-              displayBuilder (Vector.head ((traceShow $ "args: " <> show args) args))
+              displayBuilder (Vector.head args)
                 <> (displayBuilder name)
                 <> Vector.foldMap displayBuilder (Vector.tail args)
           | otherwise ->
@@ -93,9 +94,7 @@ peekToken = do
 
 -- | Remove the next token from the stream without processing it
 skipToken :: Parser ()
-skipToken = do
-  t <- nextToken
-  traceM $ "Skipping token " <> show t
+skipToken = void nextToken
 
 traceState :: Parser ()
 traceState = do
@@ -107,4 +106,4 @@ resetTrailingSpaces =
   State.modify (\stream -> stream{accumulatedWhitespace = Vector.empty})
 
 isBinOp :: Name -> Bool
-isBinOp (Name t) = t `elem` ["+", "-", "*", "/"]
+isBinOp (Name t) = t `elem` ["+", "-", "*", "/", "⋅"]

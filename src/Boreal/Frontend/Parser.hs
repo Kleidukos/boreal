@@ -33,8 +33,14 @@ parseExpression mExpression minBindingPower =
           parseExpression Nothing minBindingPower
         Newline ->
           parseExpression Nothing minBindingPower
-        c -> do
-          error $ "Got the token: " <> show c
+        (Op op) -> do
+          let rightBindingPower = prefixBindingPower op
+          rhs <- parseExpression (Nothing) rightBindingPower
+          pure $
+            BorealNode
+              (Name $ Text.singleton op)
+              (Vector.fromList [rhs])
+        e -> error ("bad token: " <> show e)
 
 proceedWithStream :: (HasCallStack) => Expression -> BindingPower -> Parser Expression
 proceedWithStream lhs minBindingPower =
@@ -67,5 +73,12 @@ infixBindingPower c =
   if
       | c `elem` ['+', '-'] -> (1, 2)
       | c `elem` ['*', '/'] -> (3, 4)
+      | c == '⋅' -> (8, 7)
       | otherwise ->
           error $ "CANNOT DETERMINE BINDING POWER FOR " <> show c
+
+prefixBindingPower :: (HasCallStack) => Char -> BindingPower
+prefixBindingPower c =
+  if
+      | c `elem` ['+', '-'] -> 5
+      | otherwise -> error $ "Bad op: " <> show c

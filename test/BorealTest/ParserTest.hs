@@ -2,7 +2,7 @@
 
 module BorealTest.ParserTest where
 
-import Data.Text.Display
+-- import Data.Text.Display
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -14,16 +14,20 @@ spec :: TestTree
 spec =
   testGroup
     "Parser"
-    [ testCase "Parse an expression" testParseExpression
-    , testCase "Restitute an expression" testRestituteExpression
+    [ testCase "Parse a numerical expression" testParseNumericalExpression
+    , testCase "Parse function application operator" testParseFunctionApplication
+    , testCase "Parse mix of numerical operators and function aplication" testParseMixNumericalAndFunApplication
+    , testCase "Parse unary operator" testParseUnaryOperator
+    , testCase "Parse unary operator and function application" testParseUnaryOperatorAndFunctionAplication
+    -- , testCase "Restitute an expression" testRestituteExpression
     ]
 
-testParseExpression :: Assertion
-testParseExpression = do
+testParseNumericalExpression :: Assertion
+testParseNumericalExpression = do
   let expression = "1 + 2 * 3"
   let parsed = runParser expression (parseExpression Nothing 0)
   assertEqual
-    "An simple expression can be parsed"
+    "A simple expression can be parsed"
     ( BorealNode
         (Name "+")
         [ BorealIdent (Name "1") []
@@ -40,11 +44,100 @@ testParseExpression = do
     )
     parsed
 
-testRestituteExpression :: Assertion
-testRestituteExpression = do
-  let expression = "1 + 2 * 3"
+testParseFunctionApplication :: Assertion
+testParseFunctionApplication = do
+  let expression = "f ⋅ g ⋅ h"
   let parsed = runParser expression (parseExpression Nothing 0)
   assertEqual
-    "An simple expression can be parsed"
-    expression
-    (display parsed)
+    "A simple expression can be parsed"
+    ( BorealNode
+        (Name "⋅")
+        [ BorealIdent (Name "f") []
+        , BorealNode
+            (Name "⋅")
+            [ BorealIdent (Name "g") [Whitespace]
+            , BorealIdent (Name "h") [Whitespace]
+            ]
+        ]
+    )
+    parsed
+
+testParseMixNumericalAndFunApplication :: Assertion
+testParseMixNumericalAndFunApplication = do
+  let expression = " 1 + 2 + f ⋅ g ⋅ h * 3 *   4"
+  let parsed = runParser expression (parseExpression Nothing 0)
+  assertEqual
+    "A simple expression can be parsed"
+    ( BorealNode
+        (Name "+")
+        [ BorealNode
+            (Name "+")
+            [ BorealIdent (Name "1") [Whitespace]
+            , BorealIdent (Name "2") [Whitespace]
+            ]
+        , BorealNode
+            (Name "*")
+            [ BorealNode
+                (Name "*")
+                [ BorealNode
+                    (Name "⋅")
+                    [ BorealIdent (Name "f") [Whitespace]
+                    , BorealNode
+                        (Name "⋅")
+                        [ BorealIdent (Name "g") [Whitespace]
+                        , BorealIdent (Name "h") [Whitespace]
+                        ]
+                    ]
+                , BorealIdent (Name "3") [Whitespace]
+                ]
+            , BorealIdent (Name "4") [Whitespace, Whitespace, Whitespace]
+            ]
+        ]
+    )
+    parsed
+
+testParseUnaryOperator :: Assertion
+testParseUnaryOperator = do
+  let expression = "--1 * 2"
+  let parsed = runParser expression (parseExpression Nothing 0)
+  assertEqual
+    "A simple expression can be parsed"
+    ( BorealNode
+        (Name "-")
+        [ BorealNode
+            (Name "-")
+            [ BorealIdent (Name "1") []
+            ]
+        ]
+    )
+    parsed
+
+testParseUnaryOperatorAndFunctionAplication :: Assertion
+testParseUnaryOperatorAndFunctionAplication = do
+  let expression = "--f ⋅ g"
+  let parsed = runParser expression (parseExpression Nothing 0)
+  assertEqual
+    "A simple expression can be parsed"
+    ( BorealNode
+        (Name "-")
+        [ BorealNode
+            (Name "-")
+            [ BorealNode
+                (Name "⋅")
+                [ BorealIdent (Name "f") []
+                , BorealIdent (Name "g") [Whitespace]
+                ]
+            ]
+        ]
+    )
+    parsed
+
+-- testRestituteExpression :: Assertion
+-- testRestituteExpression = do
+--   let expression = "1 + 2 * 3"
+--   let parsed = runParser expression (parseExpression Nothing 0)
+--   assertEqual
+--     "A simple expression can be parsed"
+--     expression
+--     (display parsed)
+--
