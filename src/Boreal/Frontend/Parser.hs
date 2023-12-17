@@ -47,32 +47,11 @@ proceedWithStream lhs minBindingPower =
       skipToken
       proceedWithStream lhs minBindingPower
     Op o -> do
-      stream <- State.get @Stream
-      let op = BorealIdent (Name (Text.singleton o)) (stream.accumulatedWhitespace)
       let (leftBindingPower, rightBindingPower) = infixBindingPower o
       resetTrailingSpaces
       if leftBindingPower < minBindingPower
-        then do
-          -- traceM $
-          --   "Left binding power of "
-          --     <> show o
-          --     <> " ("
-          --     <> show leftBindingPower
-          --     <> ") "
-          --     <> "is smaller than minimum binding power ("
-          --     <> show minBindingPower
-          --     <> ")"
-          pure lhs
+        then pure lhs
         else do
-          -- traceM $
-          --   "Left binding power of "
-          --     <> show o
-          --     <> " ("
-          --     <> show leftBindingPower
-          --     <> ") "
-          --     <> "is greater than minimum binding power ("
-          --     <> show minBindingPower
-          --     <> ")"
           skipToken
           rhs <- parseExpression Nothing rightBindingPower
           let lhs' =
