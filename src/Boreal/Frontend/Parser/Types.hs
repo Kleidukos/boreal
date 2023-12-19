@@ -10,13 +10,20 @@ import Data.Vector qualified as Vector
 import Data.Word
 import Debug.Trace
 import Effectful
+import Effectful.Error.Static (Error)
+import Effectful.Error.Static qualified as Error
 import Effectful.State.Static.Local (State)
 import Effectful.State.Static.Local qualified as State
+
 import GHC.Stack
 
 import Boreal.Frontend.Lexer
 
-type Parser = Eff '[State Stream]
+type Parser = Eff '[State Stream, Error ParseError]
+
+data ParseError
+  = ParseError
+  deriving stock (Eq, Ord, Show)
 
 type BindingPower = Word8
 
@@ -64,11 +71,12 @@ instance Display Expression where
           | otherwise ->
               displayBuilder name <> Vector.foldMap displayBuilder args
 
-runParser :: Text -> Parser Expression -> Expression
+runParser :: Text -> Parser Expression -> Either ParseError Expression
 runParser input action =
   let stream = input & lexText
    in action
         & State.evalState stream
+        & Error.runErrorNoCallStack
         & runPureEff
 
 -- | Grab the next token and remove it from the stream

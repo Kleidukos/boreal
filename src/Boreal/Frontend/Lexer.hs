@@ -61,12 +61,12 @@ lexText text =
     & Text.foldl'
       ( \acc c ->
           if
-              | c `elem` ['a' .. 'z'] -> Vector.snoc acc (Atom c)
-              | c `elem` ['A' .. 'Z'] -> Vector.snoc acc (Atom c)
-              | c `elem` ['0' .. '9'] -> Vector.snoc acc (Atom c)
-              | c == ' ' -> Vector.snoc acc Whitespace
-              | c == '\n' -> Vector.snoc acc Newline
-              | otherwise -> Vector.snoc acc (Op c)
+            | c `elem` ['a' .. 'z'] -> Vector.snoc acc (Atom c)
+            | c `elem` ['A' .. 'Z'] -> Vector.snoc acc (Atom c)
+            | c `elem` ['0' .. '9'] -> Vector.snoc acc (Atom c)
+            | c == ' ' -> Vector.snoc acc Whitespace
+            | c == '\n' -> Vector.snoc acc Newline
+            | otherwise -> Vector.snoc acc (Op c)
       )
       Vector.empty
     & Stream Vector.empty

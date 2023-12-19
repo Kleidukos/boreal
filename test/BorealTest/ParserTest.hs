@@ -10,6 +10,7 @@ import Test.Tasty.HUnit
 import Boreal.Frontend.Lexer
 import Boreal.Frontend.Parser
 import Boreal.Frontend.Parser.Types
+import Utils
 
 spec :: TestTree
 spec =
@@ -30,7 +31,7 @@ spec =
 testParseNumericalExpression :: Assertion
 testParseNumericalExpression = do
   let expression = "1 + 2 * 3"
-  let parsed = runParser expression (parseExpression Nothing 0)
+  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
   assertEqual
     (Text.unpack $ "Parse " <> expression)
     ( BorealNode
@@ -50,7 +51,7 @@ testParseNumericalExpression = do
 testParseFunctionApplication :: Assertion
 testParseFunctionApplication = do
   let expression = "f ⋅ g ⋅ h"
-  let parsed = runParser expression (parseExpression Nothing 0)
+  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
   assertEqual
     (Text.unpack $ "Parse " <> expression)
     ( BorealNode
@@ -70,7 +71,7 @@ testParseFunctionApplication = do
 testParseMixNumericalAndFunApplication :: Assertion
 testParseMixNumericalAndFunApplication = do
   let expression = " 1 + 2 + f ⋅ g ⋅ h * 3 *   4"
-  let parsed = runParser expression (parseExpression Nothing 0)
+  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
   assertEqual
     (Text.unpack $ "Parse " <> expression)
     ( BorealNode
@@ -110,7 +111,7 @@ testParseMixNumericalAndFunApplication = do
 testParseUnaryOperator :: Assertion
 testParseUnaryOperator = do
   let expression = "--1 * 2"
-  let parsed = runParser expression (parseExpression Nothing 0)
+  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
   assertEqual
     (Text.unpack $ "Parse " <> expression)
     ( BorealNode
@@ -128,7 +129,7 @@ testParseUnaryOperator = do
 testParseUnaryOperatorAndFunctionAplication :: Assertion
 testParseUnaryOperatorAndFunctionAplication = do
   let expression = "--f ⋅ g"
-  let parsed = runParser expression (parseExpression Nothing 0)
+  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
   assertEqual
     (Text.unpack $ "Parse " <> expression)
     ( BorealNode
@@ -151,7 +152,7 @@ testParseUnaryOperatorAndFunctionAplication = do
 testRestituteIdent :: Assertion
 testRestituteIdent = do
   let expression = "1"
-  let parsed = runParser expression (parseExpression Nothing 0)
+  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
   assertEqual
     (Text.unpack $ "Restitute " <> expression)
     expression
@@ -160,7 +161,7 @@ testRestituteIdent = do
 testRestituteNode :: Assertion
 testRestituteNode = do
   let expression = "1 + 2"
-  let parsed = runParser expression (parseExpression Nothing 0)
+  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
   assertEqual
     (Text.unpack $ "Restitute " <> expression)
     expression
