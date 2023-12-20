@@ -12,7 +12,7 @@ module.exports = grammar({
         "where"
       ),
 
-      module_name: $ => /[A-Z][a-z]+/,
+      module_name: $ => /[A-Za-z]+/,
 
       top_level_declarations: $ => repeat1(choice(
         $.function_declaration
@@ -22,12 +22,26 @@ module.exports = grammar({
         field("head", $.identifier), 
         field("parameters", repeat($.identifier)),
         "=",
-        field("body", $.expression)
+        field("body", $.function_body)
       ),
 
-      expression :$ => choice(
+      function_body: $ => choice(
+        $.let_binding,
+        $.expression
+      ),
+
+      expression: $ => choice(
         $.identifier,
         $.binary_operation,
+      ),
+
+      let_binding: $ => seq(
+        "let",
+        $.identifier,
+        "=",
+        $.expression,
+        "in",
+        $.expression
       ),
       
       identifier: $ => /[a-z_\d]+/,

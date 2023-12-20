@@ -33,7 +33,7 @@
     },
     "module_name": {
       "type": "PATTERN",
-      "value": "[A-Z][a-z]+"
+      "value": "[A-Za-z]+"
     },
     "top_level_declarations": {
       "type": "REPEAT1",
@@ -78,8 +78,21 @@
           "name": "body",
           "content": {
             "type": "SYMBOL",
-            "name": "expression"
+            "name": "function_body"
           }
+        }
+      ]
+    },
+    "function_body": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "let_binding"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "expression"
         }
       ]
     },
@@ -93,6 +106,35 @@
         {
           "type": "SYMBOL",
           "name": "binary_operation"
+        }
+      ]
+    },
+    "let_binding": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "let"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "STRING",
+          "value": "="
+        },
+        {
+          "type": "SYMBOL",
+          "name": "expression"
+        },
+        {
+          "type": "STRING",
+          "value": "in"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "expression"
         }
       ]
     },

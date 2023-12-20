@@ -34,6 +34,25 @@
     }
   },
   {
+    "type": "function_body",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "let_binding",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "function_declaration",
     "named": true,
     "fields": {
@@ -42,7 +61,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "function_body",
             "named": true
           }
         ]
@@ -67,6 +86,25 @@
           }
         ]
       }
+    }
+  },
+  {
+    "type": "let_binding",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -141,6 +179,14 @@
   {
     "type": "identifier",
     "named": true
+  },
+  {
+    "type": "in",
+    "named": false
+  },
+  {
+    "type": "let",
+    "named": false
   },
   {
     "type": "module",
