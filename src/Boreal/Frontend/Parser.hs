@@ -4,9 +4,9 @@ module Boreal.Frontend.Parser where
 
 import Data.Text qualified as Text
 import Data.Vector qualified as Vector
+import Debug.Trace
 import Effectful.State.Static.Local qualified as State
 import GHC.Stack
-import Debug.Trace
 
 import Boreal.Frontend.Lexer
 import Boreal.Frontend.Parser.Types
@@ -24,10 +24,10 @@ parseExpression mExpression minBindingPower = do
           let trailing = stream.accumulatedWhitespace
           let expr =
                 if
-                    | c `elem` ['a' .. 'z'] -> (BorealIdent (Name $ Text.singleton c) trailing)
-                    | c `elem` ['A' .. 'Z'] -> (BorealIdent (Name $ Text.singleton c) trailing)
-                    | c `elem` ['0' .. '9'] -> (BorealIdent (Name $ Text.singleton c) trailing)
-                    | otherwise -> error "blah"
+                  | c `elem` ['a' .. 'z'] -> (BorealIdent (Name $ Text.singleton c) trailing)
+                  | c `elem` ['A' .. 'Z'] -> (BorealIdent (Name $ Text.singleton c) trailing)
+                  | c `elem` ['0' .. '9'] -> (BorealIdent (Name $ Text.singleton c) trailing)
+                  | otherwise -> error "blah"
 
           resetTrailingSpaces
 
@@ -87,11 +87,11 @@ proceedWithStream lhs minBindingPower =
 infixBindingPower :: (HasCallStack) => Char -> (BindingPower, BindingPower)
 infixBindingPower c =
   if
-      | c `elem` ['+', '-'] -> (1, 2)
-      | c `elem` ['*', '/'] -> (3, 4)
-      | c == '⋅' -> (8, 7)
-      | otherwise ->
-          error $ "CANNOT DETERMINE BINDING POWER FOR " <> show c
+    | c `elem` ['+', '-'] -> (1, 2)
+    | c `elem` ['*', '/'] -> (3, 4)
+    | c == '⋅' -> (8, 7)
+    | otherwise ->
+        error $ "CANNOT DETERMINE BINDING POWER FOR " <> show c
 
 prefixBindingPower :: (HasCallStack) => Char -> BindingPower
 prefixBindingPower c =
