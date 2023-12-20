@@ -72,6 +72,12 @@ testParseMixNumericalAndFunApplication :: Assertion
 testParseMixNumericalAndFunApplication = do
   let expression = " 1 + 2 + f ⋅ g ⋅ h * 3 *   4"
   parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
+
+  -- assertEqual
+  --   (Text.unpack $ "Restitute " <> expression)
+  --   expression
+  --   (display parsed )
+
   assertEqual
     (Text.unpack $ "Parse " <> expression)
     ( BorealNode

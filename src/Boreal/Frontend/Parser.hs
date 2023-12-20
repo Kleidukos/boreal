@@ -6,6 +6,7 @@ import Data.Text qualified as Text
 import Data.Vector qualified as Vector
 import Effectful.State.Static.Local qualified as State
 import GHC.Stack
+import Debug.Trace
 
 import Boreal.Frontend.Lexer
 import Boreal.Frontend.Parser.Types
@@ -41,6 +42,7 @@ parseExpression mExpression minBindingPower = do
           rhs <- parseExpression Nothing rightBindingPower
           let trailing = stream.accumulatedWhitespace
           resetTrailingSpaces
+          traceM ("parseExpression: " <> show trailing)
           pure $
             BorealNode
               (Name $ Text.singleton op)
@@ -53,11 +55,12 @@ proceedWithStream lhs minBindingPower =
   peekToken >>= \case
     EOF -> pure lhs
     Whitespace -> do
+      traceState
       skipToken
-      proceedWithStream lhs minBindingPower
+      parseExpression Nothing minBindingPower
     Newline -> do
       skipToken
-      proceedWithStream lhs minBindingPower
+      parseExpression Nothing minBindingPower
     Op o -> do
       let (leftBindingPower, rightBindingPower) = infixBindingPower o
       if leftBindingPower < minBindingPower
@@ -69,6 +72,7 @@ proceedWithStream lhs minBindingPower =
             resetTrailingSpaces
             parseExpression Nothing rightBindingPower
           let trailing = stream.accumulatedWhitespace
+          traceM ("proceedWithStream: " <> show trailing)
           resetTrailingSpaces
 
           let lhs' =

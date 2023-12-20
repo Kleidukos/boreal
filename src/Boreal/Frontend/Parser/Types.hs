@@ -77,7 +77,7 @@ instance Display Expression where
 
 runParser :: Text -> Parser Expression -> Either ParseError Expression
 runParser input action =
-  let stream = input & lexText
+  let stream = lexText input
    in action
         & State.evalState stream
         & Error.runErrorNoCallStack
