@@ -4,7 +4,6 @@ module Boreal.Frontend.Parser where
 
 import Data.Text qualified as Text
 import Data.Vector qualified as Vector
-import Debug.Trace
 import Effectful.State.Static.Local qualified as State
 import GHC.Stack
 
@@ -30,37 +29,23 @@ parseExpression mExpression minBindingPower = do
                   | otherwise -> error "blah"
 
           resetTrailingSpaces
-
           proceedWithStream expr minBindingPower
         Whitespace ->
           parseExpression Nothing minBindingPower
         Newline ->
           parseExpression Nothing minBindingPower
-        (Op op) -> do
-          stream <- State.get @Stream
-          let rightBindingPower = prefixBindingPower op
-          rhs <- parseExpression Nothing rightBindingPower
-          let trailing = stream.accumulatedWhitespace
-          resetTrailingSpaces
-          traceM ("parseExpression: " <> show trailing)
-          pure $
-            BorealNode
-              (Name $ Text.singleton op)
-              trailing
-              (Vector.fromList [rhs])
         e -> error ("bad token: " <> show e)
 
 proceedWithStream :: (HasCallStack) => Expression -> BindingPower -> Parser Expression
-proceedWithStream lhs minBindingPower =
+proceedWithStream lhs minBindingPower = do
   peekToken >>= \case
     EOF -> pure lhs
     Whitespace -> do
-      traceState
       skipToken
-      parseExpression Nothing minBindingPower
+      parseExpression (Just lhs) minBindingPower
     Newline -> do
       skipToken
-      parseExpression Nothing minBindingPower
+      parseExpression (Just lhs) minBindingPower
     Op o -> do
       let (leftBindingPower, rightBindingPower) = infixBindingPower o
       if leftBindingPower < minBindingPower
@@ -72,7 +57,6 @@ proceedWithStream lhs minBindingPower =
             resetTrailingSpaces
             parseExpression Nothing rightBindingPower
           let trailing = stream.accumulatedWhitespace
-          traceM ("proceedWithStream: " <> show trailing)
           resetTrailingSpaces
 
           let lhs' =
@@ -92,7 +76,3 @@ infixBindingPower c =
     | c == '⋅' -> (8, 7)
     | otherwise ->
         error $ "CANNOT DETERMINE BINDING POWER FOR " <> show c
-
-prefixBindingPower :: (HasCallStack) => Char -> BindingPower
-prefixBindingPower c =
-  if c `elem` ['+', '-'] then 5 else error $ "Bad op: " <> show c

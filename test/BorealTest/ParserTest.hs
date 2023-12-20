@@ -18,9 +18,7 @@ spec =
     "Parser"
     [ testCase "Parse a numerical expression" testParseNumericalExpression
     , testCase "Parse function application operator" testParseFunctionApplication
-    , testCase "Parse mix of numerical operators and function aplication" testParseMixNumericalAndFunApplication
-    , testCase "Parse unary operator" testParseUnaryOperator
-    , testCase "Parse unary operator and function application" testParseUnaryOperatorAndFunctionAplication
+    , testCase "Parse mixes of numerical operators and function aplication" testParseMixNumericalAndFunApplication
     , testGroup
         "Restitution"
         [ testCase "Restitute an ident" testRestituteIdent
@@ -70,90 +68,76 @@ testParseFunctionApplication = do
 
 testParseMixNumericalAndFunApplication :: Assertion
 testParseMixNumericalAndFunApplication = do
-  let expression = " 1 + 2 + f ⋅ g ⋅ h * 3 *   4"
-  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
-
-  -- assertEqual
-  --   (Text.unpack $ "Restitute " <> expression)
-  --   expression
-  --   (display parsed )
-
-  assertEqual
-    (Text.unpack $ "Parse " <> expression)
-    ( BorealNode
-        (Name "+")
-        [Whitespace]
-        [ BorealNode
+  let expression1 = " 1 + 2 +  f"
+  parsed1 <- assertRight $ runParser expression1 (parseExpression Nothing 0)
+  let expectedAST1 =
+        ( BorealNode
             (Name "+")
             [Whitespace]
-            [ BorealIdent (Name "1") [Whitespace]
-            , BorealIdent (Name "2") [Whitespace]
-            ]
-        , BorealNode
-            (Name "*")
-            [Whitespace]
             [ BorealNode
-                (Name "*")
+                (Name "+")
                 [Whitespace]
-                [ BorealNode
-                    (Name "⋅")
-                    [Whitespace]
-                    [ BorealIdent (Name "f") [Whitespace]
-                    , BorealNode
-                        (Name "⋅")
-                        [Whitespace]
-                        [ BorealIdent (Name "g") [Whitespace]
-                        , BorealIdent (Name "h") [Whitespace]
-                        ]
-                    ]
-                , BorealIdent (Name "3") [Whitespace]
+                [ BorealIdent (Name "1") [Whitespace]
+                , BorealIdent (Name "2") [Whitespace]
                 ]
-            , BorealIdent (Name "4") [Whitespace, Whitespace, Whitespace]
+            , BorealIdent (Name "f") [Whitespace, Whitespace]
             ]
-        ]
-    )
-    parsed
+        )
 
-testParseUnaryOperator :: Assertion
-testParseUnaryOperator = do
-  let expression = "--1 * 2"
-  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
   assertEqual
-    (Text.unpack $ "Parse " <> expression)
-    ( BorealNode
-        (Name "-")
-        []
-        [ BorealNode
-            (Name "-")
-            []
-            [ BorealIdent (Name "1") []
-            ]
-        ]
-    )
-    parsed
+    (Text.unpack $ "Parse " <> expression1)
+    expectedAST1
+    parsed1
 
-testParseUnaryOperatorAndFunctionAplication :: Assertion
-testParseUnaryOperatorAndFunctionAplication = do
-  let expression = "--f ⋅ g"
-  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
   assertEqual
-    (Text.unpack $ "Parse " <> expression)
-    ( BorealNode
-        (Name "-")
-        []
-        [ BorealNode
-            (Name "-")
-            []
-            [ BorealNode
-                (Name "⋅")
-                [Whitespace]
-                [ BorealIdent (Name "f") []
-                , BorealIdent (Name "g") [Whitespace]
-                ]
-            ]
-        ]
-    )
-    parsed
+    (Text.unpack $ "Restitute " <> expression1)
+    expression1
+    (display expectedAST1)
+
+  let expression2 = " 1 + 2 + f ⋅ g ⋅ h * 3 *   4"
+  parsed2 <- assertRight $ runParser expression2 (parseExpression Nothing 0)
+  let expectedAST2 =
+        BorealNode
+          (Name "+")
+          [Whitespace]
+          [ BorealNode
+              (Name "+")
+              [Whitespace]
+              [ BorealIdent (Name "1") [Whitespace]
+              , BorealIdent (Name "2") [Whitespace]
+              ]
+          , BorealNode
+              (Name "*")
+              [Whitespace]
+              [ BorealNode
+                  (Name "*")
+                  [Whitespace]
+                  [ BorealNode
+                      (Name "⋅")
+                      [Whitespace]
+                      [ BorealIdent (Name "f") [Whitespace]
+                      , BorealNode
+                          (Name "⋅")
+                          [Whitespace]
+                          [ BorealIdent (Name "g") [Whitespace]
+                          , BorealIdent (Name "h") [Whitespace]
+                          ]
+                      ]
+                  , BorealIdent (Name "3") [Whitespace]
+                  ]
+              , BorealIdent (Name "4") [Whitespace, Whitespace, Whitespace]
+              ]
+          ]
+
+  assertEqual
+    (Text.unpack $ "Parse " <> expression2)
+    expectedAST2
+    parsed2
+
+  assertEqual
+    (Text.unpack $ "Restitute " <> expression2)
+    expression2
+    (display expectedAST2)
 
 testRestituteIdent :: Assertion
 testRestituteIdent = do
@@ -178,8 +162,8 @@ testRestituteNode = do
         )
   assertEqual
     (Text.unpack $ "Parsed " <> expression)
-    parsed
     expectedAST
+    parsed
 
   assertEqual
     (Text.unpack $ "Restitute " <> expression)

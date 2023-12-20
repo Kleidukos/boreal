@@ -116,11 +116,15 @@ peekToken = do
 skipToken :: Parser ()
 skipToken = void nextToken
 
-traceState :: (HasCallStack) => Parser ()
-traceState = do
-  let myCallStack = callStack
+traceState :: String -> Parser ()
+traceState tag = do
   state <- State.get @Stream
-  traceShowM state
+  traceM $ "[" <> tag <> "]: " <> show state
+
+traceStateWithCallStack :: (HasCallStack) => String -> Parser ()
+traceStateWithCallStack tag = do
+  let myCallStack = callStack
+  traceState tag
   traceM (prettyCallStack myCallStack)
   traceM "--------------"
 

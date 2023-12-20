@@ -22,9 +22,9 @@ common ghc-options
     -Wall -Wcompat -Widentities -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
     -fhide-source-paths -Wno-unused-do-bind -fshow-hole-constraints
-    -Wno-unticked-promoted-constructors -Werror=unused-imports
+    -Wno-unticked-promoted-constructors
     -fdicts-strict -fmax-worker-args=16 -fspec-constr-recursive=16
-    -Wunused-packages
+    -- -Wunused-packages
 
   default-language:   GHC2021
   default-extensions:
@@ -90,7 +90,6 @@ executable boreal
 test-suite boreal-test
   import:         ghc-options
   import:         rts-options
-  ghc-options:    -Wno-unused-packages
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
