@@ -162,7 +162,20 @@ testRestituteNode :: Assertion
 testRestituteNode = do
   let expression = "1 + 2"
   parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
+  let expectedAST =
+        ( BorealNode
+            (Name "+")
+            [Whitespace]
+            [ BorealIdent (Name "1") []
+            , BorealIdent (Name "2") [Whitespace]
+            ]
+        )
+  assertEqual
+    (Text.unpack $ "Parsed " <> expression)
+    parsed
+    expectedAST
+
   assertEqual
     (Text.unpack $ "Restitute " <> expression)
     expression
-    (display parsed)
+    (display expectedAST)

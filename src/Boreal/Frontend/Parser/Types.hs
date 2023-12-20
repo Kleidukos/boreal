@@ -52,19 +52,23 @@ instance Display Expression where
       go :: Builder -> Expression -> Builder
       go acc = \case
         BorealAtom t -> acc <> displayBuilder t
-        BorealIdent name rawTokens
-          | rawTokens == Vector.empty -> displayBuilder name
+        BorealIdent name trailing
+          | trailing == Vector.empty -> displayBuilder name
           | otherwise ->
-              Vector.init rawTokens
-                & fmap displayBuilder
-                & Vector.foldMap' id
+              acc
+                <> ( trailing
+                      & fmap displayBuilder
+                      & Vector.foldMap' id
+                   )
+                <> displayBuilder name
         BorealNode name trailing args
           | isBinOp name ->
               let trailing' =
                     trailing
                       & fmap displayBuilder
                       & Vector.foldMap' id
-               in displayBuilder (Vector.head args)
+               in acc
+                    <> displayBuilder (Vector.head args)
                     <> trailing'
                     <> displayBuilder name
                     <> Vector.foldMap displayBuilder (Vector.tail args)
