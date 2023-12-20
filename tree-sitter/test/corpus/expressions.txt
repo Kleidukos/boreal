@@ -1,0 +1,26 @@
+===========
+Expressions
+===========
+
+module Expressions where
+
+expr = 1 * 2 + 3
+
+---
+
+(source_file
+  (module_declaration
+    (module_name))
+  (top_level_declarations
+    (function_declaration
+      (identifier)
+      (expression
+        (binary_operation
+          (expression
+            (binary_operation
+              (expression
+                (identifier))
+              (expression
+                (identifier))))
+          (expression
+            (identifier)))))))
