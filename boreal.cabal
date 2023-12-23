@@ -47,7 +47,7 @@ library
   other-modules:    Paths_boreal
   include-dirs:     tree-sitter/src
   install-includes: tree_sitter/parser.h
-  c-sources:        tree-sitter/src/parser.c
+  cxx-sources:      tree-sitter/src/parser.c
   hs-source-dirs:   src
   build-depends:
     , atomic-counter
@@ -88,7 +88,6 @@ test-suite boreal-test
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
-    BorealTest.LexerTest
     BorealTest.ParserTest
     Utils
 
