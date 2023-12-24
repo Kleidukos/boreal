@@ -1,5 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 
 module Boreal.Frontend.TreeSitter where
 
@@ -24,7 +23,7 @@ import TreeSitter.Node
 import TreeSitter.Parser
 import TreeSitter.Tree
 
-foreign import capi unsafe "parser.c tree_sitter_boreal"
+foreign import capi unsafe "parser.h tree_sitter_boreal"
   tree_sitter_boreal :: ConstPtr Language
 
 main :: IO ()
@@ -32,38 +31,29 @@ main = do
   parser <- ts_parser_new
   ts_parser_set_language parser (unConstPtr tree_sitter_boreal)
 
-  let source =
-        "module Test where\nx = 3"
+  let source = "module Test where\nx = 3"
 
   (str, len) <- newCStringLen source
-  tree <- ts_parser_parse_string parser nullPtr str len
+  tree <-
+    ts_parser_parse_string
+      parser
+      nullPtr
+      str
+      len
 
   n <- malloc
   ts_tree_root_node_p tree n
 
   print "module (root) ------------"
-  n@Node{..} <- peek n
+  Node{nodeChildCount, nodeTSNode} <- peek n
   let childCount = fromIntegral nodeChildCount
 
   children <- mallocArray childCount
   tsNode <- malloc
   poke tsNode nodeTSNode
+
   ts_node_copy_child_nodes tsNode children
-
   printChildren children childCount
-
-  print "where ------------"
-  n@Node{..} <- peekElemOff children 3
-  let nextChildCount = fromIntegral nodeChildCount
-
-  nextChildren <- mallocArray nextChildCount
-  nextTsNode <- malloc
-  poke nextTsNode nodeTSNode
-  ts_node_copy_child_nodes nextTsNode nextChildren
-
-  printChildren nextChildren nextChildCount
-
-  print "END"
 
 printChildren :: Ptr Node -> Int -> IO ()
 printChildren children count =
@@ -75,10 +65,10 @@ printChildren children count =
     )
 
 printNode :: Node -> IO ()
-printNode n@(Node{..}) = do
+printNode n@(Node{nodeType, nodeEndPoint}) = do
   theType <- peekCString nodeType
-  let TSPoint{..} = nodeStartPoint n
-      start = "(" ++ show pointRow ++ "," ++ show pointColumn ++ ")"
-  let TSPoint{..} = nodeEndPoint
-      end = "(" ++ show pointRow ++ "," ++ show pointColumn ++ ")"
-  print $ theType ++ start ++ "-" ++ end
+  let startPoint = nodeStartPoint n
+      start = "(" <> show startPoint.pointRow <> "," <> show startPoint.pointColumn <> ")"
+  let endPoint = nodeEndPoint
+      end = "(" <> show endPoint.pointRow <> "," <> show endPoint.pointColumn <> ")"
+  print $ theType <> start <> "-" <> end

@@ -1,4 +1,6 @@
-packages: ./
+packages: 
+  ./
+  ./vendor/tree-sitter
 
 active-repositories: hackage.haskell.org
 

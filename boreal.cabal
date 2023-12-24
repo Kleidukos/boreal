@@ -45,9 +45,10 @@ library
   -- cabal-fmt: expand src/
   exposed-modules:  Boreal.Frontend.TreeSitter
   other-modules:    Paths_boreal
-  include-dirs:     tree-sitter/src
-  install-includes: tree_sitter/parser.h
-  cxx-sources:      tree-sitter/src/parser.c
+  includes:         ./include/parser.h
+  include-dirs:     include
+  install-includes: parser.h
+  cxx-sources:      ./include/parser.c
   hs-source-dirs:   src
   build-depends:
     , atomic-counter
