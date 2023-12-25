@@ -2,9 +2,9 @@
 Let-bindings
 ============
 
-module LetBindings where
+module LetIn where
 
-declaration = 
+function = 
   let x = 3
    in x + 1
 

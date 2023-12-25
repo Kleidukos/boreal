@@ -47,7 +47,6 @@ parse input inputLength = do
   n <- liftIO malloc
   liftIO $ ts_tree_root_node_p tree n
 
-  liftIO $ putStrLn "module (root) ------------"
   Node{nodeChildCount, nodeTSNode} <- liftIO $ peek n
   let childCount = fromIntegral nodeChildCount
 
@@ -69,7 +68,6 @@ getChildren :: Node -> BorealParser Syntax
 getChildren node
   | node.nodeChildCount == 0 = do
       source <- fetchSource node
-      printNode node
       if isAtom source
         then pure $ BorealAtom source
         else pure $ BorealIdent source
@@ -98,7 +96,6 @@ getChildren node
         "function_declaration"
           | childCount >= 3 -> do
               let (functionHead, functionBody) = Vector.break (== BorealAtom "=") result
-              liftIO $ print result
               pure $
                 BorealNode
                   (Text.pack theType)
@@ -111,6 +108,9 @@ getChildren node
                       , functionBody Vector.! 1
                       ]
                   )
+        "let_binding" 
+          | childCount >= 6 -> do 
+              
         _ -> pure $ BorealNode (Text.pack theType) result
 
 -------
