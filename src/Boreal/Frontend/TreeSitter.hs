@@ -108,9 +108,6 @@ getChildren node
                       , functionBody Vector.! 1
                       ]
                   )
-        "let_binding" 
-          | childCount >= 6 -> do 
-              
         _ -> pure $ BorealNode (Text.pack theType) result
 
 -------
