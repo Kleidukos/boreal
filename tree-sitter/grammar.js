@@ -19,8 +19,7 @@ module.exports = grammar({
       )),
 
       function_declaration: $ => seq(
-        field("head", $.identifier), 
-        field("parameters", repeat($.identifier)),
+        field("head", repeat($.identifier)), 
         "=",
         field("body", $.function_body)
       ),
@@ -37,11 +36,11 @@ module.exports = grammar({
 
       let_binding: $ => seq(
         "let",
-        $.identifier,
+        field("binding_name", $.identifier),
         "=",
-        $.expression,
+        field("binding_value", $.expression),
         "in",
-        $.expression
+        field("binding_body", $.expression)
       ),
       
       identifier: $ => /[a-z_\d]+/,

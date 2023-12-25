@@ -43,7 +43,12 @@ library
   import:           ghc-options
 
   -- cabal-fmt: expand src/
-  exposed-modules:  Boreal.Frontend.TreeSitter
+  exposed-modules:
+    Boreal.Frontend.Source
+    Boreal.Frontend.Syntax
+    Boreal.Frontend.TreeSitter
+    Boreal.Frontend.Types
+
   other-modules:    Paths_boreal
   includes:         ./include/parser.h
   include-dirs:     include
@@ -53,6 +58,7 @@ library
   build-depends:
     , atomic-counter
     , base                         >=4.18 && <5
+    , bytestring
     , containers
     , effectful-core
     , pretty-simple
@@ -74,6 +80,7 @@ executable boreal
   build-depends:
     , base                         >=4.18 && <5
     , boreal
+    , bytestring
     , containers
     , directory
     , filepath
@@ -96,6 +103,7 @@ test-suite boreal-test
   build-depends:
     , base          >=4.18 && <5
     , boreal
+    , bytestring
     , PyF
     , tasty
     , tasty-focus

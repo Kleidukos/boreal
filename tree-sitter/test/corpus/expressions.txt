@@ -4,7 +4,7 @@ Expressions
 
 module Expressions where
 
-expr = 1 * 2 + 3
+expr x = x * 2 + 3
 
 ---
 
@@ -13,6 +13,7 @@ expr = 1 * 2 + 3
     (module_name))
   (top_level_declarations
     (function_declaration
+      (identifier)
       (identifier)
       (function_body
         (expression
