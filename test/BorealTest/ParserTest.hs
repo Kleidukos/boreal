@@ -27,14 +27,17 @@ testParser = do
         "source"
         [ BorealNode
             "module_declaration"
-            [BorealAtom "module", BorealIdent "Expressions", BorealAtom "where"]
+            [ BorealAtom "module"
+            , BorealIdent "Expressions"
+            , BorealAtom "where"
+            ]
         , BorealNode
             "top_level_declarations"
             [ BorealNode
                 "function_declaration"
                 [ BorealIdent "expr"
                 , BorealNode "arguments" [BorealIdent "x"]
-                , BorealIdent "="
+                , BorealAtom "="
                 , BorealNode
                     "function_body"
                     [ BorealNode
