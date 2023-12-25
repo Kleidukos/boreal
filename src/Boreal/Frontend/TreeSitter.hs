@@ -6,8 +6,8 @@ import Boreal.Frontend.Source
 import Boreal.Frontend.Syntax
 import Boreal.Frontend.Types
 import Control.Monad.IO.Class
-import Data.Foldable (fold)
 import Data.Maybe (fromJust)
+import Data.Text qualified as Text
 import Data.Text.Display
 import Data.Text.IO qualified as Text
 import Data.Vector qualified as Vector
@@ -17,7 +17,7 @@ import Foreign.C.String
 import Foreign.Marshal.Alloc
   ( malloc
   )
-import Foreign.Marshal.Array (mallocArray, peekArray)
+import Foreign.Marshal.Array (mallocArray)
 import Foreign.Ptr (Ptr, nullPtr)
 import Foreign.Storable
   ( peek
@@ -59,90 +59,59 @@ parse input inputLength = do
   result <-
     Vector.forM
       (Vector.fromList [0 .. childCount - 1])
-      ( \childNode -> do
-          child <- liftIO @BorealParser $ peekElemOff children childNode
-          nodeToSyntax child
+      ( \index -> do
+          child <- liftIO @BorealParser $ peekElemOff children index
+          getChildren child
       )
-  pure $ BorealNode "module" result
+  pure $ BorealNode "source" result
 
-nodeToSyntax :: Node -> BorealParser Syntax
-nodeToSyntax node@Node{nodeType} = do
-  theType <- liftIO $ peekCString nodeType
-  case theType of
-    "module_declaration" -> do
-      mChildren <- getChildren node
-      case mChildren of
-        Nothing -> error "No module declared"
-        Just childrenPtr -> do
-          moduleNameNode <- liftIO $ peekElemOff childrenPtr 1
-          moduleName <- fetchSource moduleNameNode
-          liftIO $ Text.putStrLn moduleName
-          pure $ BorealNode "module-name" (Vector.fromList [BorealIdent moduleName])
-    "top_level_declarations" -> do
-      mChildren <- getChildren node
-      case mChildren of
-        Nothing -> error "No top-level declarations"
-        Just childrenPtr -> do
-          children <- liftIO $ peekArray (fromIntegral node.nodeChildCount) childrenPtr
-          result <- traverse processTopLevelDeclaration children
-          pure $ BorealNode "top-level-declarations" (Vector.fromList result)
-    e -> error $ "Unsupported kind: " <> e
-
-processTopLevelDeclaration :: Node -> BorealParser Syntax
-processTopLevelDeclaration node = do
-  theType <- liftIO $ peekCString node.nodeType
-  case theType of
-    "function_declaration" ->
-      processFunctionDeclaration node
-    e -> error $ "Unsupported kind: " <> e
-
-processFunctionDeclaration :: Node -> BorealParser Syntax
-processFunctionDeclaration node = do
-  liftIO $ Text.putStrLn "Entering function declaration"
-  mChildren <- getChildren node
-  case mChildren of
-    Nothing -> error "no child in function declaration"
-    Just childrenPtr -> do
-      headField <- fromJust <$> getNamedField "head" 0 childrenPtr
-      headFieldSource <- fetchSource headField
-      liftIO $ Text.putStrLn $ "headFieldSource: " <> headFieldSource
-      parametersFieldSources <- Vector.forM (Vector.fromList [1 .. (node.nodeChildCount - 3)]) $ \index -> do
-        parameterNode <- fromJust <$> getField index childrenPtr
-        fetchSource parameterNode
-      liftIO $ Text.putStrLn $ "parametersFieldSource: " <> fold parametersFieldSources
-      bodyField <- fromJust <$> getNamedField "body" 3 childrenPtr
-      bodySource <- processFunctionBody bodyField
-      let params = fmap BorealIdent parametersFieldSources
-      pure $
-        BorealNode
-          headFieldSource
-          (Vector.fromList [BorealNode "arguments" params, bodySource])
-
-processFunctionBody :: Node -> BorealParser Syntax
-processFunctionBody node = do
-  liftIO $ Text.putStrLn "Entering function body"
-  printNode node
-  mChildren <- getChildren node
-  case mChildren of
-    Nothing -> error "no child in function body"
-    Just childrenPtr -> do
-      result <- Vector.forM (Vector.fromList [0 .. node.nodeChildCount - 1]) $ \index -> do
-        parameterNode <- fromJust <$> getField index childrenPtr
-        fetchSource parameterNode
-      pure $ BorealNode "body" (fmap BorealIdent result)
-
-getChildren :: Node -> BorealParser (Maybe (Ptr Node))
+getChildren :: Node -> BorealParser Syntax
 getChildren node
-  | node.nodeChildCount <= 0 = do
-      liftIO $ putStrLn $ "Unexpected " <> show node.nodeChildCount <> " children."
-      pure Nothing
+  | node.nodeChildCount == 0 = do
+      source <- fetchSource node
+      printNode node
+      if isAtom source
+        then pure $ BorealAtom source
+        else pure $ BorealIdent source
   | otherwise = do
+      theType <- liftIO $ peekCString node.nodeType
       let childCount = fromIntegral node.nodeChildCount
-      children <- liftIO $ mallocArray childCount
+      childrenPtr <- liftIO $ mallocArray childCount
       tsNode <- liftIO malloc
       liftIO $ poke tsNode node.nodeTSNode
-      liftIO $ ts_node_copy_child_nodes tsNode children
-      pure $ Just children
+      liftIO $ ts_node_copy_child_nodes tsNode childrenPtr
+      result <- Vector.forM (Vector.fromList [0 .. node.nodeChildCount - 1]) $ \index -> do
+        childNode <- fromJust <$> getField index childrenPtr
+        getChildren childNode
+      case theType of
+        "binary_operation"
+          | childCount == 3 -> do
+              let syntax = result Vector.! 1
+              case syntax of
+                BorealIdent op ->
+                  pure $ BorealNode op (Vector.fromList [Vector.head result, Vector.last result])
+                _ -> pure Missing
+          | otherwise -> pure Missing
+        "expression"
+          | childCount == 1 -> do
+              pure $ Vector.head result
+        "function_declaration"
+          | childCount >= 3 -> do
+              let (functionHead, functionBody) = Vector.break (== BorealAtom "=") result
+              liftIO $ print result
+              pure $
+                BorealNode
+                  (Text.pack theType)
+                  ( Vector.fromList
+                      [ Vector.head functionHead
+                      , BorealNode
+                          "arguments"
+                          (Vector.tail functionHead)
+                      , functionBody Vector.! 0
+                      , functionBody Vector.! 1
+                      ]
+                  )
+        _ -> pure $ BorealNode (Text.pack theType) result
 
 -------
 

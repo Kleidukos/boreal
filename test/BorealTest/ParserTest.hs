@@ -24,15 +24,19 @@ testParser = do
   assertEqual
     "Expected AST from example.bor"
     ( BorealNode
-        "module"
-        [ BorealNode "module-name" [BorealIdent "Expressions"]
+        "source"
+        [ BorealNode
+            "module_declaration"
+            [BorealAtom "module", BorealIdent "Expressions", BorealAtom "where"]
         , BorealNode
-            "top-level-declarations"
+            "top_level_declarations"
             [ BorealNode
-                "expr"
-                [ BorealNode "arguments" [BorealIdent "x"]
+                "function_declaration"
+                [ BorealIdent "expr"
+                , BorealNode "arguments" [BorealIdent "x"]
+                , BorealIdent "="
                 , BorealNode
-                    "body"
+                    "function_body"
                     [ BorealNode
                         "+"
                         [ BorealNode
