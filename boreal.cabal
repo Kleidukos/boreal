@@ -7,6 +7,8 @@ extra-source-files:
   ChangeLog.md
   README.md
 
+tested-with:        GHC ==9.6.3
+
 common rts-options
   ghc-options: -rtsopts
 
@@ -48,6 +50,9 @@ library
     Boreal.Frontend.Syntax
     Boreal.Frontend.TreeSitter
     Boreal.Frontend.Types
+    Boreal.IR.ANFCore
+    Boreal.IR.RawCore
+    Boreal.IR.Types
 
   other-modules:    Paths_boreal
   includes:         ./include/parser.h
@@ -61,6 +66,7 @@ library
     , bytestring
     , containers
     , effectful-core
+    , extra
     , pretty-simple
     , prettyprinter
     , prettyprinter-ansi-terminal
@@ -96,7 +102,9 @@ test-suite boreal-test
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
+    BorealTest.ANFTest
     BorealTest.ParserTest
+    BorealTest.RawCoreTest
     Utils
 
   hs-source-dirs: test

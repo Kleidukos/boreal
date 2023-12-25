@@ -24,7 +24,7 @@ testFunctionDefinitionParser = do
   result <- BS.useAsCStringLen input $ \(str, len) -> do
     runParser input (TreeSitter.parse str len)
   assertEqual
-    "Expected AST from example.bor"
+    "Expected CST from example.bor"
     ( BorealNode
         "source"
         [ BorealNode
@@ -47,9 +47,9 @@ testFunctionDefinitionParser = do
                         [ BorealNode
                             "*"
                             [ BorealIdent "x"
-                            , BorealIdent "2"
+                            , BorealAtom "2"
                             ]
-                        , BorealIdent "3"
+                        , BorealAtom "3"
                         ]
                     ]
                 ]
@@ -67,7 +67,12 @@ testLetInBindingsParser = do
     "Expected AST from example.bor"
     ( BorealNode
         "source"
-        [ BorealNode "module_declaration" [BorealAtom "module", BorealIdent "LetIn", BorealAtom "where"]
+        [ BorealNode
+            "module_declaration"
+            [ BorealAtom "module"
+            , BorealIdent "LetIn"
+            , BorealAtom "where"
+            ]
         , BorealNode
             "top_level_declarations"
             [ BorealNode
@@ -79,12 +84,13 @@ testLetInBindingsParser = do
                     "function_body"
                     [ BorealNode
                         "let_binding"
-                        [ BorealAtom "let"
-                        , BorealIdent "x"
-                        , BorealAtom "="
-                        , BorealIdent "3"
-                        , BorealAtom "in"
-                        , BorealNode "+" [BorealIdent "x", BorealIdent "1"]
+                        [ BorealNode
+                            "x"
+                            [ BorealNode "bound_expression" [BorealAtom "3"]
+                            , BorealNode
+                                "body"
+                                [BorealNode "+" [BorealIdent "x", BorealAtom "1"]]
+                            ]
                         ]
                     ]
                 ]
