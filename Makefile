@@ -20,7 +20,7 @@ regen-golden: ## Re-generate the golden tests
 	@cabal test --test-options="--accept"
 
 lint: ## Run the code linter (HLint)
-	@find src -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
+	@find src test -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
 
 style: ## Run the code styler (stylish-haskell)
 	@cabal-fmt -i *.cabal

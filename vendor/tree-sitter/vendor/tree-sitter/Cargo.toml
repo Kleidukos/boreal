@@ -1,0 +1,7 @@
+[workspace]
+default-members = ["cli"]
+
+members = ["cli", "lib"]
+
+[profile.release]
+strip = true

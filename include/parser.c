@@ -1,0 +1,1 @@
+../tree-sitter-boreal/src/parser.c

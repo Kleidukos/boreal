@@ -2,170 +2,93 @@
 
 module BorealTest.ParserTest where
 
-import Data.Text qualified as Text
-import Data.Text.Display
+import Data.ByteString qualified as BS
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Boreal.Frontend.Lexer
-import Boreal.Frontend.Parser
-import Boreal.Frontend.Parser.Types
-import Utils
+import Boreal.Frontend.Syntax
+import Boreal.Frontend.TreeSitter qualified as TreeSitter
+import Boreal.Frontend.Types
 
 spec :: TestTree
 spec =
   testGroup
     "Parser"
-    [ testCase "Parse a numerical expression" testParseNumericalExpression
-    , testCase "Parse function application operator" testParseFunctionApplication
-    , testCase "Parse mixes of numerical operators and function aplication" testParseMixNumericalAndFunApplication
-    , testGroup
-        "Restitution"
-        [ testCase "Restitute an ident" testRestituteIdent
-        , testCase "Restitute a node" testRestituteNode
-        ]
+    [ testCase "Test function definition parser" testFunctionDefinitionParser
+    , testCase "Test let-in bindings parser" testLetInBindingsParser
     ]
 
-testParseNumericalExpression :: Assertion
-testParseNumericalExpression = do
-  let expression = "1 + 2 * 3"
-  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
+testFunctionDefinitionParser :: Assertion
+testFunctionDefinitionParser = do
+  input <- BS.readFile "./tree-sitter-boreal/function-definition.bor"
+  result <- BS.useAsCStringLen input $ \(str, len) -> do
+    runParser input (TreeSitter.parse str len)
   assertEqual
-    (Text.unpack $ "Parse " <> expression)
+    "Expected AST from example.bor"
     ( BorealNode
-        (Name "+")
-        [Whitespace]
-        [ BorealIdent (Name "1") []
-        , BorealNode
-            (Name "*")
-            [Whitespace]
-            [ BorealIdent (Name "2") [Whitespace]
-            , BorealIdent (Name "3") [Whitespace]
+        "source"
+        [ BorealNode
+            "module_declaration"
+            [ BorealAtom "module"
+            , BorealIdent "Expressions"
+            , BorealAtom "where"
             ]
-        ]
-    )
-    parsed
-
-testParseFunctionApplication :: Assertion
-testParseFunctionApplication = do
-  let expression = "f ⋅ g ⋅ h"
-  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
-  assertEqual
-    (Text.unpack $ "Parse " <> expression)
-    ( BorealNode
-        (Name "⋅")
-        [Whitespace]
-        [ BorealIdent (Name "f") []
         , BorealNode
-            (Name "⋅")
-            [Whitespace]
-            [ BorealIdent (Name "g") [Whitespace]
-            , BorealIdent (Name "h") [Whitespace]
-            ]
-        ]
-    )
-    parsed
-
-testParseMixNumericalAndFunApplication :: Assertion
-testParseMixNumericalAndFunApplication = do
-  let expression1 = " 1 + 2 +  f"
-  parsed1 <- assertRight $ runParser expression1 (parseExpression Nothing 0)
-  let expectedAST1 =
-        ( BorealNode
-            (Name "+")
-            [Whitespace]
+            "top_level_declarations"
             [ BorealNode
-                (Name "+")
-                [Whitespace]
-                [ BorealIdent (Name "1") [Whitespace]
-                , BorealIdent (Name "2") [Whitespace]
+                "function_declaration"
+                [ BorealIdent "expr"
+                , BorealNode "arguments" [BorealIdent "x"]
+                , BorealAtom "="
+                , BorealNode
+                    "function_body"
+                    [ BorealNode
+                        "+"
+                        [ BorealNode
+                            "*"
+                            [ BorealIdent "x"
+                            , BorealIdent "2"
+                            ]
+                        , BorealIdent "3"
+                        ]
+                    ]
                 ]
-            , BorealIdent (Name "f") [Whitespace, Whitespace]
             ]
-        )
+        ]
+    )
+    result
 
+testLetInBindingsParser :: Assertion
+testLetInBindingsParser = do
+  input <- BS.readFile "./tree-sitter-boreal/let-in.bor"
+  result <- BS.useAsCStringLen input $ \(str, len) -> do
+    runParser input (TreeSitter.parse str len)
   assertEqual
-    (Text.unpack $ "Parse " <> expression1)
-    expectedAST1
-    parsed1
-
-  assertEqual
-    (Text.unpack $ "Restitute " <> expression1)
-    expression1
-    (display expectedAST1)
-
-  let expression2 = " 1 + 2 + f ⋅ g ⋅ h * 3 *   4"
-  parsed2 <- assertRight $ runParser expression2 (parseExpression Nothing 0)
-  let expectedAST2 =
-        BorealNode
-          (Name "+")
-          [Whitespace]
-          [ BorealNode
-              (Name "+")
-              [Whitespace]
-              [ BorealIdent (Name "1") [Whitespace]
-              , BorealIdent (Name "2") [Whitespace]
-              ]
-          , BorealNode
-              (Name "*")
-              [Whitespace]
-              [ BorealNode
-                  (Name "*")
-                  [Whitespace]
-                  [ BorealNode
-                      (Name "⋅")
-                      [Whitespace]
-                      [ BorealIdent (Name "f") [Whitespace]
-                      , BorealNode
-                          (Name "⋅")
-                          [Whitespace]
-                          [ BorealIdent (Name "g") [Whitespace]
-                          , BorealIdent (Name "h") [Whitespace]
-                          ]
-                      ]
-                  , BorealIdent (Name "3") [Whitespace]
-                  ]
-              , BorealIdent (Name "4") [Whitespace, Whitespace, Whitespace]
-              ]
-          ]
-
-  assertEqual
-    (Text.unpack $ "Parse " <> expression2)
-    expectedAST2
-    parsed2
-
-  assertEqual
-    (Text.unpack $ "Restitute " <> expression2)
-    expression2
-    (display expectedAST2)
-
-testRestituteIdent :: Assertion
-testRestituteIdent = do
-  let expression = "1"
-  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
-  assertEqual
-    (Text.unpack $ "Restitute " <> expression)
-    expression
-    (display parsed)
-
-testRestituteNode :: Assertion
-testRestituteNode = do
-  let expression = "1 + 2"
-  parsed <- assertRight $ runParser expression (parseExpression Nothing 0)
-  let expectedAST =
-        ( BorealNode
-            (Name "+")
-            [Whitespace]
-            [ BorealIdent (Name "1") []
-            , BorealIdent (Name "2") [Whitespace]
+    "Expected AST from example.bor"
+    ( BorealNode
+        "source"
+        [ BorealNode "module_declaration" [BorealAtom "module", BorealIdent "LetIn", BorealAtom "where"]
+        , BorealNode
+            "top_level_declarations"
+            [ BorealNode
+                "function_declaration"
+                [ BorealIdent "function"
+                , BorealNode "arguments" []
+                , BorealAtom "="
+                , BorealNode
+                    "function_body"
+                    [ BorealNode
+                        "let_binding"
+                        [ BorealAtom "let"
+                        , BorealIdent "x"
+                        , BorealAtom "="
+                        , BorealIdent "3"
+                        , BorealAtom "in"
+                        , BorealNode "+" [BorealIdent "x", BorealIdent "1"]
+                        ]
+                    ]
+                ]
             ]
-        )
-  assertEqual
-    (Text.unpack $ "Parsed " <> expression)
-    expectedAST
-    parsed
-
-  assertEqual
-    (Text.unpack $ "Restitute " <> expression)
-    expression
-    (display expectedAST)
+        ]
+    )
+    result

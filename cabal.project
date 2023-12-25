@@ -1,8 +1,10 @@
-packages: ./
+packages: 
+  ./
+  ./vendor/tree-sitter
 
 active-repositories: hackage.haskell.org
 
-with-compiler: ghc-9.8.1
+with-compiler: ghc-9.6.3
 
 tests: True
 

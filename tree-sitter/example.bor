@@ -1,3 +1,0 @@
-module Expressions where
-
-expr = 1 * 2 + 3

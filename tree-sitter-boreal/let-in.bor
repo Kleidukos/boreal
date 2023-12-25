@@ -1,0 +1,5 @@
+module LetIn where
+
+function =
+  let x = 3
+   in x + 1

@@ -1,11 +1,4 @@
 cabal-version:      3.6
-
--- This file has been generated from package.yaml by hpack version 0.35.2.
---
--- see: https://github.com/sol/hpack
---
--- hash: d1b805c36a026c1fda3917546e854f9bf651c2cbee8d6a554ee634440d8eb9c8
-
 name:               boreal
 version:            0.1.0.0
 license-file:       LICENSE
@@ -22,14 +15,16 @@ common ghc-options
     -Wall -Wcompat -Widentities -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
     -fhide-source-paths -Wno-unused-do-bind -fshow-hole-constraints
-    -Wno-unticked-promoted-constructors
-    -fdicts-strict -fmax-worker-args=16 -fspec-constr-recursive=16
-    -- -Wunused-packages
+    -Wno-unticked-promoted-constructors -fdicts-strict
+    -fmax-worker-args=16 -fspec-constr-recursive=16
+
+  -- -Wunused-packages
 
   default-language:   GHC2021
   default-extensions:
     ApplicativeDo
     BangPatterns
+    CApiFFI
     DataKinds
     DerivingStrategies
     FlexibleInstances
@@ -49,15 +44,21 @@ library
 
   -- cabal-fmt: expand src/
   exposed-modules:
-    Boreal.Frontend.Lexer
-    Boreal.Frontend.Parser
-    Boreal.Frontend.Parser.Types
+    Boreal.Frontend.Source
+    Boreal.Frontend.Syntax
+    Boreal.Frontend.TreeSitter
+    Boreal.Frontend.Types
 
   other-modules:    Paths_boreal
+  includes:         ./include/parser.h
+  include-dirs:     include
+  install-includes: parser.h
+  cxx-sources:      ./include/parser.c
   hs-source-dirs:   src
   build-depends:
     , atomic-counter
-    , base                         >=4.7 && <5
+    , base                         >=4.18 && <5
+    , bytestring
     , containers
     , effectful-core
     , pretty-simple
@@ -65,6 +66,7 @@ library
     , prettyprinter-ansi-terminal
     , text
     , text-display
+    , tree-sitter
     , vector
 
   default-language: GHC2021
@@ -76,8 +78,9 @@ executable boreal
   other-modules:    Paths_boreal
   hs-source-dirs:   app
   build-depends:
-    , base                         >=4.7 && <5
+    , base                         >=4.18 && <5
     , boreal
+    , bytestring
     , containers
     , directory
     , filepath
@@ -93,14 +96,14 @@ test-suite boreal-test
   type:           exitcode-stdio-1.0
   main-is:        Main.hs
   other-modules:
-    BorealTest.LexerTest
     BorealTest.ParserTest
     Utils
 
   hs-source-dirs: test
   build-depends:
-    , base          >=4.7 && <5
+    , base          >=4.18 && <5
     , boreal
+    , bytestring
     , PyF
     , tasty
     , tasty-focus

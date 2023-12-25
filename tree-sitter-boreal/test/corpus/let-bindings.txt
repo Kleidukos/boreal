@@ -1,0 +1,29 @@
+============
+Let-bindings
+============
+
+module LetIn where
+
+function = 
+  let x = 3
+   in x + 1
+
+----
+
+(source_file
+  (module_declaration
+    (module_name))
+  (top_level_declarations
+    (function_declaration
+      (identifier)
+      (function_body
+        (let_binding
+          (identifier)
+          (expression
+            (identifier))
+          (expression
+            (binary_operation
+              (expression
+                (identifier))
+              (expression
+                (identifier)))))))))

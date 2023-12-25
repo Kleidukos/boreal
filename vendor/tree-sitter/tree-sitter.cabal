@@ -1,0 +1,94 @@
+cabal-version:       2.4
+name:                tree-sitter
+version:             0.10.0.0
+synopsis:            Unstable bindings for the tree-sitter parsing library.
+description:         Tree-sitter is a parser generator tool and an incremental parsing library.
+                     .
+                     We strongly recommend against depending on this library at this time;
+                     the data types and API are subject to rapid change. Future versions
+                     will provide more reliable parsers and a more stable API.
+homepage:            http://github.com/tree-sitter/haskell-tree-sitter#readme
+license:             BSD-3-Clause
+license-file:        LICENSE
+author:              Rob Rix, Josh Vera, Tim Clem, Rick Winfrey, Max Brunsfeld, Ayman Nadeem, Patrick Thomson
+maintainer:          rob.rix@github.com
+copyright:           2019 GitHub
+category:            Parsing, Tree-sitter
+build-type:          Simple
+
+tested-with:
+  GHC == 8.10.1
+  GHC == 9.0.1
+  GHC == 9.2.1
+
+extra-source-files:  vendor/tree-sitter/lib/src/**/*.c
+                   , vendor/tree-sitter/lib/src/**/*.h
+                   , ChangeLog.md
+
+common common
+  default-language: Haskell2010
+  ghc-options:
+    -Weverything
+    -Wno-all-missed-specialisations
+    -Wno-implicit-prelude
+    -Wno-missed-specialisations
+    -Wno-missing-import-lists
+    -Wno-missing-local-signatures
+    -Wno-monomorphism-restriction
+    -Wno-name-shadowing
+    -Wno-safe
+    -Wno-unsafe
+  if (impl(ghc >= 8.6))
+    ghc-options: -Wno-star-is-type
+  if (impl(ghc >= 8.8))
+    ghc-options: -Wno-missing-deriving-strategies
+  if (impl(ghc >= 8.10))
+    ghc-options:
+      -Wno-missing-safe-haskell-mode
+      -Wno-prepositive-qualified-module
+  if (impl(ghc >= 9.2))
+    ghc-options:
+      -Wno-missing-kind-signatures
+      -Wno-implicit-lift
+
+library
+  import: common
+  hs-source-dirs:      src
+  build-depends:
+    , base                  >= 4.12 && < 5
+    , bytestring            >= 0.10.8.2 && < 0.13
+    , containers           ^>= 0.6.0.1
+    , directory            ^>= 1.3
+    , filepath             ^>= 1.4.1
+    , split                ^>= 0.2.3
+    , template-haskell      >= 2.12 && < 3
+    , unordered-containers ^>= 0.2.9
+  exposed-modules:     TreeSitter.Parser
+                     , TreeSitter.Language
+                     , TreeSitter.Node
+                     , TreeSitter.Symbol
+                     , TreeSitter.Tree
+                     , TreeSitter.Cursor
+  include-dirs:        vendor/tree-sitter/lib/include
+                     , vendor/tree-sitter/lib/src
+  install-includes:    tree_sitter/api.h
+                     , tree_sitter/parser.h
+  c-sources:           src/bridge.c
+                     , vendor/tree-sitter/lib/src/lib.c
+  cc-options:          -std=c99
+
+test-suite test
+  import: common
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Test.hs
+  other-modules:       TreeSitter.Example
+                     , TreeSitter.Strings.Example
+  build-depends:       base
+                     , tree-sitter
+                     , hedgehog >= 0.6 && <2
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+
+source-repository head
+  type:     git
+  location: https://github.com/tree-sitter/haskell-tree-sitter
