@@ -1,8 +1,8 @@
 deps: ## Install the dependencies of the backend
 	@cabal build --only-dependencies
 
-build: ## Build the project in fast mode
-	@cabal build -O0
+build: ## Build the project
+	@cabal build
 
 clean: ## Remove compilation artifacts
 	@cabal clean
