@@ -108,6 +108,25 @@ getChildren node
                       , functionBody Vector.! 1
                       ]
                   )
+        "let_binding"
+          | childCount >= 6 -> do
+              let bindingName = case result Vector.! 0 of
+                    BorealAtom "let" ->
+                      case result Vector.! 1 of
+                        BorealIdent binding' -> binding'
+                        e -> error $ "Unmatched " <> show e
+                    e -> error $ "Unmatched " <> show e
+              let boundExpression = Vector.takeWhile (/= BorealAtom "in") (Vector.drop 3 result)
+              let body = Vector.drop (4 + Vector.length boundExpression) result
+              pure $
+                BorealNode "let_binding" $
+                  Vector.fromList
+                    [ BorealNode bindingName $
+                        Vector.fromList
+                          [ BorealNode "bound_expression" boundExpression
+                          , BorealNode "body" body
+                          ]
+                    ]
         _ -> pure $ BorealNode (Text.pack theType) result
 
 -------
