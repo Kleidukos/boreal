@@ -46,6 +46,8 @@ library
 
   -- cabal-fmt: expand src/
   exposed-modules:
+    Boreal.Backend.UXN
+    Boreal.Backend.UXN.Types
     Boreal.Frontend.Source
     Boreal.Frontend.Syntax
     Boreal.Frontend.TreeSitter
@@ -74,6 +76,7 @@ library
     , text-display
     , tree-sitter
     , vector
+    , text-ascii
 
   default-language: GHC2021
 

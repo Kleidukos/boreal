@@ -11,3 +11,8 @@ tests: True
 test-show-details: direct
 
 documentation: true
+
+allow-newer:
+    text-ascii:megaparsec
+  , text-ascii:hashable
+  , text-ascii:text
