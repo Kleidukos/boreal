@@ -12,3 +12,4 @@ tags.mtime
 tags
 tags.lock
 cabal.project.local
+*.tal*

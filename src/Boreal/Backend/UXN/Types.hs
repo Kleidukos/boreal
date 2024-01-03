@@ -5,12 +5,13 @@ import Data.Word (Word8)
 import Text.Ascii (AsciiText)
 
 data UXNInstruction
-  = Padding Word8
+  = Padding Text
   | RelativePadding Word8
   | Literal Word8
   | Ascii AsciiText
   | Label Text
   | SubLabel Text
+  | LiteralAbsolute Text
   | OpCode OpCode
 
 data OpCode

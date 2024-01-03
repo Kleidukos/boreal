@@ -73,10 +73,10 @@ library
     , prettyprinter
     , prettyprinter-ansi-terminal
     , text
+    , text-ascii
     , text-display
     , tree-sitter
     , vector
-    , text-ascii
 
   default-language: GHC2021
 
@@ -108,6 +108,7 @@ test-suite boreal-test
     BorealTest.ANFTest
     BorealTest.ParserTest
     BorealTest.RawCoreTest
+    BorealTest.UXNTest
     Utils
 
   hs-source-dirs: test
@@ -118,6 +119,7 @@ test-suite boreal-test
     , PyF
     , tasty
     , tasty-focus
+    , tasty-golden
     , tasty-hunit
     , text
     , text-display
