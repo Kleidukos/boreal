@@ -33,11 +33,11 @@ spec =
         diffCmd
         "./test/golden/asm/addition.tal"
         emitAddition
-        -- , goldenVsStringDiff
-        --     "Emit sequence of arithmetic operations"
-        --     diffCmd
-        --     "./test/golden/asm/arithmetic-operations.tal"
-        --     emitArithmeticOperations
+    , goldenVsStringDiff
+        "Emit sequence of arithmetic operations (42 + 1 + 1 - 1)"
+        diffCmd
+        "./test/golden/asm/arithmetic-operations.tal"
+        emitArithmeticOperations
     ]
 
 emitAddition :: IO LazyByteString

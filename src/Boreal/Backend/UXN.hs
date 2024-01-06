@@ -27,6 +27,9 @@ runUXN anf =
 toUXN :: ANFCore -> Vector (Vector UXNInstruction)
 toUXN anf = Vector.singleton $ case anf of
   Halt value -> valueToUXN value
+  AFun funName _ body -> do
+    let functionDeclaration = Padding funName
+    in 
   e -> error $ "Unmatched: " <> show e
 
 prologue :: UXNInstruction
