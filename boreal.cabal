@@ -46,6 +46,8 @@ library
 
   -- cabal-fmt: expand src/
   exposed-modules:
+    Boreal.Backend.UXN
+    Boreal.Backend.UXN.Types
     Boreal.Frontend.Source
     Boreal.Frontend.Syntax
     Boreal.Frontend.TreeSitter
@@ -71,6 +73,7 @@ library
     , prettyprinter
     , prettyprinter-ansi-terminal
     , text
+    , text-ascii
     , text-display
     , tree-sitter
     , vector
@@ -105,6 +108,7 @@ test-suite boreal-test
     BorealTest.ANFTest
     BorealTest.ParserTest
     BorealTest.RawCoreTest
+    BorealTest.UXNTest
     Utils
 
   hs-source-dirs: test
@@ -115,6 +119,7 @@ test-suite boreal-test
     , PyF
     , tasty
     , tasty-focus
+    , tasty-golden
     , tasty-hunit
     , text
     , text-display
