@@ -2,7 +2,8 @@ sources = [
   'main.c',
   'chunk.c',
   'memory.c',
-  'debug.c' 
+  'debug.c',
+  'value.c'
   ]
 
 exec = executable('vm',

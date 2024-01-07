@@ -1,4 +1,6 @@
 install_headers('common.h',
                 'memory.h',
                 'chunk.h',
-                'debug.h')
+                'debug.h',
+                'value.h'
+                )
