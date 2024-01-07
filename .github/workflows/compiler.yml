@@ -1,10 +1,26 @@
-name: CI
+name: Compiler
 
 # Trigger the workflow on push or pull request, but only for the main branch
 on:
   pull_request:
+    paths: 
+      - "test"
+      - "src" 
+      - "app" 
+      - "tree-sitter-boreal"
+      - "*.cabal"
+      - "cabal.project"
+      - "cabal.project.freeze"
   push:
     branches: ["main"]
+    paths: 
+      - "test"
+      - "src" 
+      - "app" 
+      - "tree-sitter-boreal"
+      - "*.cabal"
+      - "cabal.project"
+      - "cabal.project.freeze"
 
 jobs:
   generateMatrix:

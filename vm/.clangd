@@ -1,0 +1,7 @@
+Flags:
+  Append: [ -std=c++17 ]
+CompileFlags:    
+  Add: [-Walloca,-Wcast-qual,-Wconversion,-Wformat=2,-Wformat-security,-Wnull-dereference,-Wstack-protector,-Wvla, -Wconversion, -Wshorten-64-to-32, -Warray-bounds-pointer-arithmetic, -Wconditional-uninitialized, -Wloop-analysis, -Wshift-sign-overflow, -Wswitch-enum, Wtautological-constant-in-range-compare, -Wcomma, -Wassign-enum, -Wbad-function-cast, -Wfloat-equal, -Wformat-type-confusion, -Wpointer-arith, -Widiomatic-parentheses]
+
+  Compiler: clang
+
