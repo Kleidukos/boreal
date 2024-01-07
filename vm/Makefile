@@ -6,6 +6,7 @@ clean: ## Remove compilation artifacts
 	@meson compile -C build --clean
 
 style: ## Run the code styler (clang-format)
+	@touch meson.build
 	@ninja -C build clang-format 
 
 run: build ## Run the project

@@ -37,3 +37,9 @@ int addConstant(Chunk *chunkPtr, Value value) {
   writeValueArray(&chunkPtr->constants, value);
   return chunkPtr->constants.count - 1;
 }
+
+void writeConstant(Chunk *chunkPtr, Value value, int line) {
+  int constant = addConstant(chunkPtr, value);
+  writeChunk(chunkPtr, OP_CONSTANT, line);
+  writeChunk(chunkPtr, (uint8_t)constant, line);
+}

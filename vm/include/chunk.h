@@ -4,7 +4,7 @@
 #include "common.h"
 #include "value.h"
 
-typedef enum { OP_RETURN, OP_CONSTANT } OpCode;
+typedef enum { OP_RETURN, OP_CONSTANT, OP_CONSTANT_LONG } OpCode;
 
 typedef struct {
   int count;
@@ -21,5 +21,7 @@ void freeChunk(Chunk *chunkPtr);
 void writeChunk(Chunk *chunkPtr, uint8_t byte, int line);
 
 int addConstant(Chunk *chunkPtr, Value value);
+
+void writeConstant(Chunk *chunkPtr, Value value, int line);
 
 #endif
