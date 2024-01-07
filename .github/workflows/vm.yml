@@ -1,0 +1,25 @@
+name: Virtual Machine
+
+# Trigger the workflow on push or pull request, but only for the main branch
+on:
+  pull_request:
+    paths:
+      - "vm/**/**"
+  push:
+    branches: ["main"]
+    paths:
+      - "vm/**/**"
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - run: pip install meson ninja
+    - run: cd vm && meson setup build
+      env:
+        CC: clang
+    - run: meson compile -C vm/build

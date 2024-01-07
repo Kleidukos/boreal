@@ -3,18 +3,25 @@
 
 #include "common.h"
 
-typedef enum {
+typedef enum
+{
   OP_RETURN,
 } OpCode;
 
-typedef struct {
+typedef struct
+{
   int count;
   int capacity;
-  uint8_t code;
+  uint8_t* code;
 } Chunk;
 
-void initChunk(Chunk* chunkPtr);
+void
+initChunk(Chunk* chunkPtr);
 
-void writeChunk(Chunk* chunkPtr, uint8_t byte);
+void
+freeChunk(Chunk* chunkPtr);
+
+void
+writeChunk(Chunk* chunkPtr, uint8_t byte);
 
 #endif
