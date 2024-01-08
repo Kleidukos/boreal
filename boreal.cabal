@@ -46,6 +46,8 @@ library
 
   -- cabal-fmt: expand src/
   exposed-modules:
+    Boreal.Backend.ASM
+    Boreal.Backend.ASM.Types
     Boreal.Frontend.Source
     Boreal.Frontend.Syntax
     Boreal.Frontend.TreeSitter
@@ -67,9 +69,9 @@ library
     , containers
     , effectful-core
     , extra
-    , pretty-simple
     , prettyprinter
     , prettyprinter-ansi-terminal
+    , PyF
     , text
     , text-display
     , tree-sitter
@@ -103,6 +105,7 @@ test-suite boreal-test
   main-is:        Main.hs
   other-modules:
     BorealTest.ANFTest
+    BorealTest.ASMTest
     BorealTest.ParserTest
     BorealTest.RawCoreTest
     Utils
@@ -115,6 +118,7 @@ test-suite boreal-test
     , PyF
     , tasty
     , tasty-focus
+    , tasty-golden
     , tasty-hunit
     , text
     , text-display
