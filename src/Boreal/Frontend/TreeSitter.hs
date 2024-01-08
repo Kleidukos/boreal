@@ -2,16 +2,16 @@
 
 module Boreal.Frontend.TreeSitter where
 
-import Boreal.Frontend.Source
-import Boreal.Frontend.Syntax
-import Boreal.Frontend.Types
 import Control.Monad.IO.Class
+import Data.Function ((&))
 import Data.Maybe (fromJust)
 import Data.Text qualified as Text
 import Data.Text.Display
 import Data.Text.IO qualified as Text
 import Data.Vector qualified as Vector
 import Data.Word (Word32)
+
+-- import Debug.Trace
 import Foreign.C.ConstPtr
 import Foreign.C.String
 import Foreign.Marshal.Alloc
@@ -28,6 +28,10 @@ import TreeSitter.Language
 import TreeSitter.Node
 import TreeSitter.Parser
 import TreeSitter.Tree
+
+import Boreal.Frontend.Source
+import Boreal.Frontend.Syntax
+import Boreal.Frontend.Types
 
 foreign import capi unsafe "parser.h tree_sitter_boreal"
   tree_sitter_boreal :: ConstPtr Language
@@ -72,6 +76,7 @@ getChildren node
         then pure $ BorealAtom source
         else pure $ BorealIdent source
   | otherwise = do
+      -- Type of the node, as given in the grammar.js file
       theType <- liftIO $ peekCString node.nodeType
       let childCount = fromIntegral node.nodeChildCount
       childrenPtr <- liftIO $ mallocArray childCount
@@ -95,15 +100,19 @@ getChildren node
               pure $ Vector.head result
         "function_declaration"
           | childCount >= 3 -> do
-              let (functionHead, functionBody) = Vector.break (== BorealAtom "=") result
+              -- traceShowM result
+              let (fnHead, functionBody) = Vector.break (== BorealAtom "=") result
+              let BorealNode "function_head" functionHead = Vector.head fnHead
+              let functionName = Vector.head functionHead
+              let functionArguments = Vector.tail functionHead
               pure $
                 BorealNode
                   (Text.pack theType)
                   ( Vector.fromList
-                      [ Vector.head functionHead
+                      [ functionName
                       , BorealNode
                           "arguments"
-                          (Vector.tail functionHead)
+                          functionArguments
                       , functionBody Vector.! 0
                       , functionBody Vector.! 1
                       ]
@@ -127,6 +136,20 @@ getChildren node
                           , BorealNode "body" body
                           ]
                     ]
+        "case_expression"
+          | childCount >= 3 -> do
+              let BorealNode "simple_expression" caseHead = result Vector.! 1
+              let BorealNode "alternatives" alternatives = result Vector.! 3
+              let alternativeVector =
+                    alternatives
+                      & Vector.filter (\syntax -> isNamedNode "alternative" syntax)
+                      & Vector.map
+                        ( \(BorealNode _ content) ->
+                            let BorealNode "pattern" pat = content Vector.! 0
+                                BorealNode "simple_expression" rhs = content Vector.! 2
+                             in BorealNode "alternative" (Vector.concat [pat, rhs])
+                        )
+              pure $ BorealNode "case_expression" alternativeVector
         _ -> pure $ BorealNode (Text.pack theType) result
 
 -------

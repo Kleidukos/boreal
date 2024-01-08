@@ -1,28 +1,29 @@
-===========
+================================================================================
 Expressions
-===========
+================================================================================
 
 module Expressions where
 
 expr x = x * 2 + 3
 
----
+--------------------------------------------------------------------------------
 
 (source_file
   (module_declaration
     (module_name))
   (top_level_declarations
     (function_declaration
-      (identifier)
-      (identifier)
+      (function_head
+        (identifier)
+        (identifier))
       (function_body
-        (expression
+        (simple_expression
           (binary_operation
-            (expression
+            (simple_expression
               (binary_operation
-                (expression
+                (simple_expression
                   (identifier))
-                (expression
+                (simple_expression
                   (identifier))))
-            (expression
+            (simple_expression
               (identifier))))))))

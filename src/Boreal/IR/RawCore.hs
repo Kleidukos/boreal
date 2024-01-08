@@ -7,6 +7,7 @@ import Data.Text.Read qualified as Text
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
 import Effectful
+import GHC.Generics (Generic)
 
 -- | Non-ANF intermediate representation whose job is to take a 'Syntax'
 -- and hold it in a more convenient way for ANF transformation.
@@ -28,7 +29,7 @@ data RawCore
       -- ^ Bound expression
       RawCore
       -- ^ Body
-  deriving stock (Eq, Show, Ord)
+  deriving stock (Eq, Show, Ord, Generic)
 
 type RawCoreEff = Eff '[IOE]
 
@@ -70,6 +71,7 @@ transform (BorealNode "function_declaration" rest) = do
 transform e = error $ "Unmatched: " <> show e
 
 transformExpression :: Syntax -> RawCoreEff RawCore
+transformExpression (BorealNode "simple_expression" body) = transformExpression $ Vector.head body
 transformExpression (BorealNode "let_binding" bindings) =
   transformLetBinding (bindings Vector.! 0)
 transformExpression (BorealNode n args) = do
