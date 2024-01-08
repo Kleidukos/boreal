@@ -26,7 +26,8 @@ module.exports = grammar({
 
       function_body: $ => choice(
         $.let_binding,
-        $.expression
+        $.expression,
+        prec.right(2, $.case_expression),
       ),
 
       expression: $ => choice(
@@ -42,11 +43,35 @@ module.exports = grammar({
         "in",
         field("binding_body", $.expression)
       ),
+
+      case_expression: $ => seq(
+        "case",
+        field("conditional", $.expression),
+        "of",
+        field("alternatives", repeat($.alternatives))
+      ),
+
+      alternatives: $ => seq(
+        field("pattern", $.pattern),
+        "->",
+        field("rhs", choice(
+          $.let_binding,
+          $.expression,
+          prec.right(2, $.case_expression),
+        )),
+      ),
       
-      identifier: $ => /[a-z_\d]+/,
       node: $ => choice(
         $.binary_operation
       ),
+
+      pattern: $ => choice(
+        $.constructor,
+        $.identifier,
+      ),
+
+      identifier: $ => /[a-z_\d]+/,
+      constructor: $ => /[A-Z][A-Za-z0-9]+/,
 
       binary_operation: $ => choice(
         prec.left(1, seq($.expression, "+", $.expression)),
