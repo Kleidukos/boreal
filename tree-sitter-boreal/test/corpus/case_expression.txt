@@ -1,0 +1,21 @@
+===========
+Case Expressions
+===========
+
+module Expressions where
+
+expr x =
+  case x of
+    True -> False
+    False -> True
+---
+
+(source_file
+  (module_declaration
+    (module_name))
+  (top_level_declarations
+    (function_declaration
+      (identifier)
+      (identifier)
+      (function_body
+        ()))))

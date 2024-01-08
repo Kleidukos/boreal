@@ -1,5 +1,39 @@
 [
   {
+    "type": "alternatives",
+    "named": true,
+    "fields": {
+      "pattern": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "pattern",
+            "named": true
+          }
+        ]
+      },
+      "rhs": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "case_expression",
+            "named": true
+          },
+          {
+            "type": "expression",
+            "named": true
+          },
+          {
+            "type": "let_binding",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "binary_operation",
     "named": true,
     "fields": {},
@@ -12,6 +46,32 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "case_expression",
+    "named": true,
+    "fields": {
+      "alternatives": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "alternatives",
+            "named": true
+          }
+        ]
+      },
+      "conditional": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -41,6 +101,10 @@
       "multiple": false,
       "required": true,
       "types": [
+        {
+          "type": "case_expression",
+          "named": true
+        },
         {
           "type": "expression",
           "named": true
@@ -130,6 +194,25 @@
     }
   },
   {
+    "type": "pattern",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "constructor",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "source_file",
     "named": true,
     "fields": {},
@@ -176,12 +259,24 @@
     "named": false
   },
   {
+    "type": "->",
+    "named": false
+  },
+  {
     "type": "/",
     "named": false
   },
   {
     "type": "=",
     "named": false
+  },
+  {
+    "type": "case",
+    "named": false
+  },
+  {
+    "type": "constructor",
+    "named": true
   },
   {
     "type": "identifier",
@@ -202,6 +297,10 @@
   {
     "type": "module_name",
     "named": true
+  },
+  {
+    "type": "of",
+    "named": false
   },
   {
     "type": "where",
