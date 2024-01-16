@@ -1,13 +1,13 @@
 ================================================================================
-Let-bindings
+Case Expressions
 ================================================================================
 
-module LetIn where
+module Expressions where
 
-function = 
-  let x = 3
-   in x + 1
-
+expr x =
+  case x of
+    | True -> False
+    | False -> True
 --------------------------------------------------------------------------------
 
 (source_file
@@ -16,15 +16,20 @@ function =
   (top_level_declarations
     (function_declaration
       (function_head
+        (identifier)
         (identifier))
       (function_body
-        (let_binding
-          (identifier)
+        (case_expression
           (simple_expression
             (identifier))
-          (simple_expression
-            (binary_operation
+          (alternatives
+            (alternative
+              (pattern
+                (constructor))
               (simple_expression
-                (identifier))
+                (constructor)))
+            (alternative
+              (pattern
+                (constructor))
               (simple_expression
-                (identifier)))))))))
+                (constructor)))))))))

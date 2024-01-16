@@ -4,6 +4,7 @@ import Data.Set qualified as Set
 import Data.Text (Text)
 import Data.Text.Read qualified as Text
 import Data.Vector (Vector)
+import GHC.Generics (Generic)
 
 type Name = Text
 
@@ -19,7 +20,7 @@ data Syntax
     BorealAtom Name
   | BorealIdent Name
   | Missing
-  deriving stock (Eq, Ord, Show)
+  deriving stock (Eq, Ord, Show, Generic)
 
 isAtom :: Text -> Bool
 isAtom t =
@@ -35,3 +36,7 @@ isAtom t =
         , "in"
         , "="
         ]
+
+isNamedNode :: Name -> Syntax -> Bool
+isNamedNode name (BorealNode name' _) | name == name' = True
+isNamedNode _ _ = False

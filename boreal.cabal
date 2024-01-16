@@ -69,6 +69,7 @@ library
     , containers
     , effectful-core
     , extra
+    , pretty-simple
     , prettyprinter
     , prettyprinter-ansi-terminal
     , PyF
@@ -112,9 +113,10 @@ test-suite boreal-test
 
   hs-source-dirs: test
   build-depends:
-    , base          >=4.18 && <5
+    , base           >=4.18 && <5
     , boreal
     , bytestring
+    , pretty-simple
     , PyF
     , tasty
     , tasty-focus
@@ -122,4 +124,5 @@ test-suite boreal-test
     , tasty-hunit
     , text
     , text-display
+    , tree-diff
     , vector

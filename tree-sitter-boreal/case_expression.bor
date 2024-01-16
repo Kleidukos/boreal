@@ -1,0 +1,6 @@
+module Expressions where
+
+expr x =
+  case x of
+    | True -> False
+    | False -> True

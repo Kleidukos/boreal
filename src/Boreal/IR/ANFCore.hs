@@ -16,6 +16,7 @@ import Effectful.State.Static.Local qualified as State
 import Boreal.Frontend.Syntax
 import Boreal.IR.RawCore (RawCore (..))
 import Debug.Trace
+import GHC.Generics (Generic)
 
 type ANFCoreEff =
   Eff '[Reader Counter, State Bindings, IOE]
@@ -57,7 +58,7 @@ runANFCore inputCore = do
 data TerminalValue
   = ALiteral Int
   | AVar Name
-  deriving stock (Eq, Show, Ord)
+  deriving stock (Eq, Show, Ord, Generic)
 
 data ComplexValue
   = AApp
@@ -65,7 +66,7 @@ data ComplexValue
       -- ^ Function we are applying
       (Vector TerminalValue)
       -- ^ Arguments that need no further evaluation
-  deriving stock (Eq, Show, Ord)
+  deriving stock (Eq, Show, Ord, Generic)
 
 getName :: ComplexValue -> Name
 getName (AApp n _) = n
@@ -73,7 +74,7 @@ getName (AApp n _) = n
 data Value
   = Terminal TerminalValue
   | Complex ComplexValue
-  deriving stock (Eq, Show, Ord)
+  deriving stock (Eq, Show, Ord, Generic)
 
 -- | A-Normal Form AST more suitable for code generation.
 data ANFCore
@@ -89,7 +90,7 @@ data ANFCore
       Name
       (Vector Name)
       ANFCore
-  deriving stock (Eq, Show, Ord)
+  deriving stock (Eq, Show, Ord, Generic)
 
 transformName :: RawCore -> ANFCoreEff TerminalValue
 transformName core = do

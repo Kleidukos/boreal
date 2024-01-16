@@ -47,6 +47,13 @@
         ]
       }
     },
+    "function_head": {
+      "type": "REPEAT1",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      }
+    },
     "function_declaration": {
       "type": "SEQ",
       "members": [
@@ -54,11 +61,8 @@
           "type": "FIELD",
           "name": "head",
           "content": {
-            "type": "REPEAT",
-            "content": {
-              "type": "SYMBOL",
-              "name": "identifier"
-            }
+            "type": "SYMBOL",
+            "name": "function_head"
           }
         },
         {
@@ -79,16 +83,24 @@
       "type": "CHOICE",
       "members": [
         {
+          "type": "FIELD",
+          "name": "case_expression",
+          "content": {
+            "type": "SYMBOL",
+            "name": "case_expression"
+          }
+        },
+        {
           "type": "SYMBOL",
           "name": "let_binding"
         },
         {
           "type": "SYMBOL",
-          "name": "expression"
+          "name": "simple_expression"
         }
       ]
     },
-    "expression": {
+    "simple_expression": {
       "type": "CHOICE",
       "members": [
         {
@@ -97,7 +109,20 @@
         },
         {
           "type": "SYMBOL",
+          "name": "constructor"
+        },
+        {
+          "type": "SYMBOL",
           "name": "binary_operation"
+        }
+      ]
+    },
+    "let_binding_body": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "simple_expression"
         }
       ]
     },
@@ -125,7 +150,7 @@
           "name": "binding_value",
           "content": {
             "type": "SYMBOL",
-            "name": "expression"
+            "name": "simple_expression"
           }
         },
         {
@@ -137,14 +162,109 @@
           "name": "binding_body",
           "content": {
             "type": "SYMBOL",
-            "name": "expression"
+            "name": "simple_expression"
           }
         }
       ]
     },
-    "identifier": {
-      "type": "PATTERN",
-      "value": "[a-z_\\d]+"
+    "case_expression": {
+      "type": "PREC_RIGHT",
+      "value": 2,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "case"
+          },
+          {
+            "type": "FIELD",
+            "name": "conditional",
+            "content": {
+              "type": "SYMBOL",
+              "name": "simple_expression"
+            }
+          },
+          {
+            "type": "STRING",
+            "value": "of"
+          },
+          {
+            "type": "FIELD",
+            "name": "alternatives",
+            "content": {
+              "type": "REPEAT1",
+              "content": {
+                "type": "SYMBOL",
+                "name": "alternatives"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "alternatives": {
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "|"
+          },
+          {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "alternative"
+              },
+              {
+                "type": "REPEAT",
+                "content": {
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "|"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "alternative"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "alternative": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "pattern",
+          "content": {
+            "type": "SYMBOL",
+            "name": "pattern"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "->"
+        },
+        {
+          "type": "FIELD",
+          "name": "rhs",
+          "content": {
+            "type": "SYMBOL",
+            "name": "simple_expression"
+          }
+        }
+      ]
     },
     "node": {
       "type": "CHOICE",
@@ -154,6 +274,18 @@
           "name": "binary_operation"
         }
       ]
+    },
+    "pattern": {
+      "type": "SYMBOL",
+      "name": "constructor"
+    },
+    "identifier": {
+      "type": "PATTERN",
+      "value": "[a-z_\\d]+"
+    },
+    "constructor": {
+      "type": "PATTERN",
+      "value": "[A-Z][A-Za-z0-9]+"
     },
     "binary_operation": {
       "type": "CHOICE",
@@ -166,7 +298,7 @@
             "members": [
               {
                 "type": "SYMBOL",
-                "name": "expression"
+                "name": "simple_expression"
               },
               {
                 "type": "STRING",
@@ -174,7 +306,7 @@
               },
               {
                 "type": "SYMBOL",
-                "name": "expression"
+                "name": "simple_expression"
               }
             ]
           }
@@ -187,7 +319,7 @@
             "members": [
               {
                 "type": "SYMBOL",
-                "name": "expression"
+                "name": "simple_expression"
               },
               {
                 "type": "STRING",
@@ -195,7 +327,7 @@
               },
               {
                 "type": "SYMBOL",
-                "name": "expression"
+                "name": "simple_expression"
               }
             ]
           }
@@ -208,7 +340,7 @@
             "members": [
               {
                 "type": "SYMBOL",
-                "name": "expression"
+                "name": "simple_expression"
               },
               {
                 "type": "STRING",
@@ -216,7 +348,7 @@
               },
               {
                 "type": "SYMBOL",
-                "name": "expression"
+                "name": "simple_expression"
               }
             ]
           }
@@ -229,7 +361,7 @@
             "members": [
               {
                 "type": "SYMBOL",
-                "name": "expression"
+                "name": "simple_expression"
               },
               {
                 "type": "STRING",
@@ -237,7 +369,7 @@
               },
               {
                 "type": "SYMBOL",
-                "name": "expression"
+                "name": "simple_expression"
               }
             ]
           }
