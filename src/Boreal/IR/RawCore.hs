@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-unused-imports #-}
 module Boreal.IR.RawCore where
 
 import Boreal.Frontend.Syntax (Name, Syntax (..))
@@ -8,6 +9,7 @@ import Data.Vector (Vector)
 import Data.Vector qualified as Vector
 import Effectful
 import GHC.Generics (Generic)
+import Debug.Pretty.Simple
 
 -- | Non-ANF intermediate representation whose job is to take a 'Syntax'
 -- and hold it in a more convenient way for ANF transformation.
@@ -29,6 +31,21 @@ data RawCore
       -- ^ Bound expression
       RawCore
       -- ^ Body
+  | Case
+      RawCore
+      -- ^ Expression
+      (Vector CaseAlternative)
+      -- ^ Alternatives
+  deriving stock (Eq, Show, Ord, Generic)
+
+data CaseAlternative = CaseAlternative
+  { lhs :: Pattern
+  , rhs :: RawCore
+  }
+  deriving stock (Eq, Show, Ord, Generic)
+
+data Pattern
+  = Constructor Name
   deriving stock (Eq, Show, Ord, Generic)
 
 type RawCoreEff = Eff '[IOE]
@@ -74,6 +91,10 @@ transformExpression :: Syntax -> RawCoreEff RawCore
 transformExpression (BorealNode "simple_expression" body) = transformExpression $ Vector.head body
 transformExpression (BorealNode "let_binding" bindings) =
   transformLetBinding (bindings Vector.! 0)
+transformExpression (BorealNode "case_expression" body) = do
+  caseExpression <- transformExpression $ Vector.head body
+  processedAlternatives <- traverse processAlternative (Vector.tail body)
+  pure $ Case caseExpression processedAlternatives
 transformExpression (BorealNode n args) = do
   arguments <- traverse transformExpression args
   pure $ Call n arguments
@@ -103,3 +124,10 @@ takeLiteralFromAtom a =
   case Text.decimal a of
     Right (lit, _) -> Just lit
     Left _ -> Nothing
+
+processAlternative :: Syntax -> RawCoreEff CaseAlternative
+processAlternative (BorealNode "alternative" body) = do
+  let BorealIdent cons = Vector.head body
+  rhs <- transformExpression (Vector.last body)
+  let lhs = Constructor cons
+  pure $ CaseAlternative lhs rhs 

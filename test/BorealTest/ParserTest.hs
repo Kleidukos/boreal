@@ -105,7 +105,7 @@ testLetInBindingsParser = do
 
 testCaseExpressionParser :: Assertion
 testCaseExpressionParser = do
-  input <- BS.readFile "./tree-sitter-boreal/case_expression.bor"
+  input <- BS.readFile "./tree-sitter-boreal/case-expression.bor"
   result <- BS.useAsCStringLen input $ \(str, len) -> do
     runParser input (TreeSitter.parse str len)
   assertEqualExpr
@@ -123,7 +123,8 @@ testCaseExpressionParser = do
                     "function_body"
                     [ BorealNode
                         "case_expression"
-                        [ BorealNode "alternative" [BorealIdent "True", BorealIdent "False"]
+                        [ BorealNode "expression" [BorealIdent "x"]
+                        , BorealNode "alternative" [BorealIdent "True", BorealIdent "False"]
                         , BorealNode "alternative" [BorealIdent "False", BorealIdent "True"]
                         ]
                     ]
