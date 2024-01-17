@@ -139,6 +139,7 @@ getChildren node
         "case_expression"
           | childCount >= 3 -> do
               let BorealNode "simple_expression" caseHead = result Vector.! 1
+              let caseExpression = Vector.head caseHead
               let BorealNode "alternatives" alternatives = result Vector.! 3
               let alternativeVector =
                     alternatives
@@ -149,7 +150,7 @@ getChildren node
                                 BorealNode "simple_expression" rhs = content Vector.! 2
                              in BorealNode "alternative" (Vector.concat [pat, rhs])
                         )
-              pure $ BorealNode "case_expression" alternativeVector
+              pure $ BorealNode "case_expression" (Vector.cons caseExpression alternativeVector)
         _ -> pure $ BorealNode (Text.pack theType) result
 
 -------

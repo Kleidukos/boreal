@@ -7,10 +7,11 @@ import Test.Tasty.HUnit
 
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
 import Boreal.Frontend.Types (runParser)
-import Boreal.IR.RawCore (RawCore (..))
+import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types
 import Data.ByteString qualified as BS
+import Utils
 
 spec :: TestTree
 spec =
@@ -18,6 +19,7 @@ spec =
     "RawCore"
     [ testCase "function definition syntax to RawCore" testFunctionDefinitionToRawCore
     , testCase "let-binding syntax to RawCore" testLetBindingToRawCore
+    , testCase "case expression syntax to RawCore" testCaseExpressionToRawCore
     ]
 
 testFunctionDefinitionToRawCore :: Assertion
@@ -55,6 +57,25 @@ testLetBindingToRawCore = do
             "x"
             (Literal 3)
             (Call "+" [Var "x", Literal 1])
+        )
+    ]
+    result.topLevelDeclarations
+
+testCaseExpressionToRawCore :: Assertion
+testCaseExpressionToRawCore = do
+  input <- BS.readFile "./tree-sitter-boreal/case-expression.bor"
+  parsed <- BS.useAsCStringLen input $ \(str, len) -> runParser input (TreeSitter.parse str len)
+  result <- RawCore.runRawCore $ RawCore.transformModule parsed
+
+  assertEqualExpr
+    [ Fun
+        "expr"
+        ["x"]
+        ( Case
+            (Var "x")
+            [ CaseAlternative (Constructor "True") (Var "False")
+            , CaseAlternative (Constructor "False") (Var "True")
+            ]
         )
     ]
     result.topLevelDeclarations

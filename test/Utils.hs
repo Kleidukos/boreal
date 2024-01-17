@@ -31,6 +31,8 @@ assertEqualExpr actual expected =
     )
 
 instance ToExpr Syntax
+instance ToExpr Pattern
+instance (ToExpr ir) => ToExpr (CaseAlternative ir)
 instance ToExpr RawCore
 instance ToExpr TerminalValue
 instance ToExpr ComplexValue
