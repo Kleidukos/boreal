@@ -123,7 +123,7 @@ testCaseExpressionParser = do
                     "function_body"
                     [ BorealNode
                         "case_expression"
-                        [ BorealNode "expression" [BorealIdent "x"]
+                        [ BorealIdent "x"
                         , BorealNode "alternative" [BorealIdent "True", BorealIdent "False"]
                         , BorealNode "alternative" [BorealIdent "False", BorealIdent "True"]
                         ]

@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wno-unused-imports #-}
+
 module Boreal.IR.RawCore where
 
 import Boreal.Frontend.Syntax (Name, Syntax (..))
@@ -7,9 +8,9 @@ import Data.Function
 import Data.Text.Read qualified as Text
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
+import Debug.Pretty.Simple
 import Effectful
 import GHC.Generics (Generic)
-import Debug.Pretty.Simple
 
 -- | Non-ANF intermediate representation whose job is to take a 'Syntax'
 -- and hold it in a more convenient way for ANF transformation.
@@ -34,13 +35,13 @@ data RawCore
   | Case
       RawCore
       -- ^ Expression
-      (Vector CaseAlternative)
+      (Vector (CaseAlternative RawCore))
       -- ^ Alternatives
   deriving stock (Eq, Show, Ord, Generic)
 
-data CaseAlternative = CaseAlternative
+data CaseAlternative ir = CaseAlternative
   { lhs :: Pattern
-  , rhs :: RawCore
+  , rhs :: ir
   }
   deriving stock (Eq, Show, Ord, Generic)
 
@@ -125,9 +126,9 @@ takeLiteralFromAtom a =
     Right (lit, _) -> Just lit
     Left _ -> Nothing
 
-processAlternative :: Syntax -> RawCoreEff CaseAlternative
+processAlternative :: Syntax -> RawCoreEff (CaseAlternative RawCore)
 processAlternative (BorealNode "alternative" body) = do
   let BorealIdent cons = Vector.head body
   rhs <- transformExpression (Vector.last body)
   let lhs = Constructor cons
-  pure $ CaseAlternative lhs rhs 
+  pure $ CaseAlternative lhs rhs

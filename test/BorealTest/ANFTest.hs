@@ -7,7 +7,8 @@ import Test.Tasty.HUnit
 
 import Boreal.IR.ANFCore (ANFCore (..), ComplexValue (..), TerminalValue (..), Value (..))
 import Boreal.IR.ANFCore qualified as ANF
-import Boreal.IR.RawCore (RawCore (..))
+import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
+import Utils
 
 spec :: TestTree
 spec =
@@ -15,6 +16,7 @@ spec =
     "ANFCore"
     [ testCase "Function declaration RawCore to ANFCore" testFunctionDeclarationToANFCore
     , testCase "Let-binding of RawCore terminal value to ANFCore" testLetBindingTerminalValueToANFCore
+    , testCase "Case expression to ANFCore" testSimpleCaseExpressionToANFCore
     ]
 
 testFunctionDeclarationToANFCore :: Assertion
@@ -72,6 +74,44 @@ testLetBindingTerminalValueToANFCore = do
             "x"
             (Complex (AApp "*" [ALiteral 3, ALiteral 2]))
             (Halt (Complex (AApp "+" [AVar "x", AVar "y"])))
+        )
+    )
+    actual
+
+testSimpleCaseExpressionToANFCore :: Assertion
+testSimpleCaseExpressionToANFCore = do
+  -- original:
+  -- expr x =
+  --   case x of
+  --     | True -> False
+  --     | False -> True
+  let rawCore =
+        Fun
+          "expr"
+          ["x"]
+          ( Case
+              (Var "x")
+              [ CaseAlternative (Constructor "True") (Var "False")
+              , CaseAlternative (Constructor "False") (Var "True")
+              ]
+          )
+
+  actual <- ANF.runANFCore rawCore
+  assertEqualExpr
+    ( AFun
+        "expr"
+        ["x"]
+        ( ACase
+            (Terminal $ AVar "x")
+            [ CaseAlternative
+                { lhs = Constructor "True"
+                , rhs = Halt (Terminal (AVar "False"))
+                }
+            , CaseAlternative
+                { lhs = Constructor "False"
+                , rhs = Halt (Terminal (AVar "True"))
+                }
+            ]
         )
     )
     actual

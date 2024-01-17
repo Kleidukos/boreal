@@ -14,8 +14,7 @@ import Effectful.State.Static.Local (State)
 import Effectful.State.Static.Local qualified as State
 
 import Boreal.Frontend.Syntax
-import Boreal.IR.RawCore (RawCore (..))
-import Debug.Trace
+import Boreal.IR.RawCore (CaseAlternative (..), RawCore (..))
 import GHC.Generics (Generic)
 
 type ANFCoreEff =
@@ -90,6 +89,9 @@ data ANFCore
       Name
       (Vector Name)
       ANFCore
+  | ACase
+      Value
+      (Vector (CaseAlternative ANFCore))
   deriving stock (Eq, Show, Ord, Generic)
 
 transformName :: RawCore -> ANFCoreEff TerminalValue
@@ -121,14 +123,17 @@ transform = \case
     transformedArguments <- traverse transformName arguments
     pure $ Halt $ Complex $ AApp funName transformedArguments
   Fun name arguments body -> do
-    traceShowM body
     processedBody <- transform body
-    traceShowM processedBody
     pure $
       AFun
         name
         arguments
         processedBody
+  Case expression alternatives -> do
+    transform expression >>= \case
+      Halt processedExpression -> do
+        transformedAlternatives <- traverse transformAlternative alternatives
+        pure $ ACase processedExpression transformedAlternatives
 
 finaliseTransformation :: ANFCore -> ANFCoreEff ANFCore
 finaliseTransformation anf = do
@@ -141,3 +146,8 @@ finaliseTransformation anf = do
     mkLet :: (Name, Value) -> ANFCore -> ANFCore
     mkLet (var, value) body =
       ALet var value body
+
+transformAlternative :: CaseAlternative RawCore -> ANFCoreEff (CaseAlternative ANFCore)
+transformAlternative caseAlternative = do
+  transformedRHS <- transform caseAlternative.rhs
+  pure $ caseAlternative{rhs = transformedRHS}
