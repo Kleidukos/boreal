@@ -6,7 +6,6 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
-import Boreal.Frontend.Types (runParser)
 import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types
@@ -25,7 +24,7 @@ spec =
 testFunctionDefinitionToRawCore :: Assertion
 testFunctionDefinitionToRawCore = do
   input <- BS.readFile "./tree-sitter-boreal/function-definition.bor"
-  parsed <- BS.useAsCStringLen input $ \(str, len) -> runParser input (TreeSitter.parse str len)
+  parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
   assertEqual
@@ -45,7 +44,7 @@ testFunctionDefinitionToRawCore = do
 testLetBindingToRawCore :: Assertion
 testLetBindingToRawCore = do
   input <- BS.readFile "./tree-sitter-boreal/let-in.bor"
-  parsed <- BS.useAsCStringLen input $ \(str, len) -> runParser input (TreeSitter.parse str len)
+  parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
   assertEqual
@@ -64,7 +63,7 @@ testLetBindingToRawCore = do
 testCaseExpressionToRawCore :: Assertion
 testCaseExpressionToRawCore = do
   input <- BS.readFile "./tree-sitter-boreal/case-expression.bor"
-  parsed <- BS.useAsCStringLen input $ \(str, len) -> runParser input (TreeSitter.parse str len)
+  parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
   assertEqualExpr

@@ -32,41 +32,45 @@ import TreeSitter.Tree
 import Boreal.Frontend.Source
 import Boreal.Frontend.Syntax
 import Boreal.Frontend.Types
+import Data.ByteString (StrictByteString)
+import Data.ByteString qualified as BS
 
 foreign import capi unsafe "parser.h tree_sitter_boreal"
   tree_sitter_boreal :: ConstPtr Language
 
-parse :: CString -> Int -> BorealParser Syntax
-parse input inputLength = do
-  parser <- liftIO ts_parser_new
-  liftIO $ ts_parser_set_language parser (unConstPtr tree_sitter_boreal)
-  tree <-
-    liftIO $
-      ts_parser_parse_string
-        parser
-        nullPtr
-        input
-        inputLength
+parse :: StrictByteString -> IO Syntax
+parse input = do
+  BS.useAsCStringLen input $ \(str, len) ->
+    runParser input $ do
+      parser <- liftIO ts_parser_new
+      liftIO $ ts_parser_set_language parser (unConstPtr tree_sitter_boreal)
+      tree <-
+        liftIO $
+          ts_parser_parse_string
+            parser
+            nullPtr
+            str
+            len
 
-  n <- liftIO malloc
-  liftIO $ ts_tree_root_node_p tree n
+      n <- liftIO malloc
+      liftIO $ ts_tree_root_node_p tree n
 
-  Node{nodeChildCount, nodeTSNode} <- liftIO $ peek n
-  let childCount = fromIntegral nodeChildCount
+      Node{nodeChildCount, nodeTSNode} <- liftIO $ peek n
+      let childCount = fromIntegral nodeChildCount
 
-  children <- liftIO $ mallocArray childCount
-  tsNode <- liftIO malloc
-  liftIO $ poke tsNode nodeTSNode
-  liftIO $ ts_node_copy_child_nodes tsNode children
+      children <- liftIO $ mallocArray childCount
+      tsNode <- liftIO malloc
+      liftIO $ poke tsNode nodeTSNode
+      liftIO $ ts_node_copy_child_nodes tsNode children
 
-  result <-
-    Vector.forM
-      (Vector.fromList [0 .. childCount - 1])
-      ( \index -> do
-          child <- liftIO @BorealParser $ peekElemOff children index
-          getChildren child
-      )
-  pure $ BorealNode "source" result
+      result <-
+        Vector.forM
+          (Vector.fromList [0 .. childCount - 1])
+          ( \index -> do
+              child <- liftIO $ peekElemOff children index
+              getChildren child
+          )
+      pure $ BorealNode "source" result
 
 getChildren :: Node -> BorealParser Syntax
 getChildren node

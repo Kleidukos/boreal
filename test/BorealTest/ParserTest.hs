@@ -8,7 +8,6 @@ import Test.Tasty.HUnit
 
 import Boreal.Frontend.Syntax
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
-import Boreal.Frontend.Types
 import Utils
 
 spec :: TestTree
@@ -23,8 +22,7 @@ spec =
 testFunctionDefinitionParser :: Assertion
 testFunctionDefinitionParser = do
   input <- BS.readFile "./tree-sitter-boreal/function-definition.bor"
-  result <- BS.useAsCStringLen input $ \(str, len) -> do
-    runParser input (TreeSitter.parse str len)
+  result <- TreeSitter.parse input
   assertEqualExpr
     ( BorealNode
         "source"
@@ -63,8 +61,7 @@ testFunctionDefinitionParser = do
 testLetInBindingsParser :: Assertion
 testLetInBindingsParser = do
   input <- BS.readFile "./tree-sitter-boreal/let-in.bor"
-  result <- BS.useAsCStringLen input $ \(str, len) -> do
-    runParser input (TreeSitter.parse str len)
+  result <- TreeSitter.parse input
   assertEqualExpr
     ( BorealNode
         "source"
@@ -106,8 +103,7 @@ testLetInBindingsParser = do
 testCaseExpressionParser :: Assertion
 testCaseExpressionParser = do
   input <- BS.readFile "./tree-sitter-boreal/case-expression.bor"
-  result <- BS.useAsCStringLen input $ \(str, len) -> do
-    runParser input (TreeSitter.parse str len)
+  result <- TreeSitter.parse input
   assertEqualExpr
     ( BorealNode
         "source"

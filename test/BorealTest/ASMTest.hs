@@ -54,7 +54,7 @@ emitAddition = do
     module Mod where
     main = 1 + 2
   |]
-  parsed <- BS.useAsCStringLen input $ \(string, len) -> runParser input (TreeSitter.parse string len)
+  parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
   anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
   generated <- ASM.runASM rawModule{topLevelDeclarations = anfDecls}
@@ -67,7 +67,7 @@ emitSubtraction = do
     module Mod where
     main = 1 - 2
   |]
-  parsed <- BS.useAsCStringLen input $ \(string, len) -> runParser input (TreeSitter.parse string len)
+  parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
   anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
   generated <- ASM.runASM rawModule{topLevelDeclarations = anfDecls}
@@ -80,7 +80,7 @@ emitArithmeticOperations = do
     module Mod where
     main = 42 + 1 + 1 - 1
 |]
-  parsed <- BS.useAsCStringLen input $ \(string, len) -> runParser input (TreeSitter.parse string len)
+  parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
   anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
   generated <- ASM.runASM rawModule{topLevelDeclarations = anfDecls}
@@ -95,7 +95,7 @@ emitLetBinding = do
       let x = 42 + 1
        in x + 1 - 1
 |]
-  parsed <- BS.useAsCStringLen input $ \(string, len) -> runParser input (TreeSitter.parse string len)
+  parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
   anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
   generated <- ASM.runASM rawModule{topLevelDeclarations = anfDecls}
