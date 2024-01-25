@@ -48,7 +48,7 @@ library
   exposed-modules:
     Boreal.Backend.ASM
     Boreal.Backend.ASM.Types
-    Boreal.Frontend.Macro.Scope
+    Boreal.Frontend.Parser
     Boreal.Frontend.Source
     Boreal.Frontend.Syntax
     Boreal.Frontend.TreeSitter
@@ -70,6 +70,7 @@ library
     , containers
     , effectful-core
     , extra
+    , parser-combinators
     , pretty-simple
     , prettyprinter
     , prettyprinter-ansi-terminal

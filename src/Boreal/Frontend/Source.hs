@@ -6,11 +6,13 @@ import Data.Word (Word32)
 import Effectful.Reader.Static qualified as Reader
 import TreeSitter.Node
 
-import Boreal.Frontend.Types
+import Data.ByteString (StrictByteString)
 import Data.ByteString qualified as BS
 import Data.Text.Encoding qualified as Text
+import Effectful
+import Effectful.Reader.Static (Reader)
 
-fetchSource :: Node -> BorealParser Text
+fetchSource :: (Reader StrictByteString :> es) => Node -> Eff es Text
 fetchSource node = do
   let startByte = fromIntegral @Word32 @Int (nodeStartByte node)
   let endByte = fromIntegral @Word32 @Int node.nodeEndByte

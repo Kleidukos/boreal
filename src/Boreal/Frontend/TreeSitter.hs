@@ -177,18 +177,6 @@ getNamedField expectedName childIndex parentNode
           liftIO $ putStrLn $ "Unexpected name " <> fieldName <> " (expected name: " <> expectedName <> ")"
           pure Nothing
 
-getField
-  :: Word32
-  -> Ptr Node
-  -> BorealParser (Maybe Node)
-getField childIndex parentNode
-  | parentNode == nullPtr = do
-      liftIO $ putStrLn "Unexpected null parent"
-      pure Nothing
-  | otherwise = do
-      childNode <- liftIO $ peekElemOff parentNode (fromIntegral @Word32 @Int childIndex)
-      pure $ Just childNode
-
 printNode :: Node -> BorealParser ()
 printNode n@(Node{nodeType, nodeEndPoint, nodeChildCount}) = do
   theType <- liftIO $ peekCString nodeType
