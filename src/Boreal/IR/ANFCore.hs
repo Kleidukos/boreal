@@ -1,36 +1,17 @@
 module Boreal.IR.ANFCore where
 
-import Control.Concurrent.Counter (Counter)
 import Control.Concurrent.Counter qualified as Counter
-import Data.Function
+import Data.Function ((&))
 import Data.Text (Text)
 import Data.Text.Display (display)
-import Data.Vector (Vector)
 import Data.Vector qualified as Vector
 import Effectful
-import Effectful.Reader.Static
 import Effectful.Reader.Static qualified as Reader
-import Effectful.State.Static.Local (State)
 import Effectful.State.Static.Local qualified as State
 
 import Boreal.Frontend.Syntax
+import Boreal.IR.ANFCore.Types
 import Boreal.IR.RawCore (CaseAlternative (..), RawCore (..))
-import GHC.Generics (Generic)
-
-type ANFCoreEff =
-  Eff '[Reader Counter, State Bindings, IOE]
-
-type Bindings = Vector (Name, Value)
-
-freshName :: Text -> ANFCoreEff Name
-freshName prefix = do
-  counter <- Reader.ask
-  number <- liftIO $ Counter.add counter 1
-  pure $ prefix <> display number
-
-addBinding :: (Name, Value) -> ANFCoreEff ()
-addBinding binding =
-  State.modify (\state -> Vector.cons binding state)
 
 runANFCore :: RawCore -> IO ANFCore
 runANFCore inputCore = do
@@ -54,45 +35,15 @@ runANFCore inputCore = do
       result <- transform input
       finaliseTransformation result
 
-data TerminalValue
-  = ALiteral Int
-  | AVar Name
-  deriving stock (Eq, Show, Ord, Generic)
+freshName :: Text -> ANFCoreEff Name
+freshName prefix = do
+  counter <- Reader.ask
+  number <- liftIO $ Counter.add counter 1
+  pure $ prefix <> display number
 
-data ComplexValue
-  = AApp
-      Name
-      -- ^ Function we are applying
-      (Vector TerminalValue)
-      -- ^ Arguments that need no further evaluation
-  deriving stock (Eq, Show, Ord, Generic)
-
-getName :: ComplexValue -> Name
-getName (AApp n _) = n
-
-data Value
-  = Terminal TerminalValue
-  | Complex ComplexValue
-  deriving stock (Eq, Show, Ord, Generic)
-
--- | A-Normal Form AST more suitable for code generation.
-data ANFCore
-  = ALet
-      Name
-      -- ^ Name of the binding
-      Value
-      -- ^ Expression that is bound
-      ANFCore
-      -- ^ Body
-  | Halt Value
-  | AFun
-      Name
-      (Vector Name)
-      ANFCore
-  | ACase
-      Value
-      (Vector (CaseAlternative ANFCore))
-  deriving stock (Eq, Show, Ord, Generic)
+addBinding :: (Name, Value) -> ANFCoreEff ()
+addBinding binding =
+  State.modify (\state -> Vector.cons binding state)
 
 transformName :: RawCore -> ANFCoreEff TerminalValue
 transformName core = do
@@ -151,3 +102,6 @@ transformAlternative :: CaseAlternative RawCore -> ANFCoreEff (CaseAlternative A
 transformAlternative caseAlternative = do
   transformedRHS <- transform caseAlternative.rhs
   pure $ caseAlternative{rhs = transformedRHS}
+
+getName :: ComplexValue -> Name
+getName (AApp n _) = n

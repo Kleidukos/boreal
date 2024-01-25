@@ -5,8 +5,8 @@ module BorealTest.ANFTest where
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Boreal.IR.ANFCore (ANFCore (..), ComplexValue (..), TerminalValue (..), Value (..))
 import Boreal.IR.ANFCore qualified as ANF
+import Boreal.IR.ANFCore.Types (ANFCore (..), ComplexValue (..), TerminalValue (..), Value (..))
 import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
 import Utils
 

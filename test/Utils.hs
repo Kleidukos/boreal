@@ -2,14 +2,15 @@
 
 module Utils where
 
-import Boreal.Frontend.Syntax
-import Boreal.IR.ANFCore
-import Boreal.IR.RawCore
 import Control.Monad (unless)
 import Data.TreeDiff
 import GHC.Stack
 import Test.Tasty.HUnit (Assertion)
 import Test.Tasty.HUnit qualified as Test
+
+import Boreal.Frontend.Syntax
+import Boreal.IR.ANFCore.Types
+import Boreal.IR.RawCore
 
 assertRight :: (HasCallStack) => Either a b -> IO b
 assertRight (Left _a) = Test.assertFailure "Test return Left instead of Right"

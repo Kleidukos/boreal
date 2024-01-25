@@ -48,12 +48,12 @@ library
   exposed-modules:
     Boreal.Backend.ASM
     Boreal.Backend.ASM.Types
-    Boreal.Frontend.Macro.Scope
     Boreal.Frontend.Source
     Boreal.Frontend.Syntax
     Boreal.Frontend.TreeSitter
     Boreal.Frontend.Types
     Boreal.IR.ANFCore
+    Boreal.IR.ANFCore.Types
     Boreal.IR.RawCore
     Boreal.IR.Types
 

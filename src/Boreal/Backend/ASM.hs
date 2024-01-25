@@ -19,7 +19,7 @@ import PyF
 
 import Boreal.Backend.ASM.Types
 import Boreal.Frontend.Syntax
-import Boreal.IR.ANFCore
+import Boreal.IR.ANFCore.Types
 import Boreal.IR.Types
 import Control.Monad (forM)
 import Effectful.State.Static.Local qualified as State
