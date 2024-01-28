@@ -1,7 +1,5 @@
-{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE QuasiQuotes #-}
-
-module BorealTest.ASMTest where
+module BorealTest.LuaTest where
 
 import Data.ByteString.Lazy (LazyByteString)
 import Data.Text.Lazy qualified as Text
@@ -10,7 +8,7 @@ import PyF (str)
 import Test.Tasty
 import Test.Tasty.Golden
 
-import Boreal.Backend.ASM qualified as ASM
+import Boreal.Backend.Lua qualified as Lua
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
 import Boreal.IR.ANFCore qualified as ANFCore
 import Boreal.IR.RawCore qualified as RawCore
@@ -22,26 +20,26 @@ diffCmd ref new = ["diff", "-u", ref, new]
 spec :: TestTree
 spec =
   testGroup
-    "ASM Tests"
+    "Lua Tests"
     [ goldenVsStringDiff
         "Emit addition"
         diffCmd
-        "./test/golden/asm/addition.s"
+        "./test/golden/lua/addition.lua"
         emitAddition
     , goldenVsStringDiff
         "Emit subtraction"
         diffCmd
-        "./test/golden/asm/subtraction.s"
+        "./test/golden/lua/subtraction.lua"
         emitSubtraction
     , goldenVsStringDiff
         "Emit sequence of arithmetic operations"
         diffCmd
-        "./test/golden/asm/arithmetic-operations.s"
+        "./test/golden/lua/arithmetic-operations.lua"
         emitArithmeticOperations
     , goldenVsStringDiff
         "Emit sequence of arithmetic operations with intermediate let-binding"
         diffCmd
-        "./test/golden/asm/arithmetic-operations-let-binding.s"
+        "./test/golden/lua/arithmetic-operations-let-binding.lua"
         emitLetBinding
     ]
 
@@ -55,7 +53,7 @@ emitAddition = do
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
   anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
-  generated <- ASM.runASM rawModule{topLevelDeclarations = anfDecls}
+  generated <- Lua.runLua rawModule{topLevelDeclarations = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
 
 emitSubtraction :: IO LazyByteString
@@ -68,7 +66,7 @@ emitSubtraction = do
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
   anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
-  generated <- ASM.runASM rawModule{topLevelDeclarations = anfDecls}
+  generated <- Lua.runLua rawModule{topLevelDeclarations = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
 
 emitArithmeticOperations :: IO LazyByteString
@@ -81,7 +79,7 @@ emitArithmeticOperations = do
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
   anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
-  generated <- ASM.runASM rawModule{topLevelDeclarations = anfDecls}
+  generated <- Lua.runLua rawModule{topLevelDeclarations = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
 
 emitLetBinding :: IO LazyByteString
@@ -96,5 +94,5 @@ emitLetBinding = do
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
   anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
-  generated <- ASM.runASM rawModule{topLevelDeclarations = anfDecls}
+  generated <- Lua.runLua rawModule{topLevelDeclarations = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
