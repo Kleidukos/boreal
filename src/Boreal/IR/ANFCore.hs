@@ -12,9 +12,11 @@ import Effectful.State.Static.Local qualified as State
 import Boreal.Frontend.Syntax
 import Boreal.IR.ANFCore.Types
 import Boreal.IR.RawCore (CaseAlternative (..), RawCore (..))
+import Boreal.ScopeEnvironment (ScopeEnvironment, lookupIdentifierName)
+import qualified Data.Text as Text
 
-runANFCore :: RawCore -> IO ANFCore
-runANFCore inputCore = do
+runANFCore :: ScopeEnvironment -> RawCore -> IO ANFCore
+runANFCore scopeEnvironment inputCore = do
   counter <- Counter.new 0
   case inputCore of
     Fun name arguments body -> do
@@ -22,12 +24,14 @@ runANFCore inputCore = do
         action body
           & Reader.runReader counter
           & State.evalState Vector.empty
+          & Reader.runReader scopeEnvironment
           & runEff
       pure $ AFun name arguments result
     e ->
       action e
         & Reader.runReader counter
         & State.evalState Vector.empty
+        & Reader.runReader scopeEnvironment
         & runEff
   where
     action :: RawCore -> ANFCoreEff ANFCore
@@ -39,7 +43,11 @@ freshName :: Text -> ANFCoreEff Name
 freshName prefix = do
   counter <- Reader.ask
   number <- liftIO $ Counter.add counter 1
-  pure $ prefix <> display number
+  mCleanPrefix <- lookupIdentifierName prefix
+  case mCleanPrefix of
+    Nothing -> error $ "Could not find " <> Text.unpack prefix <> " in scope environment"
+    Just cleanPrefix -> 
+      pure $ cleanPrefix <> display number
 
 addBinding :: (Name, Value) -> ANFCoreEff ()
 addBinding binding =

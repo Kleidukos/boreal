@@ -8,10 +8,12 @@ import Effectful.State.Static.Local qualified as State
 
 import Boreal.Frontend.Syntax (Name)
 import Data.Maybe (fromJust)
+import Language.Lua qualified as Lua
 
 type LuaEff =
   Eff
     '[ State Environment
+     , State FunctionEnvironment
      , IOE
      ]
 
@@ -19,6 +21,14 @@ type Offset = Int
 
 newtype Environment = Environment (Map Name Offset)
   deriving newtype (Eq, Ord, Show, Semigroup, Monoid)
+
+data FunctionEnvironment = FunctionEnvironment
+  { returnValue :: Maybe Lua.Exp
+  }
+  deriving stock (Eq, Show)
+
+emptyFunctionEnvironment :: FunctionEnvironment
+emptyFunctionEnvironment = FunctionEnvironment Nothing
 
 data Lua
 
@@ -35,3 +45,8 @@ addToEnvironment name = do
     let newmap = Map.insert name slot envmap
      in Environment newmap
   pure slot
+
+addBlockReturnValue :: (State FunctionEnvironment :> es) => Lua.Exp -> Eff es ()
+addBlockReturnValue returnValue =
+  State.modify $ \env ->
+    env{returnValue = Just returnValue}
