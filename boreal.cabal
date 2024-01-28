@@ -59,6 +59,7 @@ library
     Boreal.IR.ANFCore.Types
     Boreal.IR.RawCore
     Boreal.IR.Types
+    Boreal.ScopeEnvironment
 
   other-modules:    Paths_boreal
   includes:         ./include/parser.h
@@ -112,9 +113,9 @@ test-suite boreal-test
   other-modules:
     BorealTest.ANFTest
     BorealTest.ASMTest
+    BorealTest.LuaTest
     BorealTest.ParserTest
     BorealTest.RawCoreTest
-    BorealTest.LuaTest
     Utils
 
   hs-source-dirs: test
