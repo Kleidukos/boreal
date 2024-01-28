@@ -8,6 +8,7 @@ import Test.Tasty.HUnit
 import Boreal.IR.ANFCore qualified as ANF
 import Boreal.IR.ANFCore.Types (ANFCore (..), ComplexValue (..), TerminalValue (..), Value (..))
 import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
+import Boreal.ScopeEnvironment
 import Utils
 
 spec :: TestTree
@@ -27,17 +28,16 @@ testFunctionDeclarationToANFCore = do
   --    let *0 = x * 2
   --    in *0 + 3
   let rawCore = Call "+" [Call "*" [Var "x", Literal 2], Literal 2]
-  actual <- ANF.runANFCore rawCore
+  actual <- ANF.runANFCore newScopeEnvironment rawCore
   assertEqual
     "Transform to ANF: x * 2 + 3"
     ( ALet
-        "*0"
+        "prim_mul0"
         ( Complex
             (AApp "*" [AVar "x", ALiteral 2])
         )
         ( Halt
-            ( Complex
-                (AApp "+" [AVar "*0", ALiteral 2])
+            ( Complex (AApp "+" [AVar "prim_mul0", ALiteral 2])
             )
         )
     )
@@ -64,7 +64,7 @@ testLetBindingTerminalValueToANFCore = do
               (Call "+" [Var "x", Var "y"])
           )
 
-  actual <- ANF.runANFCore rawCore
+  actual <- ANF.runANFCore newScopeEnvironment rawCore
   assertEqual
     "Transform to ANF: function y = let x = 3 * 2 in x + y"
     ( AFun
@@ -96,7 +96,7 @@ testSimpleCaseExpressionToANFCore = do
               ]
           )
 
-  actual <- ANF.runANFCore rawCore
+  actual <- ANF.runANFCore newScopeEnvironment rawCore
   assertEqualExpr
     ( AFun
         "expr"

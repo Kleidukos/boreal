@@ -14,6 +14,7 @@ import Boreal.Frontend.TreeSitter qualified as TreeSitter
 import Boreal.IR.ANFCore qualified as ANFCore
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types
+import Boreal.ScopeEnvironment
 
 diffCmd :: String -> String -> [String]
 diffCmd ref new = ["diff", "-u", ref, new]
@@ -53,7 +54,7 @@ emitAddition = do
   |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
-  anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
   generated <- Lua.runLua rawModule{topLevelDeclarations = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
 
@@ -66,7 +67,7 @@ emitSubtraction = do
   |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
-  anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
   generated <- Lua.runLua rawModule{topLevelDeclarations = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
 
@@ -79,7 +80,7 @@ emitArithmeticOperations = do
 |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
-  anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
   generated <- Lua.runLua rawModule{topLevelDeclarations = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
 
@@ -94,6 +95,6 @@ emitLetBinding = do
 |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
-  anfDecls <- traverse ANFCore.runANFCore rawModule.topLevelDeclarations
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
   generated <- Lua.runLua rawModule{topLevelDeclarations = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated

@@ -49,7 +49,6 @@ library
     Boreal.Backend.ASM
     Boreal.Backend.ASM.Types
     Boreal.Backend.Lua
-    Boreal.Backend.Lua.PrettyPrinter
     Boreal.Backend.Lua.Types
     Boreal.Frontend.Source
     Boreal.Frontend.Syntax

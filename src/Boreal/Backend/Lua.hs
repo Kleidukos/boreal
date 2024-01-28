@@ -84,11 +84,18 @@ letBindingToLua boundName expression body = do
       [ LocalAssign
           [Lua.Name boundName]
           (Just [expressionInstructions])
-      , bodyInstructions
       ]
+      <> bodyInstructions
 
-letBodyToBlock :: ANFCore -> LuaEff Lua.Stat
-letBodyToBlock _ = pure Lua.EmptyStat
+letBodyToBlock :: ANFCore -> LuaEff (Vector Lua.Stat)
+letBodyToBlock body = do
+  case body of
+    (ALet name expression letBody) -> letBindingToLua name expression letBody
+    (Halt value) -> do
+      returnValue <- valueToLua value
+      addBlockReturnValue returnValue
+      pure Vector.empty
+    e -> error $ "Didn't match on " <> show e
 
 additionToLua :: Vector TerminalValue -> Lua.Exp
 additionToLua args =

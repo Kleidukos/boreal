@@ -13,7 +13,7 @@ import Boreal.Frontend.Syntax
 import Boreal.IR.ANFCore.Types
 import Boreal.IR.RawCore (CaseAlternative (..), RawCore (..))
 import Boreal.ScopeEnvironment (ScopeEnvironment, lookupIdentifierName)
-import qualified Data.Text as Text
+import Data.Text qualified as Text
 
 runANFCore :: ScopeEnvironment -> RawCore -> IO ANFCore
 runANFCore scopeEnvironment inputCore = do
@@ -46,7 +46,7 @@ freshName prefix = do
   mCleanPrefix <- lookupIdentifierName prefix
   case mCleanPrefix of
     Nothing -> error $ "Could not find " <> Text.unpack prefix <> " in scope environment"
-    Just cleanPrefix -> 
+    Just cleanPrefix ->
       pure $ cleanPrefix <> display number
 
 addBinding :: (Name, Value) -> ANFCoreEff ()
