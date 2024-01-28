@@ -19,12 +19,12 @@ module.exports = grammar({
       $.function_declaration
     )),
 
-    function_head: $ => repeat1($.identifier),
     function_declaration: $ => seq(
       field("head", $.function_head),
       "=",
       field("body", $.function_body)
     ),
+    function_head: $ => repeat1($.identifier),
 
     function_body: $ => choice(
       field("case_expression", $.case_expression),

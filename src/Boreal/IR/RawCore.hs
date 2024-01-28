@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-
 module Boreal.IR.RawCore where
 
 import Boreal.Frontend.Syntax (Name, Syntax (..))
@@ -8,7 +6,6 @@ import Data.Function
 import Data.Text.Read qualified as Text
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
-import Debug.Pretty.Simple
 import Effectful
 import GHC.Generics (Generic)
 

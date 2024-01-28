@@ -9,9 +9,10 @@ import GHC.Generics (Generic)
 
 import Boreal.Frontend.Syntax (Name)
 import Boreal.IR.RawCore (CaseAlternative)
+import Boreal.ScopeEnvironment
 
 type ANFCoreEff =
-  Eff '[Reader Counter, State Bindings, IOE]
+  Eff '[Reader Counter, State Bindings, Reader ScopeEnvironment, IOE]
 
 type Bindings = Vector (Name, Value)
 
@@ -42,7 +43,6 @@ data ANFCore
       -- ^ Expression that is bound
       ANFCore
       -- ^ Body
-  | Halt Value
   | AFun
       Name
       (Vector Name)
@@ -50,4 +50,5 @@ data ANFCore
   | ACase
       Value
       (Vector (CaseAlternative ANFCore))
+  | Halt Value
   deriving stock (Eq, Show, Ord, Generic)

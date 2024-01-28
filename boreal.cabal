@@ -48,6 +48,8 @@ library
   exposed-modules:
     Boreal.Backend.ASM
     Boreal.Backend.ASM.Types
+    Boreal.Backend.Lua
+    Boreal.Backend.Lua.Types
     Boreal.Frontend.Source
     Boreal.Frontend.Syntax
     Boreal.Frontend.TreeSitter
@@ -56,6 +58,7 @@ library
     Boreal.IR.ANFCore.Types
     Boreal.IR.RawCore
     Boreal.IR.Types
+    Boreal.ScopeEnvironment
 
   other-modules:    Paths_boreal
   includes:         ./include/parser.h
@@ -70,6 +73,7 @@ library
     , containers
     , effectful-core
     , extra
+    , language-lua
     , pretty-simple
     , prettyprinter
     , prettyprinter-ansi-terminal
@@ -108,6 +112,7 @@ test-suite boreal-test
   other-modules:
     BorealTest.ANFTest
     BorealTest.ASMTest
+    BorealTest.LuaTest
     BorealTest.ParserTest
     BorealTest.RawCoreTest
     Utils
