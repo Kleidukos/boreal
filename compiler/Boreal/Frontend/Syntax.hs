@@ -22,8 +22,16 @@ data Syntax
   | Missing
   deriving stock (Eq, Ord, Show, Generic)
 
-isAtom :: Text -> Bool
-isAtom t =
+isAtom :: Syntax -> Bool
+isAtom (BorealAtom _) = True
+isAtom _ = False
+
+isIdent :: Syntax -> Bool
+isIdent (BorealIdent _) = True
+isIdent _ = False
+
+isTextAtom :: Text -> Bool
+isTextAtom t =
   case Text.decimal @Int t of
     Right _ -> True
     Left _ -> t `Set.member` atoms
@@ -35,6 +43,8 @@ isAtom t =
         , "let"
         , "in"
         , "="
+        , "type"
+        , "|"
         ]
 
 isNamedNode :: Name -> Syntax -> Bool

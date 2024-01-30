@@ -1,0 +1,3 @@
+module Prelude where
+
+type Bool = True | False

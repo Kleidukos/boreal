@@ -10,15 +10,17 @@ import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types
 import Data.ByteString qualified as BS
+import Data.Set qualified as Set
 import Utils
 
 spec :: TestTree
 spec =
   testGroup
     "RawCore"
-    [ testCase "function definition syntax to RawCore" testFunctionDefinitionToRawCore
-    , testCase "let-binding syntax to RawCore" testLetBindingToRawCore
-    , testCase "case expression syntax to RawCore" testCaseExpressionToRawCore
+    [ testCase "Function definition syntax to RawCore" testFunctionDefinitionToRawCore
+    , testCase "Let-binding syntax to RawCore" testLetBindingToRawCore
+    , testCase "Case expression syntax to RawCore" testCaseExpressionToRawCore
+    , testCase "Datatype declaration" testDatatypeDeclarationToRawCore
     ]
 
 testFunctionDefinitionToRawCore :: Assertion
@@ -77,4 +79,14 @@ testCaseExpressionToRawCore = do
             ]
         )
     ]
+    result.topLevelDeclarations
+
+testDatatypeDeclarationToRawCore :: Assertion
+testDatatypeDeclarationToRawCore = do
+  input <- BS.readFile "./tree-sitter-boreal/datatype-declaration.bor"
+  parsed <- TreeSitter.parse input
+  result <- RawCore.runRawCore $ RawCore.transformModule parsed
+
+  assertEqualExpr
+    [TypeDeclaration "Bool" (Set.fromList ["False", "True"])]
     result.topLevelDeclarations

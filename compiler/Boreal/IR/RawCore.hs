@@ -3,6 +3,8 @@ module Boreal.IR.RawCore where
 import Boreal.Frontend.Syntax (Name, Syntax (..))
 import Boreal.IR.Types
 import Data.Function
+import Data.Set (Set)
+import Data.Set qualified as Set
 import Data.Text.Read qualified as Text
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
@@ -33,7 +35,10 @@ data RawCore
       RawCore
       -- ^ Expression
       (Vector (CaseAlternative RawCore))
-      -- ^ Alternatives
+  | -- | Alternatives
+    TypeDeclaration
+      Name
+      (Set Name)
   deriving stock (Eq, Show, Ord, Generic)
 
 data CaseAlternative ir = CaseAlternative
@@ -72,7 +77,7 @@ transformModule (BorealNode "source" children) = do
 
 transform :: Syntax -> Eff '[IOE] RawCore
 transform (BorealNode "function_declaration" rest) = do
-  let (BorealIdent funName) = rest Vector.! 0
+  let BorealIdent funName = rest Vector.! 0
   let (args :: Vector Name) =
         case rest Vector.! 1 of
           (BorealNode "arguments" argsVector) ->
@@ -83,6 +88,11 @@ transform (BorealNode "function_declaration" rest) = do
       (BorealNode "function_body" bodyNode) ->
         transformExpression (bodyNode Vector.! 0)
   pure $ Fun funName args body
+transform (BorealNode "datatype_declaration" rest) = do
+  let BorealIdent typeName = rest Vector.! 0
+  let BorealNode "constructors" constructors = rest Vector.! 1
+  let constructorNames = fmap (\(BorealIdent x) -> x) constructors
+  pure $ TypeDeclaration typeName (Set.fromList $ Vector.toList constructorNames)
 transform e = error $ "Unmatched: " <> show e
 
 transformExpression :: Syntax -> RawCoreEff RawCore
