@@ -29,7 +29,10 @@ runLua anfModule = do
   pure $ Text.pack $ mconcat $ codegen luaChunk
 
 codegen :: Vector Lua.Stat -> [String]
-codegen statements = Vector.toList $ fmap (show . pprint) statements
+codegen statements =
+  let preludeImport = "prelude = require(\"./prelude.lua\")\n\n"
+      prettyPrintedStatements = Vector.toList $ fmap (show . pprint) statements
+   in [preludeImport] <> prettyPrintedStatements
 
 valueToLua :: Value -> LuaEff Lua.Exp
 valueToLua (Terminal terminalValue) = pure $ terminalValueToLua terminalValue
