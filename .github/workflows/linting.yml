@@ -15,6 +15,7 @@ jobs:
       with:
         version: "0.14.1.0"
         pattern: |
+          app/**/*.hs
           compiler/**/*.hs
           test/**/*.hs
 
@@ -31,5 +32,5 @@ jobs:
     - name: 'Run HLint'
       uses: haskell-actions/hlint-run@v2
       with:
-        path: '["compiler/", "test/"]'
+        path: '["app/", "compiler/", "test/"]'
         fail-on: warning

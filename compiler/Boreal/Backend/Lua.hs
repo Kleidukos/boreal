@@ -18,21 +18,27 @@ import Boreal.Frontend.Syntax qualified as Boreal
 import Boreal.IR.ANFCore.Types
 import Boreal.IR.Types
 import Data.List qualified as List
+import System.FilePath ((<.>), (</>))
 
-runLua :: Module ANFCore -> IO Text
-runLua anfModule = do
+runLua :: FilePath -> Module ANFCore -> IO Text
+runLua libDir anfModule = do
   luaChunk <- forM anfModule.topLevelDeclarations $ \(AFun name args body) -> do
     functionDeclarationToLua name args body
       & State.evalState mempty
       & State.evalState emptyFunctionEnvironment
       & runEff
-  pure $ Text.pack $ mconcat $ codegen luaChunk
+  pure $ Text.pack $ mconcat $ codegen libDir anfModule.moduleName luaChunk
 
-codegen :: Vector Lua.Stat -> [String]
-codegen statements =
-  let preludeImport = "prelude = require(\"./prelude.lua\")\n\n"
-      prettyPrintedStatements = Vector.toList $ fmap (show . pprint) statements
-   in [preludeImport] <> prettyPrintedStatements
+codegen :: FilePath -> Text -> Vector Lua.Stat -> [String]
+codegen libDir moduleName statements =
+  let
+    preludeImport = "prelude = require(\"" <> libDir </> "stdlib" </> "prelude\")\n\n"
+    prettyPrintedStatements = Vector.toList $ fmap (show . pprint) statements
+   in
+    [ "-- " <> Text.unpack moduleName <> "\n"
+    , preludeImport
+    ]
+      <> prettyPrintedStatements
 
 valueToLua :: Value -> LuaEff Lua.Exp
 valueToLua (Terminal terminalValue) = pure $ terminalValueToLua terminalValue
@@ -45,8 +51,10 @@ terminalValueToLua (AVar var) = Lua.PrefixExp $ Lua.PEVar (Lua.VarName (Lua.Name
 complexValueToLua :: ComplexValue -> Exp
 complexValueToLua (AApp fun arguments) =
   case fun of
-    "+" -> additionToLua arguments
-    "-" -> subtractionToLua arguments
+    "+" -> nativeLuaBinOp Add (arguments Vector.! 0) (arguments Vector.! 1)
+    "-" -> nativeLuaBinOp Sub (arguments Vector.! 0) (arguments Vector.! 1)
+    "*" -> nativeLuaBinOp Mul (arguments Vector.! 0) (arguments Vector.! 1)
+    "/" -> nativeLuaBinOp Div (arguments Vector.! 0) (arguments Vector.! 1)
     e -> error $ "Unmatched: " <> show e
 
 functionDeclarationToLua :: Boreal.Name -> Vector Boreal.Name -> ANFCore -> LuaEff Lua.Stat
@@ -111,3 +119,6 @@ subtractionToLua args =
   let operand1 = terminalValueToLua $ args Vector.! 0
       operand2 = terminalValueToLua $ args Vector.! 1
    in Binop Sub operand1 operand2
+
+nativeLuaBinOp :: Lua.Binop -> TerminalValue -> TerminalValue -> Lua.Exp
+nativeLuaBinOp binop operand1 operand2 = Binop binop (terminalValueToLua operand1) (terminalValueToLua operand2)
