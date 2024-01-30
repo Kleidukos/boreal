@@ -1,0 +1,20 @@
+================================================================================
+Sum type
+================================================================================
+
+module Expressions where
+
+type Bool = True | False
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_name))
+  (top_level_declarations
+    (datatype_declaration
+      (datatype_head
+        (constructor))
+      (datatype_body
+        (constructor)
+        (constructor)))))

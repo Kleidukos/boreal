@@ -16,14 +16,32 @@ module.exports = grammar({
     module_name: $ => /[A-Za-z]+/,
 
     top_level_declarations: $ => repeat1(choice(
-      $.function_declaration
+      $.datatype_declaration,
+      $.function_declaration,
     )),
+
+    datatype_declaration: $ => seq(
+      field("head", $.datatype_head),
+      "=",
+      field("body", $.datatype_body)
+    ),
+
+    datatype_head: $ => seq(
+      "type",
+      field("name", $.constructor),
+      repeat($.identifier),
+    ),
+
+    datatype_body: $ => seq(
+      sep1("|", $.constructor),
+    ),
 
     function_declaration: $ => seq(
       field("head", $.function_head),
       "=",
       field("body", $.function_body)
     ),
+
     function_head: $ => repeat1($.identifier),
 
     function_body: $ => choice(

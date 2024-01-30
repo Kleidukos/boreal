@@ -76,7 +76,7 @@ getChildren :: Node -> BorealParser Syntax
 getChildren node
   | node.nodeChildCount == 0 = do
       source <- fetchSource node
-      if isAtom source
+      if isTextAtom source
         then pure $ BorealAtom source
         else pure $ BorealIdent source
   | otherwise = do
@@ -155,6 +155,21 @@ getChildren node
                              in BorealNode "alternative" (Vector.concat [pat, rhs])
                         )
               pure $ BorealNode "case_expression" (Vector.cons caseExpression alternativeVector)
+        "datatype_declaration"
+          | childCount == 3 -> do
+              let BorealNode "datatype_head" datatypeHead = result Vector.! 0
+              let BorealAtom "type" = datatypeHead Vector.! 0
+              let BorealIdent typeName = datatypeHead Vector.! 1
+              let BorealNode "datatype_body" constructorsWithDelimiters = result Vector.! 2
+              let constructors = Vector.filter (\e -> isIdent e) constructorsWithDelimiters
+              pure $
+                BorealNode
+                  "datatype_declaration"
+                  ( Vector.fromList
+                      [ BorealIdent typeName
+                      , BorealNode "constructors" constructors
+                      ]
+                  )
         _ -> pure $ BorealNode (Text.pack theType) result
 
 -------

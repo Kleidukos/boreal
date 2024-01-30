@@ -65,7 +65,7 @@ library
   include-dirs:     include
   install-includes: parser.h
   cxx-sources:      ./include/parser.c
-  hs-source-dirs:   src
+  hs-source-dirs:   compiler
   build-depends:
     , atomic-counter
     , base                         >=4.18 && <5
@@ -82,25 +82,6 @@ library
     , text-display
     , tree-sitter
     , vector
-
-  default-language: GHC2021
-
-executable boreal
-  import:           ghc-options
-  import:           rts-options
-  main-is:          Main.hs
-  other-modules:    Paths_boreal
-  hs-source-dirs:   app
-  build-depends:
-    , base                         >=4.18 && <5
-    , boreal
-    , bytestring
-    , containers
-    , directory
-    , filepath
-    , parsec
-    , prettyprinter-ansi-terminal
-    , text
 
   default-language: GHC2021
 
@@ -122,6 +103,7 @@ test-suite boreal-test
     , base           >=4.18 && <5
     , boreal
     , bytestring
+    , containers
     , pretty-simple
     , PyF
     , tasty

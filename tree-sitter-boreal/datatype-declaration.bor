@@ -1,0 +1,3 @@
+module Expressions where
+
+type Bool = True | False
