@@ -30,7 +30,7 @@ runLua anfModule = do
 
 codegen :: Vector Lua.Stat -> [String]
 codegen statements =
-  let preludeImport = "prelude = require(\"./prelude.lua\")\n"
+  let preludeImport = "prelude = require(\"./prelude.lua\")\n\n"
       prettyPrintedStatements = Vector.toList $ fmap (show . pprint) statements
    in [preludeImport] <> prettyPrintedStatements
 
