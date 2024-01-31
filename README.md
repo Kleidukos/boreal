@@ -19,3 +19,17 @@ fun =
   let x = 3
    in x + 1
 ```
+
+## CLI
+
+A rudimentary CLI is available.
+
+```bash
+$ cabal run boreal -- build tree-sitter-boreal/datatype-declaration.bor
+$ cat build_/libs/Expressions.lua
+-- Expressions
+prelude = require("./build_/libs/Stdlib/prelude")
+
+local Optimisation = {O1 = {},
+                      O2 = {}}
+```

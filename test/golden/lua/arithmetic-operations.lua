@@ -1,5 +1,5 @@
 -- Mod
-prelude = require("./libs/stdlib/prelude.lua")
+prelude = require("./Stdlib/prelude")
 
 function boreal_main()
   local prim_add0 = 42 + 1

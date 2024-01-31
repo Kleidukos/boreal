@@ -18,25 +18,40 @@ import Boreal.Frontend.Syntax qualified as Boreal
 import Boreal.IR.ANFCore.Types
 import Boreal.IR.Types
 import Data.List qualified as List
-import System.FilePath ((<.>), (</>))
+import System.FilePath ((</>))
 
 runLua :: FilePath -> Module ANFCore -> IO Text
 runLua libDir anfModule = do
-  luaChunk <- forM anfModule.topLevelDeclarations $ \(AFun name args body) -> do
-    functionDeclarationToLua name args body
-      & State.evalState mempty
-      & State.evalState emptyFunctionEnvironment
-      & runEff
+  luaChunk <- forM anfModule.topLevelDeclarations $ \case
+    AFun name args body -> do
+      functionDeclarationToLua name args body
+        & State.evalState mempty
+        & State.evalState emptyFunctionEnvironment
+        & runEff
+    ATypeDeclaration name constructors ->
+      do
+        typeDeclarationToLua name constructors
+        & runEff
   pure $ Text.pack $ mconcat $ codegen libDir anfModule.moduleName luaChunk
+
+typeDeclarationToLua :: Boreal.Name -> Vector Boreal.Name -> Eff '[IOE] Lua.Stat
+typeDeclarationToLua name constructors = do
+  let fields = Vector.toList $ Vector.map constructorToTableMember constructors
+  pure $
+    Lua.LocalAssign [Lua.Name name] (Just [Lua.TableConst fields])
+
+constructorToTableMember :: Boreal.Name -> Lua.TableField
+constructorToTableMember name =
+  Lua.NamedField (Lua.Name name) (Lua.TableConst [])
 
 codegen :: FilePath -> Text -> Vector Lua.Stat -> [String]
 codegen libDir moduleName statements =
   let
-    preludeImport = "prelude = require(\"" <> libDir </> "stdlib" </> "prelude\")\n\n"
+    preludeImport = "prelude = require(\"" <> libDir </> "Stdlib" </> "prelude\")\n\n"
     prettyPrintedStatements = Vector.toList $ fmap (show . pprint) statements
    in
     [ "-- " <> Text.unpack moduleName <> "\n"
-    , preludeImport
+    , if moduleName /= "Stdlib.Prelude" then preludeImport else ""
     ]
       <> prettyPrintedStatements
 
@@ -108,17 +123,6 @@ letBodyToBlock body = do
       pure Vector.empty
     e -> error $ "Didn't match on " <> show e
 
-additionToLua :: Vector TerminalValue -> Lua.Exp
-additionToLua args =
-  let operand1 = terminalValueToLua $ args Vector.! 0
-      operand2 = terminalValueToLua $ args Vector.! 1
-   in Binop Add operand1 operand2
-
-subtractionToLua :: Vector TerminalValue -> Lua.Exp
-subtractionToLua args =
-  let operand1 = terminalValueToLua $ args Vector.! 0
-      operand2 = terminalValueToLua $ args Vector.! 1
-   in Binop Sub operand1 operand2
-
 nativeLuaBinOp :: Lua.Binop -> TerminalValue -> TerminalValue -> Lua.Exp
-nativeLuaBinOp binop operand1 operand2 = Binop binop (terminalValueToLua operand1) (terminalValueToLua operand2)
+nativeLuaBinOp binop operand1 operand2 =
+  Binop binop (terminalValueToLua operand1) (terminalValueToLua operand2)

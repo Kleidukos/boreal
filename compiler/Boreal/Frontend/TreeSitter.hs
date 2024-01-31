@@ -91,6 +91,18 @@ getChildren node
         childNode <- fromJust <$> getField index childrenPtr
         getChildren childNode
       case theType of
+        "module_declaration"
+          | childCount == 3 -> do
+              let BorealIdent moduleName' = result Vector.! 1
+              pure $
+                BorealNode
+                  "module_declaration"
+                  ( Vector.fromList
+                      [ BorealAtom "module"
+                      , BorealIdent (Text.strip moduleName')
+                      , BorealAtom "where"
+                      ]
+                  )
         "binary_operation"
           | childCount == 3 -> do
               let syntax = result Vector.! 1

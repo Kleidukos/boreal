@@ -13,7 +13,7 @@ module.exports = grammar({
       "where"
     ),
 
-    module_name: $ => /[A-Za-z]+/,
+    module_name: $ => /[A-Za-z]+(?:.[A-Za-z]+)* /,
 
     top_level_declarations: $ => repeat1(choice(
       $.datatype_declaration,

@@ -33,7 +33,7 @@
     },
     "module_name": {
       "type": "PATTERN",
-      "value": "[A-Za-z]+"
+      "value": "[A-Za-z]+(?:.[A-Za-z]+)* "
     },
     "top_level_declarations": {
       "type": "REPEAT1",

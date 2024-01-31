@@ -59,6 +59,8 @@ transformName core = do
   case n of
     ALet{} -> error "Cannot normalise a let-expression as a terminal value"
     AFun{} -> error "Cannot normalise a function declaration as a terminal value"
+    ATypeDeclaration{} -> error "Cannot normalise a type declaration as a terminal value"
+    ACase{} -> error "Cannot normalise a case expression as a terminal value"
     Halt (Terminal val) -> pure val
     Halt v@(Complex val) -> do
       newName <- freshName (getName val)
@@ -93,6 +95,10 @@ transform = \case
       Halt processedExpression -> do
         transformedAlternatives <- traverse transformAlternative alternatives
         pure $ ACase processedExpression transformedAlternatives
+      e -> error $ "Unmatched: " <> show e
+  TypeDeclaration name constructors -> pure $ ATypeDeclaration name constructors
+
+-- e -> error $ "Unmatched: " <> show e
 
 finaliseTransformation :: ANFCore -> ANFCoreEff ANFCore
 finaliseTransformation anf = do

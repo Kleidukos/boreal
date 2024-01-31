@@ -50,5 +50,8 @@ data ANFCore
   | ACase
       Value
       (Vector (CaseAlternative ANFCore))
+  | ATypeDeclaration
+      Name
+      (Vector Name)
   | Halt Value
   deriving stock (Eq, Show, Ord, Generic)
