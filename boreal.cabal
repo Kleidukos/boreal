@@ -44,7 +44,7 @@ common ghc-options
 library
   import:           ghc-options
 
-  -- cabal-fmt: expand src/
+  -- cabal-fmt: expand compiler/
   exposed-modules:
     Boreal.Backend.ASM
     Boreal.Backend.ASM.Types
@@ -59,6 +59,7 @@ library
     Boreal.IR.RawCore
     Boreal.IR.Types
     Boreal.ScopeEnvironment
+    Driver
 
   other-modules:    Paths_boreal
   includes:         ./include/parser.h
@@ -71,8 +72,10 @@ library
     , base                         >=4.18 && <5
     , bytestring
     , containers
+    , directory
     , effectful-core
     , extra
+    , filepath
     , language-lua
     , pretty-simple
     , prettyprinter
@@ -81,9 +84,26 @@ library
     , text
     , text-display
     , tree-sitter
+    , typed-process
     , vector
 
   default-language: GHC2021
+
+executable boreal
+  import:         ghc-options
+  import:         rts-options
+  hs-source-dirs: app/boreal/
+  main-is:        Main.hs
+  other-modules:  CLI.Types
+  build-depends:
+    , base                  >=4.18 && <5
+    , boreal
+    , bytestring
+    , directory
+    , effectful-core
+    , filepath
+    , optparse-applicative
+    , text
 
 test-suite boreal-test
   import:         ghc-options

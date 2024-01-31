@@ -10,7 +10,6 @@ import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types
 import Data.ByteString qualified as BS
-import Data.Set qualified as Set
 import Utils
 
 spec :: TestTree
@@ -21,6 +20,7 @@ spec =
     , testCase "Let-binding syntax to RawCore" testLetBindingToRawCore
     , testCase "Case expression syntax to RawCore" testCaseExpressionToRawCore
     , testCase "Datatype declaration" testDatatypeDeclarationToRawCore
+    , testCase "Module definition with dots" testModuleDefinitionWithDots
     ]
 
 testFunctionDefinitionToRawCore :: Assertion
@@ -88,5 +88,15 @@ testDatatypeDeclarationToRawCore = do
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
   assertEqualExpr
-    [TypeDeclaration "Bool" (Set.fromList ["False", "True"])]
+    [TypeDeclaration "Optimisation" ["O1", "O2"]]
     result.topLevelDeclarations
+
+testModuleDefinitionWithDots :: Assertion
+testModuleDefinitionWithDots = do
+  input <- BS.readFile "./stdlib/Prelude.bor"
+  parsed <- TreeSitter.parse input
+  result <- RawCore.runRawCore $ RawCore.transformModule parsed
+
+  assertEqualExpr
+    "Stdlib.Prelude"
+    result.moduleName

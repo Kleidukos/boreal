@@ -1,3 +1,3 @@
-module Prelude where
+module Stdlib.Prelude where
 
 type Bool = True | False
