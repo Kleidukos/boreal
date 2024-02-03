@@ -70,7 +70,7 @@ testLetInBindingsParser = do
             "top_level_declarations"
             [ BorealNode
                 "function_declaration"
-                [ BorealIdent "function"
+                [ BorealIdent "otherfunction"
                 , BorealNode "arguments" []
                 , BorealAtom "="
                 , BorealNode

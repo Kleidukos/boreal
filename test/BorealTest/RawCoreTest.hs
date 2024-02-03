@@ -52,7 +52,7 @@ testLetBindingToRawCore = do
   assertEqual
     "Let binding is transformed from Syntax to RawCore"
     [ Fun
-        "function"
+        "otherfunction"
         []
         ( Let
             "x"

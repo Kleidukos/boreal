@@ -20,6 +20,8 @@ common ghc-options
     -Wno-unticked-promoted-constructors -fdicts-strict
     -fmax-worker-args=16 -fspec-constr-recursive=16
 
+  cc-options:         -g
+
   -- -Wunused-packages
 
   default-language:   GHC2021
@@ -60,6 +62,8 @@ library
     Boreal.IR.Types
     Boreal.ScopeEnvironment
     Driver
+    Driver.BuildFlags
+    Driver.Cache
 
   other-modules:    Paths_boreal
   includes:         ./include/parser.h
@@ -73,6 +77,7 @@ library
     , bytestring
     , containers
     , directory
+    , effectful
     , effectful-core
     , extra
     , filepath
@@ -81,11 +86,13 @@ library
     , prettyprinter
     , prettyprinter-ansi-terminal
     , PyF
+    , sel
     , text
     , text-display
     , tree-sitter
     , typed-process
     , vector
+    , zenc
 
   default-language: GHC2021
 
@@ -100,9 +107,11 @@ executable boreal
     , boreal
     , bytestring
     , directory
+    , effectful
     , effectful-core
     , filepath
     , optparse-applicative
+    , sel
     , text
 
 test-suite boreal-test
@@ -126,6 +135,7 @@ test-suite boreal-test
     , containers
     , pretty-simple
     , PyF
+    , sel
     , tasty
     , tasty-focus
     , tasty-golden
