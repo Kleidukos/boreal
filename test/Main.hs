@@ -5,7 +5,8 @@ import Test.Tasty (TestTree, defaultMain, testGroup)
 
 import BorealTest.ANFTest qualified as ANFTest
 import BorealTest.ASMTest qualified as ASMTest
-import BorealTest.LuaTest qualified as LuaTest
+import BorealTest.Backend.LuaGoldenTest qualified as LuaGoldenTest
+import BorealTest.Backend.LuaRunTest qualified as LuaRunTest
 import BorealTest.ParserTest qualified as ParserTest
 import BorealTest.RawCoreTest qualified as RawCoreTest
 
@@ -19,5 +20,6 @@ specs =
   , RawCoreTest.spec
   , ANFTest.spec
   , ASMTest.spec
-  , LuaTest.spec
+  , LuaGoldenTest.spec
+  , LuaRunTest.spec
   ]

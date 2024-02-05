@@ -54,7 +54,7 @@ codegen :: FilePath -> Text -> Vector Lua.Stat -> LuaEff [String]
 codegen libDir moduleName' statements = do
   let moduleName = Text.pack $ zEncodeString $ Text.unpack moduleName'
   exportList <- mkExportList
-  let preludeImport = "local prelude = dofile(\"" <> libDir </> "Stdlib" </> "Prelude\")\n\n"
+  let preludeImport = "local prelude = dofile(\"" <> libDir </> "Stdlib" </> "Prelude.lua\")\n\n"
   let exportModule = "return " <> Text.unpack moduleName
   let prettyPrintedStatements =
         show . pprint $ Block (Vector.toList (statements <> Vector.singleton exportList)) Nothing
