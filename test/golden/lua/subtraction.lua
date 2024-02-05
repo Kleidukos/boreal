@@ -1,6 +1,8 @@
 -- Mod
-prelude = require("./Stdlib/prelude")
+local prelude = dofile("./Stdlib/Prelude")
 
-function boreal_main()
+local function main()
   return 1 - 2
 end
+local Mod = {main = main}
+return Mod
