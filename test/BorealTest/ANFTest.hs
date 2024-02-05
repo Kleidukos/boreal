@@ -25,8 +25,8 @@ testFunctionDeclarationToANFCore = do
   -- original:
   --    x * 2 + 3
   -- expected:
-  --    let *0 = x * 2
-  --    in *0 + 3
+  --    let prim_mul0 = x * 2
+  --    in prim_mul0 + 3
   let rawCore = Call "+" [Call "*" [Var "x", Literal 2], Literal 2]
   actual <- ANF.runANFCore newScopeEnvironment rawCore
   assertEqual

@@ -1,5 +1,5 @@
 -- Mod
-local prelude = dofile("./Stdlib/Prelude")
+local prelude = dofile("./Stdlib/Prelude.lua")
 
 local function main()
   local prim_add0 = 42 + 1

@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module BorealTest.LuaTest where
+module BorealTest.Backend.LuaGoldenTest where
 
 import Data.ByteString.Lazy (LazyByteString)
 import Data.Text.Lazy qualified as Text
