@@ -1,5 +1,5 @@
 -- Mod
-local prelude = dofile("./Stdlib/Prelude")
+local prelude = dofile("./Stdlib/Prelude.lua")
 
 local function main()
   local x = 42 + 1

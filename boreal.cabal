@@ -122,7 +122,8 @@ test-suite boreal-test
   other-modules:
     BorealTest.ANFTest
     BorealTest.ASMTest
-    BorealTest.LuaTest
+    BorealTest.Backend.LuaGoldenTest
+    BorealTest.Backend.LuaRunTest
     BorealTest.ParserTest
     BorealTest.RawCoreTest
     Utils
@@ -143,4 +144,5 @@ test-suite boreal-test
     , text
     , text-display
     , tree-diff
+    , typed-process
     , vector

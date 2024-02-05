@@ -37,30 +37,24 @@ parsePurgeCommand :: Parser Command
 parsePurgeCommand = pure Purge
 
 runOptions :: Command -> IO ()
-runOptions (Build _buildFlags filePath) = runBuildEffects $ do
+runOptions (Build _buildFlags filePath) = Driver.runBuildEffects $ do
   cachePath <- getCachePath
   FileSystem.createDirectoryIfMissing True cachePath
-  Driver.buildModule (BuildFlags O1) "stdlib/Prelude.bor"
-  Driver.buildModule (BuildFlags O1) filePath
+  Driver.buildModule (BuildFlags O1) "stdlib/Prelude.bor" True
+  Driver.buildModule (BuildFlags O1) filePath True
 runOptions Clean =
-  runBuildEffects $ do
+  Driver.runBuildEffects $ do
     buildDirExists <- FileSystem.doesDirectoryExist "build_"
     when buildDirExists $ do
       liftIO $ putStrLn "[+] Cleaning the project"
       FileSystem.removeDirectoryRecursive "build_"
 runOptions Purge =
-  runBuildEffects $ do
+  Driver.runBuildEffects $ do
     cacheDirectory <- getCachePath
     cacheExists <- FileSystem.doesDirectoryExist cacheDirectory
     when cacheExists $ do
       liftIO $ putStrLn $ "[+] Purging " <> cacheDirectory
       FileSystem.removeDirectoryRecursive cacheDirectory
-
-runBuildEffects :: Eff [FileSystem, IOE] a -> IO a
-runBuildEffects action =
-  action
-    & FileSystem.runFileSystem
-    & runEff
 
 withInfo :: Parser a -> String -> ParserInfo a
 withInfo opts desc = info (helper <*> opts) $ progDesc desc
