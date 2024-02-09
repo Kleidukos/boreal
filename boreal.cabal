@@ -64,6 +64,7 @@ library
     Driver
     Driver.BuildFlags
     Driver.Cache
+    Driver.DebugFlags
 
   other-modules:    Paths_boreal
   includes:         ./include/parser.h

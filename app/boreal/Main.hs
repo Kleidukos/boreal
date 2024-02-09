@@ -10,6 +10,7 @@ import Control.Monad (when)
 import Driver qualified
 import Driver.BuildFlags
 import Driver.Cache (getCachePath)
+import Driver.DebugFlags
 
 main :: IO ()
 main = secureMain $ do
@@ -25,8 +26,17 @@ parseCommand =
 
 parseBuildCommand :: Parser Command
 parseBuildCommand =
-  pure (Build (BuildFlags O0))
+  Build
+    <$> parseDebugFlags
+    <*> pure ((BuildFlags O0))
     <*> argument str (metavar "FILE")
+
+parseDebugFlags :: Parser DebugFlags
+parseDebugFlags =
+  DebugFlags
+    <$> switch (long "dump-syntax" <> help "Dump the syntax representation ")
+    <*> switch (long "dump-raw" <> help "Dump the Raw representation ")
+    <*> switch (long "dump-anf" <> help "Dump the ANF representation ")
 
 parseCleanCommand :: Parser Command
 parseCleanCommand = pure Clean
@@ -35,11 +45,11 @@ parsePurgeCommand :: Parser Command
 parsePurgeCommand = pure Purge
 
 runOptions :: Command -> IO ()
-runOptions (Build _buildFlags filePath) = Driver.runBuildEffects $ do
+runOptions (Build debugFlags buildFlags filePath) = Driver.runBuildEffects $ do
   cachePath <- getCachePath
   FileSystem.createDirectoryIfMissing True cachePath
-  Driver.buildModule (BuildFlags O1) "stdlib/Prelude.bor" True
-  Driver.buildModule (BuildFlags O1) filePath True
+  Driver.buildModule debugFlags buildFlags "stdlib/Prelude.bor" True
+  Driver.buildModule debugFlags buildFlags filePath True
 runOptions Clean =
   Driver.runBuildEffects $ do
     buildDirExists <- FileSystem.doesDirectoryExist "build_"

@@ -16,6 +16,7 @@ import Boreal.IR.Types
 import Boreal.ScopeEnvironment
 import Driver qualified
 import Driver.BuildFlags
+import Driver.DebugFlags
 import Utils
 
 spec :: TestTree
@@ -28,8 +29,8 @@ spec =
 testArithmeticExpression :: Assertion
 testArithmeticExpression = do
   Driver.runBuildEffects $ do
-    Driver.buildModule (BuildFlags O1) "stdlib/Prelude.bor" False
-    Driver.buildModule (BuildFlags O1) "./test/run-test/boreal/arithmetic-expression.bor" False
+    Driver.buildModule emptyDebugFlags (BuildFlags O1) "stdlib/Prelude.bor" False
+    Driver.buildModule emptyDebugFlags (BuildFlags O1) "./test/run-test/boreal/arithmetic-expression.bor" False
   (_, result) <- readProcessStdout "lua -e 'print(require(\"build_/libs/Mod\").main())'"
   assertEqual
     "Expected result"
