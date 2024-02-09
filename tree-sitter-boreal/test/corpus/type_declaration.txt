@@ -4,7 +4,7 @@ Sum type
 
 module Expressions where
 
-type Bool = True | False
+type Vector = V Int
 
 --------------------------------------------------------------------------------
 
@@ -15,6 +15,6 @@ type Bool = True | False
     (datatype_declaration
       (datatype_head
         (constructor))
-      (sumtype_body
+      (datatype_body
         (constructor)
         (constructor)))))

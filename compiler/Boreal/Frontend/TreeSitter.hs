@@ -172,7 +172,7 @@ getChildren node
               let BorealNode "datatype_head" datatypeHead = result Vector.! 0
               let BorealAtom "type" = datatypeHead Vector.! 0
               let BorealIdent typeName = datatypeHead Vector.! 1
-              let BorealNode "datatype_body" constructorsWithDelimiters = result Vector.! 2
+              let BorealNode "sumtype_body" constructorsWithDelimiters = result Vector.! 2
               let constructors = Vector.filter (\e -> isIdent e) constructorsWithDelimiters
               pure $
                 BorealNode
