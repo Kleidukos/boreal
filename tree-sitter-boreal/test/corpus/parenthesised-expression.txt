@@ -1,11 +1,29 @@
-====
+================================================================================
 Parenthesised expression
-====
+================================================================================
 
 module Module where
 
 main = ( 1 + 2 ) - 3
 
----
+--------------------------------------------------------------------------------
 
-()
+(source_file
+  (module_declaration
+    (module_name))
+  (top_level_declarations
+    (function_declaration
+      (function_head
+        (identifier))
+      (function_body
+        (simple_expression
+          (binary_operation
+            (simple_expression
+              (simple_expression
+                (binary_operation
+                  (simple_expression
+                    (identifier))
+                  (simple_expression
+                    (identifier)))))
+            (simple_expression
+              (identifier))))))))
