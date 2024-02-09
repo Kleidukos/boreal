@@ -1,9 +1,5 @@
 # Boreal
 
-## Development
-
-Consult the [development wiki](https://github.com/Kleidukos/boreal/wiki) for more information
-
 ## Syntax
 
 The syntax is Haskell-like.
@@ -20,6 +16,30 @@ fun =
    in x + 1
 ```
 
+and its most advanced backend produces Lua code:
+
+```lua
+-- Expressions
+local prelude = dofile("/home/hecate/Code/boreal/build_/libs/Stdlib/Prelude.lua")
+
+-- Sum types are created as tables with keys
+local MyBool = {MyTrue = {}, MyFalse = {}}
+local function expr(x)
+    local prim_mul0 = x * 2
+    return prim_mul0 + 3
+end
+local function fun()
+    local x = 3
+    return x + 1
+end
+-- Functions are then collected to produce an export list in the form of…
+-- a table.
+local Expressions = {fun = fun, expr = expr, MyBool = MyBool}
+
+-- Importing this module within Lua makes the export list available
+return Expressions
+```
+
 ## CLI
 
 A rudimentary CLI is available.
@@ -33,3 +53,8 @@ prelude = require("./build_/libs/Stdlib/prelude")
 local Optimisation = {O1 = {},
                       O2 = {}}
 ```
+
+## Development
+
+Consult the [development wiki](https://github.com/Kleidukos/boreal/wiki) for more information
+

@@ -17,6 +17,7 @@ spec =
     [ testCase "Test function definition parser" testFunctionDefinitionParser
     , testCase "Test let-in bindings parser" testLetInBindingsParser
     , testCase "Test case expressions parser" testCaseExpressionParser
+    , testCase "Parentheses" testParentheses
     ]
 
 testFunctionDefinitionParser :: Assertion
@@ -122,6 +123,63 @@ testCaseExpressionParser = do
                         [ BorealIdent "x"
                         , BorealNode "alternative" [BorealIdent "True", BorealIdent "False"]
                         , BorealNode "alternative" [BorealIdent "False", BorealIdent "True"]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    )
+    result
+
+testParentheses :: Assertion
+testParentheses = do
+  input <- BS.readFile "./tree-sitter-boreal/parentheses.bor"
+  result <- TreeSitter.parse input
+  assertEqual
+    ""
+    ( BorealNode
+        "source"
+        [ BorealNode "module_declaration" [BorealAtom "module", BorealIdent "Module", BorealAtom "where"]
+        , BorealNode
+            "top_level_declarations"
+            [ BorealNode
+                "function_declaration"
+                [ BorealIdent "main1"
+                , BorealNode "arguments" []
+                , BorealAtom "="
+                , BorealNode
+                    "function_body"
+                    [ BorealNode
+                        "simple_expression"
+                        [ BorealNode
+                            "-"
+                            [ BorealNode "simple_expression" [BorealAtom "1"]
+                            , BorealNode
+                                "simple_expression"
+                                [ BorealAtom "("
+                                , BorealNode "simple_expression" [BorealNode "+" [BorealNode "simple_expression" [BorealAtom "2"], BorealNode "simple_expression" [BorealAtom "3"]]]
+                                , BorealAtom ")"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            , BorealNode
+                "function_declaration"
+                [ BorealIdent "main2"
+                , BorealNode "arguments" []
+                , BorealAtom "="
+                , BorealNode
+                    "function_body"
+                    [ BorealNode
+                        "simple_expression"
+                        [ BorealNode
+                            "+"
+                            [ BorealNode
+                                "simple_expression"
+                                [BorealNode "-" [BorealNode "simple_expression" [BorealAtom "1"], BorealNode "simple_expression" [BorealAtom "2"]]]
+                            , BorealNode "simple_expression" [BorealAtom "3"]
+                            ]
                         ]
                     ]
                 ]

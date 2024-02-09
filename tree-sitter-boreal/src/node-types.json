@@ -304,6 +304,10 @@
         {
           "type": "identifier",
           "named": true
+        },
+        {
+          "type": "simple_expression",
+          "named": true
         }
       ]
     }
@@ -345,6 +349,14 @@
         }
       ]
     }
+  },
+  {
+    "type": "(",
+    "named": false
+  },
+  {
+    "type": ")",
+    "named": false
   },
   {
     "type": "*",

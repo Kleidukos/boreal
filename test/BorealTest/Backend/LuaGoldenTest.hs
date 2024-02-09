@@ -43,6 +43,11 @@ spec =
         diffCmd
         "./test/golden/lua/arithmetic-operations-let-binding.lua"
         emitLetBinding
+    , goldenVsStringDiff
+        "Emit parenthesised and non-parenthised code"
+        diffCmd
+        "./test/golden/lua/parenthesised-expression.lua"
+        emitParenthesisedExpression
     ]
 
 emitAddition :: IO LazyByteString
@@ -92,6 +97,22 @@ emitLetBinding = do
     main =
       let x = 42 + 1
        in x + 1 - 1
+|]
+  parsed <- TreeSitter.parse input
+  rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
+  generated <- Lua.runLua "." rawModule{topLevelDeclarations = anfDecls}
+  pure . Text.encodeUtf8 . Text.fromStrict $ generated
+
+emitParenthesisedExpression :: IO LazyByteString
+emitParenthesisedExpression = do
+  let input =
+        [str|
+module Module where
+
+main1 = 1 - (2 + 3)
+
+main2 = 1 - 2 + 3
 |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed

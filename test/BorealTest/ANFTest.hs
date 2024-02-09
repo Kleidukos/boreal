@@ -2,6 +2,7 @@
 
 module BorealTest.ANFTest where
 
+import Data.Vector qualified as Vector
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -18,6 +19,7 @@ spec =
     [ testCase "Function declaration RawCore to ANFCore" testFunctionDeclarationToANFCore
     , testCase "Let-binding of RawCore terminal value to ANFCore" testLetBindingTerminalValueToANFCore
     , testCase "Case expression to ANFCore" testSimpleCaseExpressionToANFCore
+    , testCase "Parenthesised expression in ANF" testParenthesisedExpressionToANFCore
     ]
 
 testFunctionDeclarationToANFCore :: Assertion
@@ -113,5 +115,45 @@ testSimpleCaseExpressionToANFCore = do
                 }
             ]
         )
+    )
+    actual
+
+testParenthesisedExpressionToANFCore :: Assertion
+testParenthesisedExpressionToANFCore = do
+  let rawCore =
+        [ Fun
+            "main1"
+            []
+            (Call "-" [Literal 1, Call "+" [Literal 2, Literal 3]])
+        , Fun
+            "main2"
+            []
+            (Call "+" [Call "-" [Literal 1, Literal 2], Literal 3])
+        ]
+
+  actual <- traverse (ANF.runANFCore newScopeEnvironment) rawCore
+  assertEqualExpr
+    ( Vector.fromList
+        [ AFun
+            "main1"
+            (Vector.fromList [])
+            ( ALet
+                "prim_add0"
+                (Complex (AApp "+" (Vector.fromList [ALiteral 2, ALiteral 3])))
+                ( Halt
+                    (Complex (AApp "-" (Vector.fromList [ALiteral 1, AVar "prim_add0"])))
+                )
+            )
+        , AFun
+            "main2"
+            (Vector.fromList [])
+            ( ALet
+                "prim_sub0"
+                (Complex (AApp "-" (Vector.fromList [ALiteral 1, ALiteral 2])))
+                ( Halt
+                    (Complex (AApp "+" (Vector.fromList [AVar "prim_sub0", ALiteral 3])))
+                )
+            )
+        ]
     )
     actual

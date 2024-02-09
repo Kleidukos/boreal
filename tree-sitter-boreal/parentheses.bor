@@ -1,0 +1,5 @@
+module Module where
+
+main1 = 1 - (2 + 3)
+
+main2 = 1 - 2 + 3

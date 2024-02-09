@@ -21,6 +21,7 @@ spec =
     , testCase "Case expression syntax to RawCore" testCaseExpressionToRawCore
     , testCase "Datatype declaration" testDatatypeDeclarationToRawCore
     , testCase "Module definition with dots" testModuleDefinitionWithDots
+    , testCase "Parenthesised expression" testParenthesisedExpression
     ]
 
 testFunctionDefinitionToRawCore :: Assertion
@@ -100,3 +101,22 @@ testModuleDefinitionWithDots = do
   assertEqualExpr
     "Stdlib.Prelude"
     result.moduleName
+
+testParenthesisedExpression :: Assertion
+testParenthesisedExpression = do
+  input <- BS.readFile "./tree-sitter-boreal/parentheses.bor"
+  parsed <- TreeSitter.parse input
+  result <- RawCore.runRawCore $ RawCore.transformModule parsed
+
+  assertEqual
+    "Function definition is transformed from Syntax to RawCore"
+    [ Fun
+        "main1"
+        []
+        (Call "-" [Literal 1, Call "+" [Literal 2, Literal 3]])
+    , Fun
+        "main2"
+        []
+        (Call "+" [Call "-" [Literal 1, Literal 2], Literal 3])
+    ]
+    result.topLevelDeclarations
