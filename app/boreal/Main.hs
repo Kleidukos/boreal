@@ -1,8 +1,6 @@
 module Main where
 
-import Data.Function ((&))
 import Effectful
-import Effectful.FileSystem
 import Effectful.FileSystem qualified as FileSystem
 import Options.Applicative hiding (action)
 import Sel
