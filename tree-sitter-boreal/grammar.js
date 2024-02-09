@@ -54,6 +54,7 @@ module.exports = grammar({
       $.identifier,
       $.constructor,
       $.binary_operation,
+      seq("(", $.simple_expression, ")"),
     ),
 
     let_binding_body: $ => choice(

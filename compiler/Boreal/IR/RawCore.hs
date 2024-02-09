@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedLists #-}
+
 module Boreal.IR.RawCore where
 
 import Boreal.Frontend.Syntax (Name, Syntax (..))
@@ -95,7 +97,10 @@ transform (BorealNode "datatype_declaration" rest) = do
 transform e = error $ "Unmatched: " <> show e
 
 transformExpression :: Syntax -> RawCoreEff RawCore
-transformExpression (BorealNode "simple_expression" body) = transformExpression $ Vector.head body
+transformExpression (BorealNode "simple_expression" body) =
+  case body of
+    [BorealAtom "(", expr, BorealAtom ")"] -> transformExpression expr
+    _ -> transformExpression $ Vector.head body
 transformExpression (BorealNode "let_binding" bindings) =
   transformLetBinding (bindings Vector.! 0)
 transformExpression (BorealNode "case_expression" body) = do
