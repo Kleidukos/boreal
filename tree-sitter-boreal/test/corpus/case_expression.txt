@@ -19,17 +19,18 @@ expr x =
         (identifier)
         (identifier))
       (function_body
-        (case_expression
-          (simple_expression
-            (identifier))
-          (alternatives
-            (alternative
-              (pattern
-                (constructor))
-              (simple_expression
-                (constructor)))
-            (alternative
-              (pattern
-                (constructor))
-              (simple_expression
-                (constructor)))))))))
+        (expression
+          (case_expression
+            (simple_expression
+              (identifier))
+            (alternatives
+              (alternative
+                (pattern
+                  (constructor))
+                (simple_expression
+                  (constructor)))
+              (alternative
+                (pattern
+                  (constructor))
+                (simple_expression
+                  (constructor))))))))))

@@ -64,6 +64,7 @@ library
     Driver
     Driver.BuildFlags
     Driver.Cache
+    Driver.DebugFlags
 
   other-modules:    Paths_boreal
   includes:         ./include/parser.h
@@ -76,6 +77,7 @@ library
     , base                         >=4.18 && <5
     , bytestring
     , containers
+    , diagnose
     , directory
     , effectful
     , effectful-core

@@ -1,6 +1,7 @@
 module Driver where
 
-import Control.Monad (void)
+import Control.Monad (void, when)
+import Text.Pretty.Simple
 import Data.Function ((&))
 import Data.Text (Text)
 import Data.Text.Encoding qualified as Text
@@ -20,6 +21,7 @@ import Boreal.IR.Types (Module (..), moduleNameToPath)
 import Boreal.ScopeEnvironment
 import Driver.BuildFlags
 import Driver.Cache qualified as Cache
+import Driver.DebugFlags
 
 runBuildEffects :: Eff [FileSystem, IOE] a -> IO a
 runBuildEffects action =
@@ -29,17 +31,24 @@ runBuildEffects action =
 
 buildModule
   :: (FileSystem :> es, IOE :> es)
-  => BuildFlags
+  => DebugFlags
+  -> BuildFlags
   -> FilePath
   -> Bool
   -> Eff es ()
-buildModule buildFlags filePath withCache = do
+buildModule debugFlags buildFlags filePath withCache = do
   currentDir <- FileSystem.getCurrentDirectory
   let libsDir = currentDir </> "build_" </> "libs"
   FileSystem.createDirectoryIfMissing True libsDir
   input <- EBS.readFile filePath
   parsedResult <- liftIO $ TreeSitter.parse input
+  when debugFlags.dumpSyntax $
+    liftIO $
+      pPrint parsedResult
   rawModule <- liftIO $ RawCore.runRawCore $ RawCore.transformModule parsedResult
+  when debugFlags.dumpRawCore $
+    liftIO $
+      pPrint rawModule
   mCacheEntry <- Cache.readCache buildFlags filePath
   if withCache
     then case mCacheEntry of
@@ -51,23 +60,28 @@ buildModule buildFlags filePath withCache = do
         FileSystem.createDirectoryIfMissing True moduleDir
         FileSystem.copyFile cacheEntry outputPath
       Nothing -> do
-        generated <- runCompilation rawModule libsDir filePath
+        generated <- runCompilation debugFlags rawModule libsDir filePath
         Cache.writeCache buildFlags filePath (Text.encodeUtf8 generated)
-    else void $ runCompilation rawModule libsDir filePath
+    else void $ runCompilation debugFlags rawModule libsDir filePath
 
 runCompilation
   :: (FileSystem :> es, IOE :> es)
-  => Module RawCore
+  => DebugFlags
+  -> Module RawCore
   -> FilePath
   -> FilePath
   -> Eff es Text
-runCompilation rawModule libsDir filePath = do
+runCompilation debugFlags rawModule libsDir filePath = do
   let outputFile = moduleNameToPath rawModule.moduleName <.> ".lua"
   let outputPath = libsDir </> outputFile
   let moduleDir = FilePath.takeDirectory outputPath
   liftIO $ putStrLn $ "[+] Compiling " <> filePath <> " to " <> outputPath
   anfDecls <- liftIO $ traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
-  generated <- liftIO $ Lua.runLua libsDir rawModule{topLevelDeclarations = anfDecls}
+  let anfModule = rawModule{topLevelDeclarations = anfDecls}
+  when debugFlags.dumpANFCore $
+    liftIO $
+      pPrint anfModule
+  generated <- liftIO $ Lua.runLua libsDir anfModule
   FileSystem.createDirectoryIfMissing True moduleDir
   EBS.writeFile outputPath (Text.encodeUtf8 generated)
   pure generated

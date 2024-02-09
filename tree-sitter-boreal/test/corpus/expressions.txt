@@ -17,13 +17,14 @@ expr x = x * 2 + 3
         (identifier)
         (identifier))
       (function_body
-        (simple_expression
-          (binary_operation
-            (simple_expression
-              (binary_operation
-                (simple_expression
-                  (identifier))
-                (simple_expression
-                  (identifier))))
-            (simple_expression
-              (identifier))))))))
+        (expression
+          (simple_expression
+            (binary_operation
+              (simple_expression
+                (binary_operation
+                  (simple_expression
+                    (identifier))
+                  (simple_expression
+                    (identifier))))
+              (simple_expression
+                (identifier)))))))))

@@ -17,5 +17,6 @@ let x = 3
         (identifier)
         (identifier))
       (function_body
-        (simple_expression
-          (identifier))))))
+        (expression
+          (simple_expression
+            (identifier)))))))

@@ -45,8 +45,12 @@ module.exports = grammar({
     function_head: $ => repeat1($.identifier),
 
     function_body: $ => choice(
-      field("case_expression", $.case_expression),
+      $.expression,
       $.let_binding,
+    ),
+
+    expression: $ => choice(
+      $.case_expression,
       $.simple_expression,
     ),
 
@@ -54,10 +58,12 @@ module.exports = grammar({
       $.identifier,
       $.constructor,
       $.binary_operation,
+      seq('(', $.simple_expression, ')'),
     ),
 
     let_binding_body: $ => choice(
-      $.simple_expression
+      $.expression,
+      $.let_binding,
     ),
 
     let_binding: $ => seq(
@@ -66,7 +72,7 @@ module.exports = grammar({
       "=",
       field("binding_value", $.simple_expression),
       "in",
-      field("binding_body", $.simple_expression)
+      field("binding_body", $.expression)
     ),
 
     case_expression: $ => prec.right(2,seq(

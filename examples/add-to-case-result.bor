@@ -1,0 +1,9 @@
+module AddToCase where
+
+main y = 
+  add1 ( case y of
+    | 0 -> 1
+    | 1 -> 1 + 2
+  )
+
+add1 x = x + 1

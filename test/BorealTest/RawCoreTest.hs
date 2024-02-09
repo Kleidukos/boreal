@@ -25,7 +25,7 @@ spec =
 
 testFunctionDefinitionToRawCore :: Assertion
 testFunctionDefinitionToRawCore = do
-  input <- BS.readFile "./tree-sitter-boreal/function-definition.bor"
+  input <- BS.readFile "./examples/function-definition.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -45,7 +45,7 @@ testFunctionDefinitionToRawCore = do
 
 testLetBindingToRawCore :: Assertion
 testLetBindingToRawCore = do
-  input <- BS.readFile "./tree-sitter-boreal/let-in.bor"
+  input <- BS.readFile "./examples/let-in.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -64,7 +64,7 @@ testLetBindingToRawCore = do
 
 testCaseExpressionToRawCore :: Assertion
 testCaseExpressionToRawCore = do
-  input <- BS.readFile "./tree-sitter-boreal/case-expression.bor"
+  input <- BS.readFile "./examples/case-expression.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -83,7 +83,7 @@ testCaseExpressionToRawCore = do
 
 testDatatypeDeclarationToRawCore :: Assertion
 testDatatypeDeclarationToRawCore = do
-  input <- BS.readFile "./tree-sitter-boreal/datatype-declaration.bor"
+  input <- BS.readFile "./examples/datatype-declaration.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 

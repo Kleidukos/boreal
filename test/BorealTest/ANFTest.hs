@@ -18,6 +18,7 @@ spec =
     [ testCase "Function declaration RawCore to ANFCore" testFunctionDeclarationToANFCore
     , testCase "Let-binding of RawCore terminal value to ANFCore" testLetBindingTerminalValueToANFCore
     , testCase "Case expression to ANFCore" testSimpleCaseExpressionToANFCore
+    , testCase "Commuting Conversion" testCommutingConversion
     ]
 
 testFunctionDeclarationToANFCore :: Assertion
@@ -115,3 +116,13 @@ testSimpleCaseExpressionToANFCore = do
         )
     )
     actual
+
+testCommutingConversion :: Assertion
+testCommutingConversion = do
+  let rawCore = undefined
+  pure ()
+
+-- actual <- ANF.runANFCore newScopeEnvironment rawCore
+-- assertEqualExpr
+--   ()
+--   actual

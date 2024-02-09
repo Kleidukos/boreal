@@ -69,6 +69,7 @@ transformModule (BorealNode "source" children) = do
     case topLevelDeclarations of
       BorealNode "top_level_declarations" decls ->
         traverse transform decls
+      e -> error $ "Unmatched: " <> show e
   pure $
     Module
       (Text.strip moduleName)

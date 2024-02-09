@@ -166,16 +166,21 @@
       "type": "CHOICE",
       "members": [
         {
-          "type": "FIELD",
-          "name": "case_expression",
-          "content": {
-            "type": "SYMBOL",
-            "name": "case_expression"
-          }
+          "type": "SYMBOL",
+          "name": "expression"
         },
         {
           "type": "SYMBOL",
           "name": "let_binding"
+        }
+      ]
+    },
+    "expression": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "case_expression"
         },
         {
           "type": "SYMBOL",
@@ -197,6 +202,23 @@
         {
           "type": "SYMBOL",
           "name": "binary_operation"
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "("
+            },
+            {
+              "type": "SYMBOL",
+              "name": "simple_expression"
+            },
+            {
+              "type": "STRING",
+              "value": ")"
+            }
+          ]
         }
       ]
     },
@@ -205,7 +227,11 @@
       "members": [
         {
           "type": "SYMBOL",
-          "name": "simple_expression"
+          "name": "expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "let_binding"
         }
       ]
     },
@@ -245,7 +271,7 @@
           "name": "binding_body",
           "content": {
             "type": "SYMBOL",
-            "name": "simple_expression"
+            "name": "expression"
           }
         }
       ]

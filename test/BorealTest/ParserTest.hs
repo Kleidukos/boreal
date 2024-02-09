@@ -21,7 +21,7 @@ spec =
 
 testFunctionDefinitionParser :: Assertion
 testFunctionDefinitionParser = do
-  input <- BS.readFile "./tree-sitter-boreal/function-definition.bor"
+  input <- BS.readFile "./examples/function-definition.bor"
   result <- TreeSitter.parse input
   assertEqualExpr
     ( BorealNode
@@ -60,7 +60,7 @@ testFunctionDefinitionParser = do
 
 testLetInBindingsParser :: Assertion
 testLetInBindingsParser = do
-  input <- BS.readFile "./tree-sitter-boreal/let-in.bor"
+  input <- BS.readFile "./examples/let-in.bor"
   result <- TreeSitter.parse input
   assertEqualExpr
     ( BorealNode
@@ -102,7 +102,7 @@ testLetInBindingsParser = do
 
 testCaseExpressionParser :: Assertion
 testCaseExpressionParser = do
-  input <- BS.readFile "./tree-sitter-boreal/case-expression.bor"
+  input <- BS.readFile "./examples/case-expression.bor"
   result <- TreeSitter.parse input
   assertEqualExpr
     ( BorealNode
