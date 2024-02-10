@@ -28,7 +28,7 @@ parseBuildCommand :: Parser Command
 parseBuildCommand =
   Build
     <$> parseDebugFlags
-    <*> pure ((BuildFlags O0))
+    <*> pure (BuildFlags O0)
     <*> argument str (metavar "FILE")
 
 parseDebugFlags :: Parser DebugFlags

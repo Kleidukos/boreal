@@ -18,11 +18,13 @@ spec =
     , testCase "Test let-in bindings parser" testLetInBindingsParser
     , testCase "Test case expressions parser" testCaseExpressionParser
     , testCase "Parentheses" testParentheses
+    , testCase "Summ parsing" testSumParser
+    , testCase "Record parsing" testRecordParser
     ]
 
 testFunctionDefinitionParser :: Assertion
 testFunctionDefinitionParser = do
-  input <- BS.readFile "./tree-sitter-boreal/function-definition.bor"
+  input <- BS.readFile "./examples/function-definition.bor"
   result <- TreeSitter.parse input
   assertEqualExpr
     ( BorealNode
@@ -61,7 +63,7 @@ testFunctionDefinitionParser = do
 
 testLetInBindingsParser :: Assertion
 testLetInBindingsParser = do
-  input <- BS.readFile "./tree-sitter-boreal/let-in.bor"
+  input <- BS.readFile "./examples/let-in.bor"
   result <- TreeSitter.parse input
   assertEqualExpr
     ( BorealNode
@@ -103,7 +105,7 @@ testLetInBindingsParser = do
 
 testCaseExpressionParser :: Assertion
 testCaseExpressionParser = do
-  input <- BS.readFile "./tree-sitter-boreal/case-expression.bor"
+  input <- BS.readFile "./examples/case-expression.bor"
   result <- TreeSitter.parse input
   assertEqualExpr
     ( BorealNode
@@ -133,7 +135,7 @@ testCaseExpressionParser = do
 
 testParentheses :: Assertion
 testParentheses = do
-  input <- BS.readFile "./tree-sitter-boreal/parentheses.bor"
+  input <- BS.readFile "./examples/parentheses.bor"
   result <- TreeSitter.parse input
   assertEqual
     ""
@@ -181,6 +183,53 @@ testParentheses = do
                             , BorealNode "simple_expression" [BorealAtom "3"]
                             ]
                         ]
+                    ]
+                ]
+            ]
+        ]
+    )
+    result
+
+testSumParser :: Assertion
+testSumParser = do
+  input <- BS.readFile "./examples/datatype-declaration.bor"
+  result <- TreeSitter.parse input
+  assertEqual
+    ""
+    ( BorealNode
+        "source"
+        [ BorealNode "module_declaration" [BorealAtom "module", BorealIdent "Expressions", BorealAtom "where"]
+        , BorealNode
+            "top_level_declarations"
+            [ BorealNode
+                "sumtype_declaration"
+                [ BorealIdent "Optimisation"
+                , BorealNode "constructors" [BorealIdent "O1", BorealIdent "O2"]
+                ]
+            ]
+        ]
+    )
+    result
+
+testRecordParser :: Assertion
+testRecordParser = do
+  input <- BS.readFile "./examples/record-declaration.bor"
+  result <- TreeSitter.parse input
+  assertEqual
+    ""
+    ( BorealNode
+        "source"
+        [ BorealNode "module_declaration" [BorealAtom "module", BorealIdent "Record", BorealAtom "where"]
+        , BorealNode
+            "top_level_declarations"
+            [ BorealNode
+                "record_declaration"
+                [ BorealIdent "Point"
+                , BorealNode
+                    "members"
+                    [ BorealNode "record_member" [BorealIdent "x", BorealIdent ":", BorealIdent "Int"]
+                    , BorealIdent ","
+                    , BorealNode "record_member" [BorealIdent "y", BorealIdent ":", BorealIdent "Int"]
                     ]
                 ]
             ]

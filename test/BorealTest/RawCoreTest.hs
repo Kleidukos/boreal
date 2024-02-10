@@ -6,7 +6,7 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
-import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
+import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..), RecordMember (..))
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types
 import Data.ByteString qualified as BS
@@ -16,17 +16,18 @@ spec :: TestTree
 spec =
   testGroup
     "RawCore"
-    [ testCase "Function definition syntax to RawCore" testFunctionDefinitionToRawCore
-    , testCase "Let-binding syntax to RawCore" testLetBindingToRawCore
-    , testCase "Case expression syntax to RawCore" testCaseExpressionToRawCore
-    , testCase "Datatype declaration" testDatatypeDeclarationToRawCore
+    [ testCase "Function definition syntax to RawCore" testFunctionDefinition
+    , testCase "Let-binding syntax to RawCore" testLetBinding
+    , testCase "Case expression syntax to RawCore" testCaseExpression
+    , testCase "Sum type declaration" testDatatypeDeclaration
     , testCase "Module definition with dots" testModuleDefinitionWithDots
     , testCase "Parenthesised expression" testParenthesisedExpression
+    , testCase "Record declaration" testRecordDeclaration
     ]
 
-testFunctionDefinitionToRawCore :: Assertion
-testFunctionDefinitionToRawCore = do
-  input <- BS.readFile "./tree-sitter-boreal/function-definition.bor"
+testFunctionDefinition :: Assertion
+testFunctionDefinition = do
+  input <- BS.readFile "./examples/function-definition.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -44,9 +45,9 @@ testFunctionDefinitionToRawCore = do
     ]
     result.topLevelDeclarations
 
-testLetBindingToRawCore :: Assertion
-testLetBindingToRawCore = do
-  input <- BS.readFile "./tree-sitter-boreal/let-in.bor"
+testLetBinding :: Assertion
+testLetBinding = do
+  input <- BS.readFile "./examples/let-in.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -63,9 +64,9 @@ testLetBindingToRawCore = do
     ]
     result.topLevelDeclarations
 
-testCaseExpressionToRawCore :: Assertion
-testCaseExpressionToRawCore = do
-  input <- BS.readFile "./tree-sitter-boreal/case-expression.bor"
+testCaseExpression :: Assertion
+testCaseExpression = do
+  input <- BS.readFile "./examples/case-expression.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -82,9 +83,9 @@ testCaseExpressionToRawCore = do
     ]
     result.topLevelDeclarations
 
-testDatatypeDeclarationToRawCore :: Assertion
-testDatatypeDeclarationToRawCore = do
-  input <- BS.readFile "./tree-sitter-boreal/datatype-declaration.bor"
+testDatatypeDeclaration :: Assertion
+testDatatypeDeclaration = do
+  input <- BS.readFile "./examples/datatype-declaration.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -104,7 +105,7 @@ testModuleDefinitionWithDots = do
 
 testParenthesisedExpression :: Assertion
 testParenthesisedExpression = do
-  input <- BS.readFile "./tree-sitter-boreal/parentheses.bor"
+  input <- BS.readFile "./examples/parentheses.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -118,5 +119,21 @@ testParenthesisedExpression = do
         "main2"
         []
         (Call "+" [Call "-" [Literal 1, Literal 2], Literal 3])
+    ]
+    result.topLevelDeclarations
+
+testRecordDeclaration :: Assertion
+testRecordDeclaration = do
+  input <- BS.readFile "./examples/record-declaration.bor"
+  parsed <- TreeSitter.parse input
+  result <- RawCore.runRawCore $ RawCore.transformModule parsed
+
+  assertEqual
+    "Record declaration"
+    [ RecordDeclaration
+        "Point"
+        [ RecordMember{memberName = "x", memberType = "Int"}
+        , RecordMember{memberName = "y", memberType = "Int"}
+        ]
     ]
     result.topLevelDeclarations

@@ -82,30 +82,15 @@
     }
   },
   {
-    "type": "datatype_body",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "constructor",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "datatype_declaration",
     "named": true,
     "fields": {
       "body": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
-            "type": "datatype_body",
+            "type": "sumtype_body",
             "named": true
           }
         ]
@@ -120,6 +105,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "record_body",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -286,6 +281,40 @@
     }
   },
   {
+    "type": "record_body",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "record_member",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "record_member",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "constructor",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "simple_expression",
     "named": true,
     "fields": {},
@@ -332,6 +361,21 @@
     }
   },
   {
+    "type": "sumtype_body",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "constructor",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "top_level_declarations",
     "named": true,
     "fields": {},
@@ -367,6 +411,10 @@
     "named": false
   },
   {
+    "type": ",",
+    "named": false
+  },
+  {
     "type": "-",
     "named": false
   },
@@ -376,6 +424,10 @@
   },
   {
     "type": "/",
+    "named": false
+  },
+  {
+    "type": ":",
     "named": false
   },
   {
@@ -423,7 +475,15 @@
     "named": false
   },
   {
+    "type": "{",
+    "named": false
+  },
+  {
     "type": "|",
+    "named": false
+  },
+  {
+    "type": "}",
     "named": false
   }
 ]

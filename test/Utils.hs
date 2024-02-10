@@ -39,3 +39,4 @@ instance ToExpr TerminalValue
 instance ToExpr ComplexValue
 instance ToExpr Value
 instance ToExpr ANFCore
+instance ToExpr RecordMember

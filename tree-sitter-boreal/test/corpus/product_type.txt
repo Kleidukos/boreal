@@ -1,10 +1,10 @@
 ================================================================================
-Sum type
+Product type
 ================================================================================
 
 module Expressions where
 
-type Bool = True | False
+type Vector = { size : Int }
 
 --------------------------------------------------------------------------------
 
@@ -15,6 +15,7 @@ type Bool = True | False
     (datatype_declaration
       (datatype_head
         (constructor))
-      (sumtype_body
-        (constructor)
-        (constructor)))))
+      (record_body
+        (record_member
+          (identifier)
+          (constructor))))))

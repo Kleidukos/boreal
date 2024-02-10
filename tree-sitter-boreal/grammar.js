@@ -23,7 +23,10 @@ module.exports = grammar({
     datatype_declaration: $ => seq(
       field("head", $.datatype_head),
       "=",
-      field("body", $.datatype_body)
+      choice(
+        seq("{", $.record_body, "}"),
+        field("body", $.sumtype_body),
+      ),
     ),
 
     datatype_head: $ => seq(
@@ -32,8 +35,16 @@ module.exports = grammar({
       repeat($.identifier),
     ),
 
-    datatype_body: $ => seq(
+    sumtype_body: $ => seq(
       sep1("|", $.constructor),
+    ),
+
+    record_body: $ => sep1(",", $.record_member),
+
+    record_member: $ => seq(
+      $.identifier,
+      ":",
+      $.constructor,
     ),
 
     function_declaration: $ => seq(
