@@ -107,7 +107,7 @@ transform (BorealNode "sumtype_declaration" rest) = do
 transform (BorealNode "record_declaration" rest) = do
   let BorealIdent typeName = rest Vector.! 0
   let BorealNode "members" members' = rest Vector.! 1
-  let members = fmap processMember $ Vector.filter (isNamedNode "record_member") $ members'
+  let members = fmap processMember $ Vector.filter (isNamedNode "record_member") members'
   pure $ RecordDeclaration typeName members
 transform e = error $ "Unmatched: " <> show e
 

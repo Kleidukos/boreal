@@ -6,7 +6,7 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
-import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..), RecordMember(..))
+import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..), RecordMember (..))
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types
 import Data.ByteString qualified as BS
