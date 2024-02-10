@@ -47,7 +47,6 @@ module.exports = grammar({
       $.constructor,
     ),
 
-
     function_declaration: $ => seq(
       field("head", $.function_head),
       "=",

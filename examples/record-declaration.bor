@@ -1,0 +1,3 @@
+module Record where
+
+type Point = { x : Int, y : Int }

@@ -25,10 +25,10 @@ enum {
   anon_sym_RBRACE = 6,
   anon_sym_type = 7,
   anon_sym_PIPE = 8,
-  anon_sym_LPAREN = 9,
-  anon_sym_RPAREN = 10,
-  anon_sym_COMMA = 11,
-  anon_sym_COLON = 12,
+  anon_sym_COMMA = 9,
+  anon_sym_COLON = 10,
+  anon_sym_LPAREN = 11,
+  anon_sym_RPAREN = 12,
   anon_sym_let = 13,
   anon_sym_in = 14,
   anon_sym_case = 15,
@@ -46,12 +46,12 @@ enum {
   sym_datatype_declaration = 27,
   sym_datatype_head = 28,
   sym_sumtype_body = 29,
-  sym_function_declaration = 30,
-  sym_function_head = 31,
-  sym_function_body = 32,
-  sym_simple_expression = 33,
-  sym_record_body = 34,
-  sym_record_member = 35,
+  sym_record_body = 30,
+  sym_record_member = 31,
+  sym_function_declaration = 32,
+  sym_function_head = 33,
+  sym_function_body = 34,
+  sym_simple_expression = 35,
   sym_let_binding = 36,
   sym_case_expression = 37,
   sym_alternatives = 38,
@@ -76,10 +76,10 @@ static const char * const ts_symbol_names[] = {
   [anon_sym_RBRACE] = "}",
   [anon_sym_type] = "type",
   [anon_sym_PIPE] = "|",
-  [anon_sym_LPAREN] = "(",
-  [anon_sym_RPAREN] = ")",
   [anon_sym_COMMA] = ",",
   [anon_sym_COLON] = ":",
+  [anon_sym_LPAREN] = "(",
+  [anon_sym_RPAREN] = ")",
   [anon_sym_let] = "let",
   [anon_sym_in] = "in",
   [anon_sym_case] = "case",
@@ -97,12 +97,12 @@ static const char * const ts_symbol_names[] = {
   [sym_datatype_declaration] = "datatype_declaration",
   [sym_datatype_head] = "datatype_head",
   [sym_sumtype_body] = "sumtype_body",
+  [sym_record_body] = "record_body",
+  [sym_record_member] = "record_member",
   [sym_function_declaration] = "function_declaration",
   [sym_function_head] = "function_head",
   [sym_function_body] = "function_body",
   [sym_simple_expression] = "simple_expression",
-  [sym_record_body] = "record_body",
-  [sym_record_member] = "record_member",
   [sym_let_binding] = "let_binding",
   [sym_case_expression] = "case_expression",
   [sym_alternatives] = "alternatives",
@@ -127,10 +127,10 @@ static const TSSymbol ts_symbol_map[] = {
   [anon_sym_RBRACE] = anon_sym_RBRACE,
   [anon_sym_type] = anon_sym_type,
   [anon_sym_PIPE] = anon_sym_PIPE,
-  [anon_sym_LPAREN] = anon_sym_LPAREN,
-  [anon_sym_RPAREN] = anon_sym_RPAREN,
   [anon_sym_COMMA] = anon_sym_COMMA,
   [anon_sym_COLON] = anon_sym_COLON,
+  [anon_sym_LPAREN] = anon_sym_LPAREN,
+  [anon_sym_RPAREN] = anon_sym_RPAREN,
   [anon_sym_let] = anon_sym_let,
   [anon_sym_in] = anon_sym_in,
   [anon_sym_case] = anon_sym_case,
@@ -148,12 +148,12 @@ static const TSSymbol ts_symbol_map[] = {
   [sym_datatype_declaration] = sym_datatype_declaration,
   [sym_datatype_head] = sym_datatype_head,
   [sym_sumtype_body] = sym_sumtype_body,
+  [sym_record_body] = sym_record_body,
+  [sym_record_member] = sym_record_member,
   [sym_function_declaration] = sym_function_declaration,
   [sym_function_head] = sym_function_head,
   [sym_function_body] = sym_function_body,
   [sym_simple_expression] = sym_simple_expression,
-  [sym_record_body] = sym_record_body,
-  [sym_record_member] = sym_record_member,
   [sym_let_binding] = sym_let_binding,
   [sym_case_expression] = sym_case_expression,
   [sym_alternatives] = sym_alternatives,
@@ -205,19 +205,19 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
     .visible = true,
     .named = false,
   },
-  [anon_sym_LPAREN] = {
-    .visible = true,
-    .named = false,
-  },
-  [anon_sym_RPAREN] = {
-    .visible = true,
-    .named = false,
-  },
   [anon_sym_COMMA] = {
     .visible = true,
     .named = false,
   },
   [anon_sym_COLON] = {
+    .visible = true,
+    .named = false,
+  },
+  [anon_sym_LPAREN] = {
+    .visible = true,
+    .named = false,
+  },
+  [anon_sym_RPAREN] = {
     .visible = true,
     .named = false,
   },
@@ -289,6 +289,14 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
     .visible = true,
     .named = true,
   },
+  [sym_record_body] = {
+    .visible = true,
+    .named = true,
+  },
+  [sym_record_member] = {
+    .visible = true,
+    .named = true,
+  },
   [sym_function_declaration] = {
     .visible = true,
     .named = true,
@@ -302,14 +310,6 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
     .named = true,
   },
   [sym_simple_expression] = {
-    .visible = true,
-    .named = true,
-  },
-  [sym_record_body] = {
-    .visible = true,
-    .named = true,
-  },
-  [sym_record_member] = {
     .visible = true,
     .named = true,
   },
@@ -526,14 +526,14 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
   switch (state) {
     case 0:
       if (eof) ADVANCE(29);
-      if (lookahead == '(') ADVANCE(39);
-      if (lookahead == ')') ADVANCE(40);
+      if (lookahead == '(') ADVANCE(41);
+      if (lookahead == ')') ADVANCE(42);
       if (lookahead == '*') ADVANCE(63);
       if (lookahead == '+') ADVANCE(60);
-      if (lookahead == ',') ADVANCE(41);
+      if (lookahead == ',') ADVANCE(39);
       if (lookahead == '-') ADVANCE(62);
       if (lookahead == '/') ADVANCE(64);
-      if (lookahead == ':') ADVANCE(42);
+      if (lookahead == ':') ADVANCE(40);
       if (lookahead == '=') ADVANCE(33);
       if (lookahead == 'c') ADVANCE(6);
       if (lookahead == 'i') ADVANCE(17);
@@ -559,8 +559,8 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
           lookahead != '\n') ADVANCE(26);
       END_STATE();
     case 2:
-      if (lookahead == '(') ADVANCE(39);
-      if (lookahead == ')') ADVANCE(40);
+      if (lookahead == '(') ADVANCE(41);
+      if (lookahead == ')') ADVANCE(42);
       if (lookahead == '*') ADVANCE(63);
       if (lookahead == '+') ADVANCE(60);
       if (lookahead == '-') ADVANCE(61);
@@ -577,7 +577,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
           ('a' <= lookahead && lookahead <= 'z')) ADVANCE(58);
       END_STATE();
     case 3:
-      if (lookahead == '(') ADVANCE(39);
+      if (lookahead == '(') ADVANCE(41);
       if (lookahead == '-') ADVANCE(5);
       if (lookahead == '=') ADVANCE(33);
       if (lookahead == '\t' ||
@@ -680,7 +680,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       END_STATE();
     case 28:
       if (eof) ADVANCE(29);
-      if (lookahead == ')') ADVANCE(40);
+      if (lookahead == ')') ADVANCE(42);
       if (lookahead == '*') ADVANCE(63);
       if (lookahead == '+') ADVANCE(60);
       if (lookahead == '-') ADVANCE(61);
@@ -731,16 +731,16 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       ACCEPT_TOKEN(anon_sym_PIPE);
       END_STATE();
     case 39:
-      ACCEPT_TOKEN(anon_sym_LPAREN);
-      END_STATE();
-    case 40:
-      ACCEPT_TOKEN(anon_sym_RPAREN);
-      END_STATE();
-    case 41:
       ACCEPT_TOKEN(anon_sym_COMMA);
       END_STATE();
-    case 42:
+    case 40:
       ACCEPT_TOKEN(anon_sym_COLON);
+      END_STATE();
+    case 41:
+      ACCEPT_TOKEN(anon_sym_LPAREN);
+      END_STATE();
+    case 42:
+      ACCEPT_TOKEN(anon_sym_RPAREN);
       END_STATE();
     case 43:
       ACCEPT_TOKEN(anon_sym_let);
@@ -956,10 +956,10 @@ static const uint16_t ts_parse_table[LARGE_STATE_COUNT][SYMBOL_COUNT] = {
     [anon_sym_RBRACE] = ACTIONS(1),
     [anon_sym_type] = ACTIONS(1),
     [anon_sym_PIPE] = ACTIONS(1),
-    [anon_sym_LPAREN] = ACTIONS(1),
-    [anon_sym_RPAREN] = ACTIONS(1),
     [anon_sym_COMMA] = ACTIONS(1),
     [anon_sym_COLON] = ACTIONS(1),
+    [anon_sym_LPAREN] = ACTIONS(1),
+    [anon_sym_RPAREN] = ACTIONS(1),
     [anon_sym_let] = ACTIONS(1),
     [anon_sym_in] = ACTIONS(1),
     [anon_sym_case] = ACTIONS(1),

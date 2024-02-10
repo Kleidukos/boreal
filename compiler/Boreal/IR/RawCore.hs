@@ -2,8 +2,6 @@
 
 module Boreal.IR.RawCore where
 
-import Boreal.Frontend.Syntax (Name, Syntax (..))
-import Boreal.IR.Types
 import Data.Function
 import Data.Text qualified as Text
 import Data.Text.Read qualified as Text
@@ -11,6 +9,9 @@ import Data.Vector (Vector)
 import Data.Vector qualified as Vector
 import Effectful
 import GHC.Generics (Generic)
+
+import Boreal.Frontend.Syntax (Name, Syntax (..), isNamedNode)
+import Boreal.IR.Types
 
 -- | Non-ANF intermediate representation whose job is to take a 'Syntax'
 -- and hold it in a more convenient way for ANF transformation.
@@ -40,6 +41,15 @@ data RawCore
   | TypeDeclaration
       Name
       (Vector Name)
+  | RecordDeclaration
+      Name
+      (Vector RecordMember)
+  deriving stock (Eq, Show, Ord, Generic)
+
+data RecordMember = RecordMember
+  { memberName :: Name
+  , memberType :: Name
+  }
   deriving stock (Eq, Show, Ord, Generic)
 
 data CaseAlternative ir = CaseAlternative
@@ -89,11 +99,16 @@ transform (BorealNode "function_declaration" rest) = do
       (BorealNode "function_body" bodyNode) ->
         transformExpression (bodyNode Vector.! 0)
   pure $ Fun funName args body
-transform (BorealNode "datatype_declaration" rest) = do
+transform (BorealNode "sumtype_declaration" rest) = do
   let BorealIdent typeName = rest Vector.! 0
   let BorealNode "constructors" constructors = rest Vector.! 1
   let constructorNames = fmap (\(BorealIdent x) -> x) constructors
   pure $ TypeDeclaration typeName constructorNames
+transform (BorealNode "record_declaration" rest) = do
+  let BorealIdent typeName = rest Vector.! 0
+  let BorealNode "members" members' = rest Vector.! 1
+  let members = fmap processMember $ Vector.filter (isNamedNode "record_member") $ members'
+  pure $ RecordDeclaration typeName members
 transform e = error $ "Unmatched: " <> show e
 
 transformExpression :: Syntax -> RawCoreEff RawCore
@@ -143,3 +158,9 @@ processAlternative (BorealNode "alternative" body) = do
   rhs <- transformExpression (Vector.last body)
   let lhs = Constructor cons
   pure $ CaseAlternative lhs rhs
+
+processMember :: Syntax -> RecordMember
+processMember (BorealNode "record_member" members) =
+  let BorealIdent memberName = members Vector.! 0
+      BorealIdent memberType = members Vector.! 2
+   in RecordMember{memberName, memberType}

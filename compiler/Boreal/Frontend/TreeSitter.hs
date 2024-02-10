@@ -8,6 +8,7 @@ import Data.Maybe (fromJust)
 import Data.Text qualified as Text
 import Data.Text.Display
 import Data.Text.IO qualified as Text
+import Data.Vector (Vector)
 import Data.Vector qualified as Vector
 import Data.Word (Word32)
 
@@ -172,17 +173,47 @@ getChildren node
               let BorealNode "datatype_head" datatypeHead = result Vector.! 0
               let BorealAtom "type" = datatypeHead Vector.! 0
               let BorealIdent typeName = datatypeHead Vector.! 1
-              let BorealNode "sumtype_body" constructorsWithDelimiters = result Vector.! 2
-              let constructors = Vector.filter (\e -> isIdent e) constructorsWithDelimiters
-              pure $
-                BorealNode
-                  "datatype_declaration"
-                  ( Vector.fromList
-                      [ BorealIdent typeName
-                      , BorealNode "constructors" constructors
-                      ]
-                  )
+              let BorealNode bodyType constructorsWithDelimiters = result Vector.! 2
+              case bodyType of
+                "sumtype_body" ->
+                  sumtypeParser constructorsWithDelimiters typeName
+          | otherwise -> do
+              -- We are in the record case
+              let BorealNode "datatype_head" datatypeHead = result Vector.! 0
+              let BorealAtom "type" = datatypeHead Vector.! 0
+              let BorealIdent typeName = datatypeHead Vector.! 1
+              let BorealNode "record_body" recordBody = result Vector.! 3
+              recordParser recordBody typeName
         _ -> pure $ BorealNode (Text.pack theType) result
+
+sumtypeParser
+  :: Vector Syntax
+  -> Name
+  -> BorealParser Syntax
+sumtypeParser constructorsWithDelimiters typeName = do
+  let constructors = Vector.filter (\e -> isIdent e) constructorsWithDelimiters
+  pure $
+    BorealNode
+      "sumtype_declaration"
+      ( Vector.fromList
+          [ BorealIdent typeName
+          , BorealNode "constructors" constructors
+          ]
+      )
+
+recordParser
+  :: Vector Syntax
+  -> Name
+  -> BorealParser Syntax
+recordParser c typeName =
+  pure $
+    BorealNode
+      "record_declaration"
+      ( Vector.fromList
+          [ BorealIdent typeName
+          , BorealNode "members" c
+          ]
+      )
 
 -------
 
