@@ -96,7 +96,6 @@ transform = \case
         transformedAlternatives <- traverse transformAlternative alternatives
         pure $ ACase processedExpression transformedAlternatives
       e -> error $ "Unmatched: " <> show e
-  TypeDeclaration name constructors -> pure $ ATypeDeclaration name constructors
 
 -- e -> error $ "Unmatched: " <> show e
 

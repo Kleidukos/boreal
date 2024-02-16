@@ -48,8 +48,6 @@ library
 
   -- cabal-fmt: expand compiler/
   exposed-modules:
-    Boreal.Backend.ASM
-    Boreal.Backend.ASM.Types
     Boreal.Backend.Lua
     Boreal.Backend.Lua.Types
     Boreal.Frontend.Source
@@ -61,6 +59,7 @@ library
     Boreal.IR.RawCore
     Boreal.IR.Types
     Boreal.ScopeEnvironment
+    Boreal.SourceInfo
     Driver
     Driver.BuildFlags
     Driver.Cache
@@ -122,7 +121,6 @@ test-suite boreal-test
   main-is:        Main.hs
   other-modules:
     BorealTest.ANFTest
-    BorealTest.ASMTest
     BorealTest.Backend.LuaGoldenTest
     BorealTest.Backend.LuaRunTest
     BorealTest.ParserTest
@@ -145,5 +143,6 @@ test-suite boreal-test
     , text
     , text-display
     , tree-diff
+    , tree-sitter
     , typed-process
     , vector

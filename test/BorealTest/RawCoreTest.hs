@@ -2,15 +2,16 @@
 
 module BorealTest.RawCoreTest where
 
+import Data.ByteString qualified as BS
 import Test.Tasty
 import Test.Tasty.HUnit
+import Text.Pretty.Simple (pPrint)
+import Utils
 
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
-import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..), RecordMember (..))
+import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types
-import Data.ByteString qualified as BS
-import Utils
 
 spec :: TestTree
 spec =
@@ -43,7 +44,7 @@ testFunctionDefinition = do
             ]
         )
     ]
-    result.topLevelDeclarations
+    result.topLevelFunctions
 
 testLetBinding :: Assertion
 testLetBinding = do
@@ -62,7 +63,7 @@ testLetBinding = do
             (Call "+" [Var "x", Literal 1])
         )
     ]
-    result.topLevelDeclarations
+    result.topLevelFunctions
 
 testCaseExpression :: Assertion
 testCaseExpression = do
@@ -81,7 +82,7 @@ testCaseExpression = do
             ]
         )
     ]
-    result.topLevelDeclarations
+    result.topLevelFunctions
 
 testDatatypeDeclaration :: Assertion
 testDatatypeDeclaration = do
@@ -90,8 +91,8 @@ testDatatypeDeclaration = do
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
   assertEqualExpr
-    [TypeDeclaration "Optimisation" ["O1", "O2"]]
-    result.topLevelDeclarations
+    [SumTypeDeclaration "Optimisation" ["O1", "O2"]]
+    result.typeDeclarations
 
 testModuleDefinitionWithDots :: Assertion
 testModuleDefinitionWithDots = do
@@ -120,7 +121,7 @@ testParenthesisedExpression = do
         []
         (Call "+" [Call "-" [Literal 1, Literal 2], Literal 3])
     ]
-    result.topLevelDeclarations
+    result.topLevelFunctions
 
 testRecordDeclaration :: Assertion
 testRecordDeclaration = do
@@ -136,4 +137,4 @@ testRecordDeclaration = do
         , RecordMember{memberName = "y", memberType = "Int"}
         ]
     ]
-    result.topLevelDeclarations
+    result.typeDeclarations

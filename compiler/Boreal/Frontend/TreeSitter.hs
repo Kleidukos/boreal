@@ -3,12 +3,12 @@
 module Boreal.Frontend.TreeSitter where
 
 import Control.Monad.IO.Class
-import Data.Function ((&))
+import Data.ByteString (StrictByteString)
+import Data.ByteString qualified as BS
 import Data.Maybe (fromJust)
 import Data.Text qualified as Text
 import Data.Text.Display
 import Data.Text.IO qualified as Text
-import Data.Vector (Vector)
 import Data.Vector qualified as Vector
 import Data.Word (Word32)
 
@@ -33,8 +33,7 @@ import TreeSitter.Tree
 import Boreal.Frontend.Source
 import Boreal.Frontend.Syntax
 import Boreal.Frontend.Types
-import Data.ByteString (StrictByteString)
-import Data.ByteString qualified as BS
+import Boreal.SourceInfo qualified as SourceInfo
 
 foreign import capi unsafe "parser.h tree_sitter_boreal"
   tree_sitter_boreal :: ConstPtr Language
@@ -56,7 +55,7 @@ parse input = do
       n <- liftIO malloc
       liftIO $ ts_tree_root_node_p tree n
 
-      Node{nodeChildCount, nodeTSNode} <- liftIO $ peek n
+      n@Node{nodeChildCount, nodeTSNode} <- liftIO $ peek n
       let childCount = fromIntegral nodeChildCount
 
       children <- liftIO $ mallocArray childCount
@@ -71,16 +70,19 @@ parse input = do
               child <- liftIO $ peekElemOff children index
               getChildren child
           )
-      pure $ BorealNode "source" result
+      let sourceInfo = SourceInfo.fromNode n
+      pure $ BorealNode sourceInfo "source" result
 
 getChildren :: Node -> BorealParser Syntax
 getChildren node
   | node.nodeChildCount == 0 = do
+      let sourceInfo = SourceInfo.fromNode node
       source <- fetchSource node
       if isTextAtom source
-        then pure $ BorealAtom source
-        else pure $ BorealIdent source
+        then pure $ BorealAtom sourceInfo source
+        else pure $ BorealIdent sourceInfo source
   | otherwise = do
+      let sourceInfo = SourceInfo.fromNode node
       -- Type of the node, as given in the grammar.js file
       theType <- liftIO $ peekCString node.nodeType
       let childCount = fromIntegral node.nodeChildCount
@@ -91,129 +93,7 @@ getChildren node
       result <- Vector.forM (Vector.fromList [0 .. node.nodeChildCount - 1]) $ \index -> do
         childNode <- fromJust <$> getField index childrenPtr
         getChildren childNode
-      case theType of
-        "module_declaration"
-          | childCount == 3 -> do
-              let BorealIdent moduleName' = result Vector.! 1
-              pure $
-                BorealNode
-                  "module_declaration"
-                  ( Vector.fromList
-                      [ BorealAtom "module"
-                      , BorealIdent (Text.strip moduleName')
-                      , BorealAtom "where"
-                      ]
-                  )
-        "binary_operation"
-          | childCount == 3 -> do
-              let syntax = result Vector.! 1
-              case syntax of
-                BorealIdent op ->
-                  pure $ BorealNode op (Vector.fromList [Vector.head result, Vector.last result])
-                _ -> pure Missing
-          | otherwise -> pure Missing
-        "expression"
-          | childCount == 1 -> do
-              pure $ Vector.head result
-        "function_declaration"
-          | childCount >= 3 -> do
-              -- traceShowM result
-              let (fnHead, functionBody) = Vector.break (== BorealAtom "=") result
-              let BorealNode "function_head" functionHead = Vector.head fnHead
-              let functionName = Vector.head functionHead
-              let functionArguments = Vector.tail functionHead
-              pure $
-                BorealNode
-                  (Text.pack theType)
-                  ( Vector.fromList
-                      [ functionName
-                      , BorealNode
-                          "arguments"
-                          functionArguments
-                      , functionBody Vector.! 0
-                      , functionBody Vector.! 1
-                      ]
-                  )
-        "let_binding"
-          | childCount >= 6 -> do
-              let bindingName = case result Vector.! 0 of
-                    BorealAtom "let" ->
-                      case result Vector.! 1 of
-                        BorealIdent binding' -> binding'
-                        e -> error $ "Unmatched " <> show e
-                    e -> error $ "Unmatched " <> show e
-              let boundExpression = Vector.takeWhile (/= BorealAtom "in") (Vector.drop 3 result)
-              let body = Vector.drop (4 + Vector.length boundExpression) result
-              pure $
-                BorealNode "let_binding" $
-                  Vector.fromList
-                    [ BorealNode bindingName $
-                        Vector.fromList
-                          [ BorealNode "bound_expression" boundExpression
-                          , BorealNode "body" body
-                          ]
-                    ]
-        "case_expression"
-          | childCount >= 3 -> do
-              let BorealNode "simple_expression" caseHead = result Vector.! 1
-              let caseExpression = Vector.head caseHead
-              let BorealNode "alternatives" alternatives = result Vector.! 3
-              let alternativeVector =
-                    alternatives
-                      & Vector.filter (\syntax -> isNamedNode "alternative" syntax)
-                      & Vector.map
-                        ( \(BorealNode _ content) ->
-                            let BorealNode "pattern" pat = content Vector.! 0
-                                BorealNode "simple_expression" rhs = content Vector.! 2
-                             in BorealNode "alternative" (Vector.concat [pat, rhs])
-                        )
-              pure $ BorealNode "case_expression" (Vector.cons caseExpression alternativeVector)
-        "datatype_declaration"
-          | childCount == 3 -> do
-              let BorealNode "datatype_head" datatypeHead = result Vector.! 0
-              let BorealAtom "type" = datatypeHead Vector.! 0
-              let BorealIdent typeName = datatypeHead Vector.! 1
-              let BorealNode bodyType constructorsWithDelimiters = result Vector.! 2
-              case bodyType of
-                "sumtype_body" ->
-                  sumtypeParser constructorsWithDelimiters typeName
-          | otherwise -> do
-              -- We are in the record case
-              let BorealNode "datatype_head" datatypeHead = result Vector.! 0
-              let BorealAtom "type" = datatypeHead Vector.! 0
-              let BorealIdent typeName = datatypeHead Vector.! 1
-              let BorealNode "record_body" recordBody = result Vector.! 3
-              recordParser recordBody typeName
-        _ -> pure $ BorealNode (Text.pack theType) result
-
-sumtypeParser
-  :: Vector Syntax
-  -> Name
-  -> BorealParser Syntax
-sumtypeParser constructorsWithDelimiters typeName = do
-  let constructors = Vector.filter (\e -> isIdent e) constructorsWithDelimiters
-  pure $
-    BorealNode
-      "sumtype_declaration"
-      ( Vector.fromList
-          [ BorealIdent typeName
-          , BorealNode "constructors" constructors
-          ]
-      )
-
-recordParser
-  :: Vector Syntax
-  -> Name
-  -> BorealParser Syntax
-recordParser c typeName =
-  pure $
-    BorealNode
-      "record_declaration"
-      ( Vector.fromList
-          [ BorealIdent typeName
-          , BorealNode "members" c
-          ]
-      )
+      pure $ BorealNode sourceInfo (Text.pack theType) result
 
 -------
 
