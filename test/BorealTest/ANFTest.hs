@@ -8,7 +8,7 @@ import Test.Tasty.HUnit
 
 import Boreal.IR.ANFCore qualified as ANF
 import Boreal.IR.ANFCore.Types (ANFCore (..), ComplexValue (..), TerminalValue (..), Value (..))
-import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
+import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..), RecordMember (..))
 import Boreal.ScopeEnvironment
 import Utils
 
@@ -16,14 +16,15 @@ spec :: TestTree
 spec =
   testGroup
     "ANFCore"
-    [ testCase "Function declaration RawCore to ANFCore" testFunctionDeclarationToANFCore
-    , testCase "Let-binding of RawCore terminal value to ANFCore" testLetBindingTerminalValueToANFCore
-    , testCase "Case expression to ANFCore" testSimpleCaseExpressionToANFCore
-    , testCase "Parenthesised expression in ANF" testParenthesisedExpressionToANFCore
+    [ testCase "Function declaration RawCore to ANFCore" testFunctionDeclaration
+    , testCase "Let-binding of RawCore terminal value to ANFCore" testLetBindingTerminalValue
+    , testCase "Case expression to ANFCore" testSimpleCaseExpression
+    , testCase "Parenthesised expression in ANF" testParenthesisedExpression
+    , testCase "Records in ANF" testRecords
     ]
 
-testFunctionDeclarationToANFCore :: Assertion
-testFunctionDeclarationToANFCore = do
+testFunctionDeclaration :: Assertion
+testFunctionDeclaration = do
   -- original:
   --    x * 2 + 3
   -- expected:
@@ -45,8 +46,8 @@ testFunctionDeclarationToANFCore = do
     )
     actual
 
-testLetBindingTerminalValueToANFCore :: Assertion
-testLetBindingTerminalValueToANFCore = do
+testLetBindingTerminalValue :: Assertion
+testLetBindingTerminalValue = do
   -- original:
   --   function y =
   --     let x = 3 * 2
@@ -80,8 +81,8 @@ testLetBindingTerminalValueToANFCore = do
     )
     actual
 
-testSimpleCaseExpressionToANFCore :: Assertion
-testSimpleCaseExpressionToANFCore = do
+testSimpleCaseExpression :: Assertion
+testSimpleCaseExpression = do
   -- original:
   -- expr x =
   --   case x of
@@ -118,8 +119,8 @@ testSimpleCaseExpressionToANFCore = do
     )
     actual
 
-testParenthesisedExpressionToANFCore :: Assertion
-testParenthesisedExpressionToANFCore = do
+testParenthesisedExpression :: Assertion
+testParenthesisedExpression = do
   let rawCore =
         [ Fun
             "main1"
@@ -153,6 +154,29 @@ testParenthesisedExpressionToANFCore = do
                 ( Halt
                     (Complex (AApp "+" (Vector.fromList [AVar "prim_sub0", ALiteral 3])))
                 )
+            )
+        ]
+    )
+    actual
+
+testRecords :: Assertion
+testRecords = do
+  let rawCore =
+        [ RecordDeclaration
+            "Point"
+            [ RecordMember{memberName = "x", memberType = "Int"}
+            , RecordMember{memberName = "y", memberType = "Int"}
+            ]
+        ]
+
+  actual <- traverse (ANF.runANFCore newScopeEnvironment) rawCore
+  assertEqualExpr
+    ( Vector.fromList
+        [ ARecordDeclaration
+            "Point"
+            ( [ RecordMember{memberName = "x", memberType = "Int"}
+              , RecordMember{memberName = "y", memberType = "Int"}
+              ]
             )
         ]
     )

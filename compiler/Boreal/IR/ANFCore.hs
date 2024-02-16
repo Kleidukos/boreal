@@ -11,7 +11,7 @@ import Effectful.State.Static.Local qualified as State
 
 import Boreal.Frontend.Syntax
 import Boreal.IR.ANFCore.Types
-import Boreal.IR.RawCore (CaseAlternative (..), RawCore (..))
+import Boreal.IR.RawCore (CaseAlternative (..), RawCore (..), RecordMember (..))
 import Boreal.ScopeEnvironment (ScopeEnvironment, lookupIdentifierName)
 import Data.Text qualified as Text
 
@@ -97,6 +97,7 @@ transform = \case
         pure $ ACase processedExpression transformedAlternatives
       e -> error $ "Unmatched: " <> show e
   TypeDeclaration name constructors -> pure $ ATypeDeclaration name constructors
+  RecordDeclaration name members -> pure $ ARecordDeclaration name members
 
 -- e -> error $ "Unmatched: " <> show e
 

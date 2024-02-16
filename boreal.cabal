@@ -61,6 +61,7 @@ library
     Boreal.IR.RawCore
     Boreal.IR.Types
     Boreal.ScopeEnvironment
+    Boreal.SourceInfo
     Driver
     Driver.BuildFlags
     Driver.Cache

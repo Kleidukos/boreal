@@ -6,10 +6,13 @@ import Data.Text.Read qualified as Text
 import Data.Vector (Vector)
 import GHC.Generics (Generic)
 
+import Boreal.SourceInfo
+
 type Name = Text
 
 data Syntax
   = BorealNode
+      SourceInfo
       Name
       -- ^ Name
       (Vector Syntax)
@@ -17,17 +20,25 @@ data Syntax
   | -- | Bits of syntax that do not need to be looked up in environment,
     -- (like parentheses, syntactic keyword, commas, equal), or
     -- literal numbers
-    BorealAtom Name
-  | BorealIdent Name
+    BorealAtom
+      SourceInfo
+      Name
+  | BorealIdent
+      SourceInfo
+      Name
   | Missing
-  deriving stock (Eq, Ord, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
 isAtom :: Syntax -> Bool
-isAtom (BorealAtom _) = True
+isAtom (BorealAtom _ _) = True
 isAtom _ = False
 
+isNamedAtom :: Text -> Syntax -> Bool
+isNamedAtom name (BorealAtom _ a) = a == name
+isNamedAtom _ _ = False
+
 isIdent :: Syntax -> Bool
-isIdent (BorealIdent _) = True
+isIdent (BorealIdent _ _) = True
 isIdent _ = False
 
 isTextAtom :: Text -> Bool
@@ -50,5 +61,5 @@ isTextAtom t =
         ]
 
 isNamedNode :: Name -> Syntax -> Bool
-isNamedNode name (BorealNode name' _) | name == name' = True
+isNamedNode name (BorealNode _ name' _) | name == name' = True
 isNamedNode _ _ = False

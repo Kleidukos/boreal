@@ -13,6 +13,9 @@ import Data.Vector qualified as Vector
 import Data.Word (Word32)
 
 -- import Debug.Trace
+
+import Data.ByteString (StrictByteString)
+import Data.ByteString qualified as BS
 import Foreign.C.ConstPtr
 import Foreign.C.String
 import Foreign.Marshal.Alloc
@@ -33,8 +36,7 @@ import TreeSitter.Tree
 import Boreal.Frontend.Source
 import Boreal.Frontend.Syntax
 import Boreal.Frontend.Types
-import Data.ByteString (StrictByteString)
-import Data.ByteString qualified as BS
+import Boreal.SourceInfo qualified as SourceInfo
 
 foreign import capi unsafe "parser.h tree_sitter_boreal"
   tree_sitter_boreal :: ConstPtr Language
@@ -56,7 +58,7 @@ parse input = do
       n <- liftIO malloc
       liftIO $ ts_tree_root_node_p tree n
 
-      Node{nodeChildCount, nodeTSNode} <- liftIO $ peek n
+      n@Node{nodeChildCount, nodeTSNode} <- liftIO $ peek n
       let childCount = fromIntegral nodeChildCount
 
       children <- liftIO $ mallocArray childCount
@@ -71,16 +73,19 @@ parse input = do
               child <- liftIO $ peekElemOff children index
               getChildren child
           )
-      pure $ BorealNode "source" result
+      let sourceInfo = SourceInfo.fromNode n
+      pure $ BorealNode sourceInfo "source" result
 
 getChildren :: Node -> BorealParser Syntax
 getChildren node
   | node.nodeChildCount == 0 = do
+      let sourceInfo = SourceInfo.fromNode node
       source <- fetchSource node
       if isTextAtom source
-        then pure $ BorealAtom source
-        else pure $ BorealIdent source
+        then pure $ BorealAtom sourceInfo source
+        else pure $ BorealIdent sourceInfo source
   | otherwise = do
+      let sourceInfo = SourceInfo.fromNode node
       -- Type of the node, as given in the grammar.js file
       theType <- liftIO $ peekCString node.nodeType
       let childCount = fromIntegral node.nodeChildCount
@@ -94,22 +99,25 @@ getChildren node
       case theType of
         "module_declaration"
           | childCount == 3 -> do
-              let BorealIdent moduleName' = result Vector.! 1
+              let moduleKeyword = result Vector.! 0
+              let BorealIdent moduleNameSourceInfo moduleName' = result Vector.! 1
+              let whereKeyword = result Vector.! 2
               pure $
                 BorealNode
+                  sourceInfo
                   "module_declaration"
                   ( Vector.fromList
-                      [ BorealAtom "module"
-                      , BorealIdent (Text.strip moduleName')
-                      , BorealAtom "where"
+                      [ moduleKeyword
+                      , BorealIdent moduleNameSourceInfo (Text.strip moduleName')
+                      , whereKeyword
                       ]
                   )
         "binary_operation"
           | childCount == 3 -> do
               let syntax = result Vector.! 1
               case syntax of
-                BorealIdent op ->
-                  pure $ BorealNode op (Vector.fromList [Vector.head result, Vector.last result])
+                BorealIdent sourceInfo op ->
+                  pure $ BorealNode sourceInfo op (Vector.fromList [Vector.head result, Vector.last result])
                 _ -> pure Missing
           | otherwise -> pure Missing
         "expression"
@@ -117,17 +125,19 @@ getChildren node
               pure $ Vector.head result
         "function_declaration"
           | childCount >= 3 -> do
-              -- traceShowM result
-              let (fnHead, functionBody) = Vector.break (== BorealAtom "=") result
-              let BorealNode "function_head" functionHead = Vector.head fnHead
+              let (fnHead, functionBody) = Vector.break (isNamedAtom "=") result
+              let BorealNode _ "function_head" functionHead = Vector.head fnHead
               let functionName = Vector.head functionHead
               let functionArguments = Vector.tail functionHead
+              let argumentsPos = undefined
               pure $
                 BorealNode
+                  sourceInfo
                   (Text.pack theType)
                   ( Vector.fromList
                       [ functionName
                       , BorealNode
+                          argumentsPos
                           "arguments"
                           functionArguments
                       , functionBody Vector.! 0
@@ -136,18 +146,19 @@ getChildren node
                   )
         "let_binding"
           | childCount >= 6 -> do
-              let bindingName = case result Vector.! 0 of
-                    BorealAtom "let" ->
+              let (bindingName, bindingPos) = case result Vector.! 0 of
+                    BorealAtom letPos "let" ->
                       case result Vector.! 1 of
-                        BorealIdent binding' -> binding'
+                        BorealIdent bindingPos binding' -> (binding', bindingPos)
                         e -> error $ "Unmatched " <> show e
                     e -> error $ "Unmatched " <> show e
-              let boundExpression = Vector.takeWhile (/= BorealAtom "in") (Vector.drop 3 result)
+              let boundExpression = Vector.takeWhile (not . isNamedAtom "in") (Vector.drop 3 result)
+              let boundExpressionPos = undefined -- concat the beginning and end positions
               let body = Vector.drop (4 + Vector.length boundExpression) result
               pure $
-                BorealNode "let_binding" $
+                BorealNode sourceInfo "let_binding" $
                   Vector.fromList
-                    [ BorealNode bindingName $
+                    [ BorealNode bindingPos bindingName $
                         Vector.fromList
                           [ BorealNode "bound_expression" boundExpression
                           , BorealNode "body" body

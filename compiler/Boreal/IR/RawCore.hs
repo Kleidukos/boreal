@@ -73,13 +73,13 @@ transformModule
   :: Syntax
   -- ^ Bit of syntax we're analysing
   -> RawCoreEff (Module RawCore)
-transformModule (BorealNode "source" children) = do
-  let (BorealNode "module_declaration" moduleDeclaration) = children Vector.! 0
+transformModule (BorealNode _ "source" children) = do
+  let (BorealNode _ "module_declaration" moduleDeclaration) = children Vector.! 0
   let topLevelDeclarations = children Vector.! 1
-  let (BorealIdent moduleName) = moduleDeclaration Vector.! 1
+  let (BorealIdent _ moduleName) = moduleDeclaration Vector.! 1
   transformedTopLevelDeclarations <-
     case topLevelDeclarations of
-      BorealNode "top_level_declarations" decls ->
+      BorealNode _ "top_level_declarations" decls ->
         traverse transform decls
   pure $
     Module
@@ -87,59 +87,59 @@ transformModule (BorealNode "source" children) = do
       transformedTopLevelDeclarations
 
 transform :: Syntax -> Eff '[IOE] RawCore
-transform (BorealNode "function_declaration" rest) = do
-  let BorealIdent funName = rest Vector.! 0
+transform (BorealNode _ "function_declaration" rest) = do
+  let BorealIdent _ funName = rest Vector.! 0
   let (args :: Vector Name) =
         case rest Vector.! 1 of
-          (BorealNode "arguments" argsVector) ->
-            fmap (\(BorealIdent x) -> x) argsVector
+          (BorealNode _ "arguments" argsVector) ->
+            fmap (\(BorealIdent _ x) -> x) argsVector
           e -> error $ "Unmatched: " <> show e
   (body :: RawCore) <-
     case rest Vector.! 3 of
-      (BorealNode "function_body" bodyNode) ->
+      (BorealNode _ "function_body" bodyNode) ->
         transformExpression (bodyNode Vector.! 0)
   pure $ Fun funName args body
-transform (BorealNode "sumtype_declaration" rest) = do
-  let BorealIdent typeName = rest Vector.! 0
-  let BorealNode "constructors" constructors = rest Vector.! 1
-  let constructorNames = fmap (\(BorealIdent x) -> x) constructors
+transform (BorealNode _ "sumtype_declaration" rest) = do
+  let BorealIdent _ typeName = rest Vector.! 0
+  let BorealNode _ "constructors" constructors = rest Vector.! 1
+  let constructorNames = fmap (\(BorealIdent _ x) -> x) constructors
   pure $ TypeDeclaration typeName constructorNames
-transform (BorealNode "record_declaration" rest) = do
-  let BorealIdent typeName = rest Vector.! 0
-  let BorealNode "members" members' = rest Vector.! 1
+transform (BorealNode _ "record_declaration" rest) = do
+  let BorealIdent _ typeName = rest Vector.! 0
+  let BorealNode _ "members" members' = rest Vector.! 1
   let members = fmap processMember $ Vector.filter (isNamedNode "record_member") members'
   pure $ RecordDeclaration typeName members
 transform e = error $ "Unmatched: " <> show e
 
 transformExpression :: Syntax -> RawCoreEff RawCore
-transformExpression (BorealNode "simple_expression" body) =
+transformExpression (BorealNode _ "simple_expression" body) =
   case body of
-    [BorealAtom "(", expr, BorealAtom ")"] -> transformExpression expr
+    [BorealAtom _ "(", expr, BorealAtom _ ")"] -> transformExpression expr
     _ -> transformExpression $ Vector.head body
-transformExpression (BorealNode "let_binding" bindings) =
+transformExpression (BorealNode _ "let_binding" bindings) =
   transformLetBinding (bindings Vector.! 0)
-transformExpression (BorealNode "case_expression" body) = do
+transformExpression (BorealNode _ "case_expression" body) = do
   caseExpression <- transformExpression $ Vector.head body
   processedAlternatives <- traverse processAlternative (Vector.tail body)
   pure $ Case caseExpression processedAlternatives
-transformExpression (BorealNode n args) = do
+transformExpression (BorealNode _ n args) = do
   arguments <- traverse transformExpression args
   pure $ Call n arguments
-transformExpression (BorealAtom a) =
+transformExpression (BorealAtom _ a) =
   case takeLiteralFromAtom a of
     (Just l) -> pure $ Literal l
     Nothing -> error $ "Not a literal from atom: " <> show a
-transformExpression (BorealIdent x) = pure $ Var x
+transformExpression (BorealIdent _ x) = pure $ Var x
 transformExpression e = error $ "Unmatched: " <> show e
 
 transformLetBinding :: Syntax -> RawCoreEff RawCore
-transformLetBinding (BorealNode bindingName children) = do
+transformLetBinding (BorealNode _ bindingName children) = do
   let boundExpression =
         case children Vector.! 0 of
-          BorealNode "bound_expression" boundExpressions -> boundExpressions Vector.! 0
+          BorealNode _ "bound_expression" boundExpressions -> boundExpressions Vector.! 0
   let body =
         case children Vector.! 1 of
-          BorealNode "body" body' -> body' Vector.! 0
+          BorealNode _ "body" body' -> body' Vector.! 0
 
   transformedBoundExpression <- transformExpression boundExpression
   transformedBody <- transformExpression body
@@ -153,14 +153,14 @@ takeLiteralFromAtom a =
     Left _ -> Nothing
 
 processAlternative :: Syntax -> RawCoreEff (CaseAlternative RawCore)
-processAlternative (BorealNode "alternative" body) = do
-  let BorealIdent cons = Vector.head body
+processAlternative (BorealNode _ "alternative" body) = do
+  let BorealIdent _ cons = Vector.head body
   rhs <- transformExpression (Vector.last body)
   let lhs = Constructor cons
   pure $ CaseAlternative lhs rhs
 
 processMember :: Syntax -> RecordMember
-processMember (BorealNode "record_member" members) =
-  let BorealIdent memberName = members Vector.! 0
-      BorealIdent memberType = members Vector.! 2
+processMember (BorealNode _ "record_member" members) =
+  let BorealIdent _ memberName = members Vector.! 0
+      BorealIdent _ memberType = members Vector.! 2
    in RecordMember{memberName, memberType}

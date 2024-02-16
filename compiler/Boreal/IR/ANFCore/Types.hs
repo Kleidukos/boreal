@@ -8,7 +8,7 @@ import Effectful.State.Static.Local (State)
 import GHC.Generics (Generic)
 
 import Boreal.Frontend.Syntax (Name)
-import Boreal.IR.RawCore (CaseAlternative)
+import Boreal.IR.RawCore (CaseAlternative, RecordMember)
 import Boreal.ScopeEnvironment
 
 type ANFCoreEff =
@@ -53,5 +53,8 @@ data ANFCore
   | ATypeDeclaration
       Name
       (Vector Name)
+  | ARecordDeclaration
+      Name
+      (Vector RecordMember)
   | Halt Value
   deriving stock (Eq, Show, Ord, Generic)
