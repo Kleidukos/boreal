@@ -48,6 +48,11 @@ spec =
         diffCmd
         "./test/golden/lua/parenthesised-expression.lua"
         emitParenthesisedExpression
+    , goldenVsStringDiff
+        "Emit sum type"
+        diffCmd
+        "./test/golden/lua/sum-type.lua"
+        emitSumType
     ]
 
 emitAddition :: IO LazyByteString
@@ -59,8 +64,8 @@ emitAddition = do
   |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
-  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
-  generated <- Lua.runLua "." rawModule{topLevelDeclarations = anfDecls}
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
+  generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
 
 emitSubtraction :: IO LazyByteString
@@ -72,8 +77,8 @@ emitSubtraction = do
   |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
-  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
-  generated <- Lua.runLua "." rawModule{topLevelDeclarations = anfDecls}
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
+  generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
 
 emitArithmeticOperations :: IO LazyByteString
@@ -85,8 +90,8 @@ emitArithmeticOperations = do
 |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
-  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
-  generated <- Lua.runLua "." rawModule{topLevelDeclarations = anfDecls}
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
+  generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
 
 emitLetBinding :: IO LazyByteString
@@ -100,8 +105,8 @@ emitLetBinding = do
 |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
-  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
-  generated <- Lua.runLua "." rawModule{topLevelDeclarations = anfDecls}
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
+  generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
 
 emitParenthesisedExpression :: IO LazyByteString
@@ -116,6 +121,21 @@ main2 = 1 - 2 + 3
 |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
-  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
-  generated <- Lua.runLua "." rawModule{topLevelDeclarations = anfDecls}
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
+  generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
+  pure . Text.encodeUtf8 . Text.fromStrict $ generated
+
+emitSumType :: IO LazyByteString
+emitSumType = do
+  let input =
+        [str|
+module Module where
+
+type Ordering = LT | EQ | GT
+
+|]
+  parsed <- TreeSitter.parse input
+  rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
+  generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated

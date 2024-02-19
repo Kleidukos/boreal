@@ -28,13 +28,28 @@ runLua libDir anfModule =
     . State.evalState emptyFunctionEnvironment
     . State.evalState mempty
     $ do
-      luaChunk <- forM anfModule.topLevelDeclarations $ \case
+      luaTypeDeclarations <- forM anfModule.typeDeclarations $ \case
+        SumTypeDeclaration name constructors ->
+          typeDeclarationToLua name constructors
+      luaTopLevelFunctions <- forM anfModule.topLevelFunctions $ \case
         AFun name args body -> do
           functionDeclarationToLua name args body
-        ATypeDeclaration name constructors ->
-          typeDeclarationToLua name constructors
-      result <- codegen libDir anfModule.moduleName luaChunk
-      pure $ Text.pack $ mconcat result
+      let moduleName = Text.pack $ zEncodeString $ Text.unpack anfModule.moduleName
+      exportList' <- mkExportList
+      let exportList = show . pprint $ Block (List.singleton exportList') Nothing
+      let preludeImport = "local prelude = dofile(\"" <> libDir </> "Stdlib" </> "Prelude.lua\")\n\n"
+      let exportModule = "return " <> Text.unpack moduleName
+      result1 <- codegen libDir luaTypeDeclarations
+      result2 <- codegen libDir luaTopLevelFunctions
+      pure $
+        Text.pack $
+          mconcat $
+            ["-- ", Text.unpack anfModule.moduleName, "\n"]
+              <> [if anfModule.moduleName /= "Stdlib.Prelude" then preludeImport else ""]
+              <> result1
+              <> result2
+              <> ["\n", exportList]
+              <> ["\n", exportModule, "\n"]
 
 typeDeclarationToLua
   :: Boreal.Name
@@ -50,20 +65,11 @@ constructorToTableMember :: Boreal.Name -> Lua.TableField
 constructorToTableMember name =
   Lua.NamedField (Lua.Name name) (Lua.TableConst [])
 
-codegen :: FilePath -> Text -> Vector Lua.Stat -> LuaEff [String]
-codegen libDir moduleName' statements = do
-  let moduleName = Text.pack $ zEncodeString $ Text.unpack moduleName'
-  exportList <- mkExportList
-  let preludeImport = "local prelude = dofile(\"" <> libDir </> "Stdlib" </> "Prelude.lua\")\n\n"
-  let exportModule = "return " <> Text.unpack moduleName
+codegen :: FilePath -> Vector Lua.Stat -> LuaEff [String]
+codegen libDir statements = do
   let prettyPrintedStatements =
-        show . pprint $ Block (Vector.toList (statements <> Vector.singleton exportList)) Nothing
-  pure $
-    [ "-- " <> Text.unpack moduleName' <> "\n"
-    , if moduleName' /= "Stdlib.Prelude" then preludeImport else ""
-    ]
-      <> [prettyPrintedStatements]
-      <> ["\n", exportModule]
+        show . pprint $ Block (Vector.toList statements) Nothing
+  pure [prettyPrintedStatements]
 
 valueToLua :: Value -> LuaEff Lua.Exp
 valueToLua (Terminal terminalValue) = pure $ terminalValueToLua terminalValue

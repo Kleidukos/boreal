@@ -20,11 +20,11 @@ regen-golden: ## Re-generate the golden tests
 	@cabal test --test-options="--accept"
 
 lint: ## Run the code linter (HLint)
-	@find app compiler test -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
+	@find app compiler test/BorealTest test/*.hs -name "*.hs" | xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
 
 style: ## Run the code styler (stylish-haskell)
 	@cabal-fmt -i *.cabal
-	@find app compiler test -name "*.hs" | xargs -P $(PROCS) -I {} fourmolu -q --mode inplace {}
+	@find app compiler test/BorealTest test/*.hs -name "*.hs" | xargs -P $(PROCS) -I {} fourmolu -q --mode inplace {}
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.* ?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

@@ -7,10 +7,13 @@ import Data.TreeDiff
 import GHC.Stack
 import Test.Tasty.HUnit (Assertion)
 import Test.Tasty.HUnit qualified as Test
+import TreeSitter.Node
 
 import Boreal.Frontend.Syntax
 import Boreal.IR.ANFCore.Types
 import Boreal.IR.RawCore
+import Boreal.IR.Types
+import Boreal.SourceInfo
 
 assertRight :: (HasCallStack) => Either a b -> IO b
 assertRight (Left _a) = Test.assertFailure "Test return Left instead of Right"
@@ -40,3 +43,6 @@ instance ToExpr ComplexValue
 instance ToExpr Value
 instance ToExpr ANFCore
 instance ToExpr RecordMember
+instance ToExpr SourceInfo
+instance ToExpr TSPoint
+instance ToExpr TypeDeclaration

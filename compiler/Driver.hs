@@ -76,8 +76,8 @@ runCompilation debugFlags rawModule libsDir filePath = do
   let outputPath = libsDir </> outputFile
   let moduleDir = FilePath.takeDirectory outputPath
   liftIO $ putStrLn $ "[+] Compiling " <> filePath <> " to " <> outputPath
-  anfDecls <- liftIO $ traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelDeclarations
-  let anfModule = rawModule{topLevelDeclarations = anfDecls}
+  anfDecls <- liftIO $ traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
+  let anfModule = rawModule{topLevelFunctions = anfDecls}
   when debugFlags.dumpANFCore $
     liftIO $
       pPrint anfModule
