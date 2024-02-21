@@ -1,0 +1,10 @@
+=====
+Lua Native FFI
+=====
+
+module Table where
+
+type Table = 
+
+native lua "table.pack" 
+  new : Table
