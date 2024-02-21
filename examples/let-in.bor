@@ -1,5 +1,6 @@
 module LetIn where
 
-otherfunction =
-  let x = 3
-   in x + 1
+otherfunction = 
+  let x = 3 in
+  let y = x + 1 in
+  y * 3

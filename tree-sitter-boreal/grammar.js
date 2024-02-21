@@ -69,7 +69,8 @@ module.exports = grammar({
     ),
 
     let_binding_body: $ => choice(
-      $.simple_expression
+      $.simple_expression,
+      $.let_binding,
     ),
 
     let_binding: $ => seq(
@@ -78,7 +79,7 @@ module.exports = grammar({
       "=",
       field("binding_value", $.simple_expression),
       "in",
-      field("binding_body", $.simple_expression)
+      field("binding_body", $.let_binding_body)
     ),
 
     case_expression: $ => prec.right(2,seq(

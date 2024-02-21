@@ -99,9 +99,11 @@ emitLetBinding = do
   let input =
         [str|
     module Mod where
-    main =
-      let x = 42 + 1
-       in x + 1 - 1
+
+    otherfunction = 
+      let x = 3 in
+      let y = x + 1 in
+      y * 3
 |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
