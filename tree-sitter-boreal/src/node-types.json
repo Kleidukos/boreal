@@ -223,7 +223,7 @@
         "required": true,
         "types": [
           {
-            "type": "simple_expression",
+            "type": "let_binding_body",
             "named": true
           }
         ]
@@ -248,6 +248,25 @@
           }
         ]
       }
+    }
+  },
+  {
+    "type": "let_binding_body",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "let_binding",
+          "named": true
+        },
+        {
+          "type": "simple_expression",
+          "named": true
+        }
+      ]
     }
   },
   {

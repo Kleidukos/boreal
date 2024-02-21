@@ -2,6 +2,7 @@
 
 module Boreal.IR.RawCore where
 
+import Data.Foldable
 import Data.Function
 import Data.Text qualified as Text
 import Data.Text.Read qualified as Text
@@ -12,7 +13,6 @@ import Effectful.State.Static.Local (State)
 import Effectful.State.Static.Local qualified as State
 import GHC.Generics (Generic)
 import Text.Pretty.Simple (pPrint)
-import Data.Foldable
 
 import Boreal.Frontend.Syntax
 import Boreal.IR.Types
@@ -115,6 +115,8 @@ transformExpression (BorealNode _ "simple_expression" body) =
   case body of
     [BorealAtom _ "(", expr, BorealAtom _ ")"] -> transformExpression expr
     _ -> transformExpression $ Vector.head body
+transformExpression (BorealNode si "let_binding_body" bindingBody) = do
+  transformExpression (bindingBody Vector.! 0)
 transformExpression (BorealNode si "let_binding" bindings) = do
   let BorealIdent _ bindingName = bindings Vector.! 1
   let BorealNode _ _ beNode' = bindings Vector.! 3

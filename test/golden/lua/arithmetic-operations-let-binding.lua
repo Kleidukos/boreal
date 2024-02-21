@@ -1,10 +1,11 @@
 -- Mod
 local prelude = dofile("./Stdlib/Prelude.lua")
 
-local function main()
-  local x = 42 + 1
-  local prim_sub0 = 1 - 1
-  return x + prim_sub0
+local function otherfunction()
+  local x = 3
+  local y = x + 1
+  return y * 3
 end
-local Mod = {main = main}
+local Mod =
+{otherfunction = otherfunction}
 return Mod

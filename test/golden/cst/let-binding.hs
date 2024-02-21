@@ -5,7 +5,7 @@ BorealNode
             , pointColumn = 0
             }
         , end = TSPoint
-            { pointRow = 5
+            { pointRow = 6
             , pointColumn = 0
             }
         }
@@ -66,8 +66,8 @@ BorealNode
                 , pointColumn = 0
                 }
             , end = TSPoint
-                { pointRow = 4
-                , pointColumn = 11
+                { pointRow = 5
+                , pointColumn = 7
                 }
             }
         ) "top_level_declarations"
@@ -78,8 +78,8 @@ BorealNode
                     , pointColumn = 0
                     }
                 , end = TSPoint
-                    { pointRow = 4
-                    , pointColumn = 11
+                    { pointRow = 5
+                    , pointColumn = 7
                     }
                 }
             ) "function_declaration"
@@ -127,8 +127,8 @@ BorealNode
                         , pointColumn = 2
                         }
                     , end = TSPoint
-                        { pointRow = 4
-                        , pointColumn = 11
+                        { pointRow = 5
+                        , pointColumn = 7
                         }
                     }
                 ) "function_body"
@@ -139,8 +139,8 @@ BorealNode
                             , pointColumn = 2
                             }
                         , end = TSPoint
-                            { pointRow = 4
-                            , pointColumn = 11
+                            { pointRow = 5
+                            , pointColumn = 7
                             }
                         }
                     ) "let_binding"
@@ -208,12 +208,12 @@ BorealNode
                     , BorealAtom
                         ( Original
                             { start = TSPoint
-                                { pointRow = 4
-                                , pointColumn = 3
+                                { pointRow = 3
+                                , pointColumn = 12
                                 }
                             , end = TSPoint
-                                { pointRow = 4
-                                , pointColumn = 5
+                                { pointRow = 3
+                                , pointColumn = 14
                                 }
                             }
                         ) "in"
@@ -221,27 +221,39 @@ BorealNode
                         ( Original
                             { start = TSPoint
                                 { pointRow = 4
-                                , pointColumn = 6
+                                , pointColumn = 2
                                 }
                             , end = TSPoint
-                                { pointRow = 4
-                                , pointColumn = 11
+                                { pointRow = 5
+                                , pointColumn = 7
                                 }
                             }
-                        ) "simple_expression"
+                        ) "let_binding_body"
                         [ BorealNode
                             ( Original
                                 { start = TSPoint
                                     { pointRow = 4
-                                    , pointColumn = 6
+                                    , pointColumn = 2
                                     }
                                 , end = TSPoint
-                                    { pointRow = 4
-                                    , pointColumn = 11
+                                    { pointRow = 5
+                                    , pointColumn = 7
                                     }
                                 }
-                            ) "binary_operation"
-                            [ BorealNode
+                            ) "let_binding"
+                            [ BorealAtom
+                                ( Original
+                                    { start = TSPoint
+                                        { pointRow = 4
+                                        , pointColumn = 2
+                                        }
+                                    , end = TSPoint
+                                        { pointRow = 4
+                                        , pointColumn = 5
+                                        }
+                                    }
+                                ) "let"
+                            , BorealIdent
                                 ( Original
                                     { start = TSPoint
                                         { pointRow = 4
@@ -252,21 +264,8 @@ BorealNode
                                         , pointColumn = 7
                                         }
                                     }
-                                ) "simple_expression"
-                                [ BorealIdent
-                                    ( Original
-                                        { start = TSPoint
-                                            { pointRow = 4
-                                            , pointColumn = 6
-                                            }
-                                        , end = TSPoint
-                                            { pointRow = 4
-                                            , pointColumn = 7
-                                            }
-                                        }
-                                    ) "x"
-                                ]
-                            , BorealIdent
+                                ) "y"
+                            , BorealAtom
                                 ( Original
                                     { start = TSPoint
                                         { pointRow = 4
@@ -277,7 +276,7 @@ BorealNode
                                         , pointColumn = 9
                                         }
                                     }
-                                ) "+"
+                                ) "="
                             , BorealNode
                                 ( Original
                                     { start = TSPoint
@@ -286,11 +285,11 @@ BorealNode
                                         }
                                     , end = TSPoint
                                         { pointRow = 4
-                                        , pointColumn = 11
+                                        , pointColumn = 15
                                         }
                                     }
                                 ) "simple_expression"
-                                [ BorealAtom
+                                [ BorealNode
                                     ( Original
                                         { start = TSPoint
                                             { pointRow = 4
@@ -298,10 +297,186 @@ BorealNode
                                             }
                                         , end = TSPoint
                                             { pointRow = 4
-                                            , pointColumn = 11
+                                            , pointColumn = 15
                                             }
                                         }
-                                    ) "1"
+                                    ) "binary_operation"
+                                    [ BorealNode
+                                        ( Original
+                                            { start = TSPoint
+                                                { pointRow = 4
+                                                , pointColumn = 10
+                                                }
+                                            , end = TSPoint
+                                                { pointRow = 4
+                                                , pointColumn = 11
+                                                }
+                                            }
+                                        ) "simple_expression"
+                                        [ BorealIdent
+                                            ( Original
+                                                { start = TSPoint
+                                                    { pointRow = 4
+                                                    , pointColumn = 10
+                                                    }
+                                                , end = TSPoint
+                                                    { pointRow = 4
+                                                    , pointColumn = 11
+                                                    }
+                                                }
+                                            ) "x"
+                                        ]
+                                    , BorealIdent
+                                        ( Original
+                                            { start = TSPoint
+                                                { pointRow = 4
+                                                , pointColumn = 12
+                                                }
+                                            , end = TSPoint
+                                                { pointRow = 4
+                                                , pointColumn = 13
+                                                }
+                                            }
+                                        ) "+"
+                                    , BorealNode
+                                        ( Original
+                                            { start = TSPoint
+                                                { pointRow = 4
+                                                , pointColumn = 14
+                                                }
+                                            , end = TSPoint
+                                                { pointRow = 4
+                                                , pointColumn = 15
+                                                }
+                                            }
+                                        ) "simple_expression"
+                                        [ BorealAtom
+                                            ( Original
+                                                { start = TSPoint
+                                                    { pointRow = 4
+                                                    , pointColumn = 14
+                                                    }
+                                                , end = TSPoint
+                                                    { pointRow = 4
+                                                    , pointColumn = 15
+                                                    }
+                                                }
+                                            ) "1"
+                                        ]
+                                    ]
+                                ]
+                            , BorealAtom
+                                ( Original
+                                    { start = TSPoint
+                                        { pointRow = 4
+                                        , pointColumn = 16
+                                        }
+                                    , end = TSPoint
+                                        { pointRow = 4
+                                        , pointColumn = 18
+                                        }
+                                    }
+                                ) "in"
+                            , BorealNode
+                                ( Original
+                                    { start = TSPoint
+                                        { pointRow = 5
+                                        , pointColumn = 2
+                                        }
+                                    , end = TSPoint
+                                        { pointRow = 5
+                                        , pointColumn = 7
+                                        }
+                                    }
+                                ) "let_binding_body"
+                                [ BorealNode
+                                    ( Original
+                                        { start = TSPoint
+                                            { pointRow = 5
+                                            , pointColumn = 2
+                                            }
+                                        , end = TSPoint
+                                            { pointRow = 5
+                                            , pointColumn = 7
+                                            }
+                                        }
+                                    ) "simple_expression"
+                                    [ BorealNode
+                                        ( Original
+                                            { start = TSPoint
+                                                { pointRow = 5
+                                                , pointColumn = 2
+                                                }
+                                            , end = TSPoint
+                                                { pointRow = 5
+                                                , pointColumn = 7
+                                                }
+                                            }
+                                        ) "binary_operation"
+                                        [ BorealNode
+                                            ( Original
+                                                { start = TSPoint
+                                                    { pointRow = 5
+                                                    , pointColumn = 2
+                                                    }
+                                                , end = TSPoint
+                                                    { pointRow = 5
+                                                    , pointColumn = 3
+                                                    }
+                                                }
+                                            ) "simple_expression"
+                                            [ BorealIdent
+                                                ( Original
+                                                    { start = TSPoint
+                                                        { pointRow = 5
+                                                        , pointColumn = 2
+                                                        }
+                                                    , end = TSPoint
+                                                        { pointRow = 5
+                                                        , pointColumn = 3
+                                                        }
+                                                    }
+                                                ) "y"
+                                            ]
+                                        , BorealIdent
+                                            ( Original
+                                                { start = TSPoint
+                                                    { pointRow = 5
+                                                    , pointColumn = 4
+                                                    }
+                                                , end = TSPoint
+                                                    { pointRow = 5
+                                                    , pointColumn = 5
+                                                    }
+                                                }
+                                            ) "*"
+                                        , BorealNode
+                                            ( Original
+                                                { start = TSPoint
+                                                    { pointRow = 5
+                                                    , pointColumn = 6
+                                                    }
+                                                , end = TSPoint
+                                                    { pointRow = 5
+                                                    , pointColumn = 7
+                                                    }
+                                                }
+                                            ) "simple_expression"
+                                            [ BorealAtom
+                                                ( Original
+                                                    { start = TSPoint
+                                                        { pointRow = 5
+                                                        , pointColumn = 6
+                                                        }
+                                                    , end = TSPoint
+                                                        { pointRow = 5
+                                                        , pointColumn = 7
+                                                        }
+                                                    }
+                                                ) "3"
+                                            ]
+                                        ]
+                                    ]
                                 ]
                             ]
                         ]

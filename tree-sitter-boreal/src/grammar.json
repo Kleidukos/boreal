@@ -287,6 +287,10 @@
         {
           "type": "SYMBOL",
           "name": "simple_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "let_binding"
         }
       ]
     },
@@ -326,7 +330,7 @@
           "name": "binding_body",
           "content": {
             "type": "SYMBOL",
-            "name": "simple_expression"
+            "name": "let_binding_body"
           }
         }
       ]

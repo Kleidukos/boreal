@@ -60,7 +60,8 @@ testLetBinding = do
         ( Let
             "x"
             (Literal 3)
-            (Call "+" [Var "x", Literal 1])
+            ( Let "y" (Call "+" [Var "x", Literal 1]) (Call "*" [Var "y", Literal 3])
+            )
         )
     ]
     result.topLevelFunctions
