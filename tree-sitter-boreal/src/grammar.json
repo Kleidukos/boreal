@@ -220,11 +220,28 @@
       ]
     },
     "function_head": {
-      "type": "REPEAT1",
-      "content": {
-        "type": "SYMBOL",
-        "name": "identifier"
-      }
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "function_name"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "argument"
+          }
+        }
+      ]
+    },
+    "argument": {
+      "type": "PATTERN",
+      "value": "[a-z_\\d]+"
+    },
+    "function_name": {
+      "type": "PATTERN",
+      "value": "[a-z_\\d]+"
     },
     "function_body": {
       "type": "CHOICE",
@@ -251,10 +268,14 @@
       "type": "CHOICE",
       "members": [
         {
-          "type": "REPEAT1",
+          "type": "PREC",
+          "value": 2,
           "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
+            "type": "REPEAT1",
+            "content": {
+              "type": "SYMBOL",
+              "name": "identifier"
+            }
           }
         },
         {

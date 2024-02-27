@@ -8,8 +8,8 @@ import Test.Tasty.HUnit
 import Utils
 
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
-import Boreal.IR.RawCore.Types (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.IR.RawCore qualified as RawCore
+import Boreal.IR.RawCore.Types (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.IR.Types
 
 spec :: TestTree
@@ -147,5 +147,21 @@ testNestedLetBindings = do
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
   assertEqualExpr
-    []
+    [ Fun
+        "adder"
+        ["x"]
+        (Call "+" [Var "x", Literal 1])
+    , Fun
+        "main"
+        []
+        ( Let
+            "a"
+            (Literal 1)
+            ( Let
+                "y"
+                (Call "adder" [Var "a"])
+                (Call "*" [Var "a", Literal 2])
+            )
+        )
+    ]
     result.topLevelFunctions

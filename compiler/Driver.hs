@@ -15,8 +15,8 @@ import Text.Pretty.Simple
 import Boreal.Backend.Lua qualified as Lua
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
 import Boreal.IR.ANFCore qualified as ANFCore
-import Boreal.IR.RawCore.Types (RawCore)
 import Boreal.IR.RawCore qualified as RawCore
+import Boreal.IR.RawCore.Types (RawCore)
 import Boreal.IR.Types (Module (..), moduleNameToPath)
 import Boreal.ScopeEnvironment
 import Driver.BuildFlags

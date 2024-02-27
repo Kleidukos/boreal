@@ -22,7 +22,8 @@ runRawCore action = do
     & State.execState Module{moduleName = "", topLevelFunctions = mempty, typeDeclarations = mempty}
     & runEff
 transformModule
-  :: HasCallStack => Syntax
+  :: (HasCallStack)
+  => Syntax
   -- ^ Bit of syntax we're analysing
   -> RawCoreEff ()
 transformModule (BorealNode _ "source" children) = do
@@ -35,7 +36,7 @@ transformModule (BorealNode _ "source" children) = do
       traverse_ transform decls
   pure ()
 
-transform :: HasCallStack => Syntax -> RawCoreEff ()
+transform :: (HasCallStack) => Syntax -> RawCoreEff ()
 transform (BorealNode _ "function_declaration" rest) = do
   let BorealNode _ "function_head" functionHead = rest Vector.! 0
   let BorealIdent _ funName = functionHead Vector.! 0
@@ -44,7 +45,7 @@ transform (BorealNode _ "function_declaration" rest) = do
         functionHead
           & Vector.tail
           & Vector.map (\(BorealIdent _ x) -> x)
-  (body :: HasCallStack => RawCore) <-
+  (body :: (HasCallStack) => RawCore) <-
     case rest Vector.! 2 of
       (BorealNode _ "function_body" bodyNode) ->
         transformExpression (bodyNode Vector.! 0)
@@ -58,7 +59,7 @@ transform (BorealNode _ "datatype_declaration" declaration) = do
     e -> transformDatatypeDeclaration typeName e
 transform e = error $ "Unmatched: " <> show e
 
-transformDatatypeDeclaration :: HasCallStack => Name -> Syntax -> RawCoreEff ()
+transformDatatypeDeclaration :: (HasCallStack) => Name -> Syntax -> RawCoreEff ()
 transformDatatypeDeclaration typeName (BorealNode _ "sumtype_body" rest) = do
   let constructorNames =
         rest
@@ -70,7 +71,7 @@ transformDatatypeDeclaration typeName (BorealNode _ "record_body" members') = do
   addTypeDeclaration $ RecordDeclaration typeName members
 transformDatatypeDeclaration _ e = error $ "Unmatched: " <> show e
 
-transformExpression :: HasCallStack => Syntax -> RawCoreEff RawCore
+transformExpression :: (HasCallStack) => Syntax -> RawCoreEff RawCore
 transformExpression (BorealNode _ "simple_expression" body) =
   case body of
     [BorealAtom _ "(", expr, BorealAtom _ ")"] -> transformExpression expr
@@ -122,7 +123,7 @@ takeLiteralFromAtom name =
     Right (lit, _) -> Just lit
     Left _ -> Nothing
 
-processAlternative :: HasCallStack => (Syntax, Syntax) -> RawCoreEff (CaseAlternative RawCore)
+processAlternative :: (HasCallStack) => (Syntax, Syntax) -> RawCoreEff (CaseAlternative RawCore)
 processAlternative (BorealIdent _ matchPattern, body) = do
   rhs <- transformExpression body
   let lhs = Constructor matchPattern
@@ -135,16 +136,16 @@ processMember (BorealNode _ "record_member" members) =
       BorealIdent _ memberType = members Vector.! 2
    in RecordMember{memberName, memberType}
 
-addTypeDeclaration :: HasCallStack => TypeDeclaration -> RawCoreEff ()
+addTypeDeclaration :: (HasCallStack) => TypeDeclaration -> RawCoreEff ()
 addTypeDeclaration typeDecl = State.modify @(Module RawCore) $ \m ->
   let newTypeDeclarations = Vector.cons typeDecl m.typeDeclarations
    in m{typeDeclarations = newTypeDeclarations}
 
-addTopLevelFunction :: HasCallStack => RawCore -> RawCoreEff ()
+addTopLevelFunction :: (HasCallStack) => RawCore -> RawCoreEff ()
 addTopLevelFunction functionDeclaration = State.modify @(Module RawCore) $ \m ->
   let newTopLevelFunctions = Vector.snoc m.topLevelFunctions functionDeclaration
    in m{topLevelFunctions = newTopLevelFunctions}
 
-addModuleName :: HasCallStack => Name -> RawCoreEff ()
+addModuleName :: (HasCallStack) => Name -> RawCoreEff ()
 addModuleName name = State.modify @(Module RawCore) $ \m ->
   m{moduleName = Text.strip name}

@@ -448,7 +448,7 @@ BorealNode
                                         }
                                     , end = TSPoint
                                         { pointRow = 6
-                                        , pointColumn = 15
+                                        , pointColumn = 17
                                         }
                                     }
                                 ) "simple_expression"
@@ -464,20 +464,7 @@ BorealNode
                                             }
                                         }
                                     ) "adder"
-                                ]
-                            , BorealNode
-                                ( Original
-                                    { start = TSPoint
-                                        { pointRow = 6
-                                        , pointColumn = 16
-                                        }
-                                    , end = TSPoint
-                                        { pointRow = 6
-                                        , pointColumn = 17
-                                        }
-                                    }
-                                ) "ERROR"
-                                [ BorealIdent
+                                , BorealIdent
                                     ( Original
                                         { start = TSPoint
                                             { pointRow = 6

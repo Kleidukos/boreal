@@ -53,7 +53,14 @@ module.exports = grammar({
       field("body", $.function_body)
     ),
 
-    function_head: $ => repeat1($.identifier),
+    function_head: $ => seq(
+      $.function_name,
+      repeat($.argument),
+    ),
+
+    argument: $ => /[a-z_\d]+/,
+
+    function_name: $ => /[a-z_\d]+/,
 
     function_body: $ => choice(
       field("case_expression", $.case_expression),
@@ -62,7 +69,7 @@ module.exports = grammar({
     ),
 
     simple_expression: $ => choice(
-      repeat1($.identifier),
+      prec(2, repeat1($.identifier)),
       $.constructor,
       $.binary_operation,
       seq("(", $.simple_expression, ")"),

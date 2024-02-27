@@ -41,6 +41,11 @@
     }
   },
   {
+    "type": "argument",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "binary_operation",
     "named": true,
     "fields": {},
@@ -208,11 +213,25 @@
       "required": true,
       "types": [
         {
-          "type": "identifier",
+          "type": "argument",
+          "named": true
+        },
+        {
+          "type": "function_name",
           "named": true
         }
       ]
     }
+  },
+  {
+    "type": "function_name",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "identifier",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "let_binding",
@@ -338,7 +357,7 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
@@ -459,10 +478,6 @@
   },
   {
     "type": "constructor",
-    "named": true
-  },
-  {
-    "type": "identifier",
     "named": true
   },
   {

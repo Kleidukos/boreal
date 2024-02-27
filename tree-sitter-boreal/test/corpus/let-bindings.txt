@@ -13,4 +13,35 @@ main =
 
 --------------------------------------------------------------------------------
 
-()
+(source_file
+  (module_declaration
+    (module_name))
+  (top_level_declarations
+    (function_declaration
+      head: (function_head
+        (function_name)
+        (argument))
+      body: (function_body
+        (simple_expression
+          (binary_operation
+            (simple_expression
+              (identifier))
+            (simple_expression
+              (identifier))))))
+    (function_declaration
+      head: (function_head
+        (function_name))
+      body: (function_body
+        (let_binding
+          binding_name: (identifier)
+          binding_value: (simple_expression
+            (identifier))
+          binding_body: (let_binding_body
+            (let_binding
+              binding_name: (identifier)
+              binding_value: (simple_expression
+                (identifier)
+                (identifier))
+              binding_body: (let_binding_body
+                (simple_expression
+                  (identifier))))))))))

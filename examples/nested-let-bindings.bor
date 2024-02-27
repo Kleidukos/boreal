@@ -5,4 +5,4 @@ adder x = x + 1
 main = 
   let a = 1 in
   let y = adder a in
-  a
+  a * 2
