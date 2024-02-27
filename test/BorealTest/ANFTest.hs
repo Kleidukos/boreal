@@ -8,7 +8,7 @@ import Test.Tasty.HUnit
 
 import Boreal.IR.ANFCore qualified as ANF
 import Boreal.IR.ANFCore.Types (ANFCore (..), ComplexValue (..), TerminalValue (..), Value (..))
-import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
+import Boreal.IR.RawCore.Types (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.ScopeEnvironment
 import Utils
 

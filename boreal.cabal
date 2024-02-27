@@ -57,6 +57,7 @@ library
     Boreal.IR.ANFCore
     Boreal.IR.ANFCore.Types
     Boreal.IR.RawCore
+    Boreal.IR.RawCore.Types
     Boreal.IR.Types
     Boreal.ScopeEnvironment
     Boreal.SourceInfo

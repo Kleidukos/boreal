@@ -14,6 +14,7 @@ watch: ## Start a reloading REPL
 	@ghcid
 
 test: ## Run the test suite
+	@cd tree-sitter-boreal && tree-sitter t
 	@cabal test --test-show-details direct
 
 regen-golden: ## Re-generate the golden tests

@@ -8,7 +8,7 @@ import Effectful.State.Static.Local (State)
 import GHC.Generics (Generic)
 
 import Boreal.Frontend.Syntax (Name)
-import Boreal.IR.RawCore (CaseAlternative)
+import Boreal.IR.RawCore.Types (CaseAlternative)
 import Boreal.ScopeEnvironment
 
 type ANFCoreEff =
