@@ -2,11 +2,11 @@ packages:
   ./
   ./vendor/tree-sitter
 
--- profiling: True
+profiling: True
 
 -- package boreal
---  profiling-detail: late
---  ghc-options: +RTS -pj
+--   profiling-detail: late
+--   ghc-options: -prof +RTS -pj
 
 active-repositories: hackage.haskell.org
 
