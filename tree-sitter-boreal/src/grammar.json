@@ -251,8 +251,11 @@
       "type": "CHOICE",
       "members": [
         {
-          "type": "SYMBOL",
-          "name": "identifier"
+          "type": "REPEAT1",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
         },
         {
           "type": "SYMBOL",
@@ -278,19 +281,6 @@
               "value": ")"
             }
           ]
-        }
-      ]
-    },
-    "let_binding_body": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "simple_expression"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "let_binding"
         }
       ]
     },
@@ -332,6 +322,19 @@
             "type": "SYMBOL",
             "name": "let_binding_body"
           }
+        }
+      ]
+    },
+    "let_binding_body": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "simple_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "let_binding"
         }
       ]
     },

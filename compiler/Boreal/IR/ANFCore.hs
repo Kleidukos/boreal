@@ -11,7 +11,7 @@ import Effectful.State.Static.Local qualified as State
 
 import Boreal.Frontend.Syntax
 import Boreal.IR.ANFCore.Types
-import Boreal.IR.RawCore (CaseAlternative (..), RawCore (..))
+import Boreal.IR.RawCore.Types (CaseAlternative (..), RawCore (..))
 import Boreal.ScopeEnvironment (ScopeEnvironment, lookupIdentifierName)
 import Data.Text qualified as Text
 
