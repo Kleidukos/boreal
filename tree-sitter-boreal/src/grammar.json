@@ -268,15 +268,8 @@
       "type": "CHOICE",
       "members": [
         {
-          "type": "PREC",
-          "value": 2,
-          "content": {
-            "type": "REPEAT1",
-            "content": {
-              "type": "SYMBOL",
-              "name": "identifier"
-            }
-          }
+          "type": "SYMBOL",
+          "name": "identifier"
         },
         {
           "type": "SYMBOL",
@@ -285,6 +278,10 @@
         {
           "type": "SYMBOL",
           "name": "binary_operation"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "function_application"
         },
         {
           "type": "SEQ",
@@ -304,6 +301,17 @@
           ]
         }
       ]
+    },
+    "function_application": {
+      "type": "PREC",
+      "value": 2,
+      "content": {
+        "type": "REPEAT1",
+        "content": {
+          "type": "SYMBOL",
+          "name": "identifier"
+        }
+      }
     },
     "let_binding": {
       "type": "SEQ",

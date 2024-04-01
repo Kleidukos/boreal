@@ -69,11 +69,15 @@ module.exports = grammar({
     ),
 
     simple_expression: $ => choice(
-      prec(2, repeat1($.identifier)),
+      $.identifier,
       $.constructor,
       $.binary_operation,
+      $.function_application,
       seq("(", $.simple_expression, ")"),
     ),
+
+    function_application: $ => 
+      prec(2, repeat1($.identifier)),
 
     let_binding: $ => seq(
       "let",
