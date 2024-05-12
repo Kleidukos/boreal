@@ -7,7 +7,7 @@ extra-source-files:
   ChangeLog.md
   README.md
 
-tested-with:        GHC ==9.6.3
+tested-with:        GHC ==9.8.2
 
 common rts-options
   ghc-options: -rtsopts
@@ -21,8 +21,6 @@ common ghc-options
     -fmax-worker-args=16 -fspec-constr-recursive=16
 
   cc-options:         -g
-
-  -- -Wunused-packages
 
   default-language:   GHC2021
   default-extensions:
