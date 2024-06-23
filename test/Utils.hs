@@ -12,6 +12,7 @@ import TreeSitter.Node
 import Boreal.Frontend.Syntax
 import Boreal.IR.ANFCore.Types
 import Boreal.IR.RawCore
+import Boreal.IR.RawCore.Types
 import Boreal.IR.Types
 import Boreal.SourceInfo
 

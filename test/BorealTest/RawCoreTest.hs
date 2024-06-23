@@ -5,12 +5,11 @@ module BorealTest.RawCoreTest where
 import Data.ByteString qualified as BS
 import Test.Tasty
 import Test.Tasty.HUnit
-import Text.Pretty.Simple (pPrint)
 import Utils
 
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
-import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.IR.RawCore qualified as RawCore
+import Boreal.IR.RawCore.Types (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.IR.Types
 
 spec :: TestTree
@@ -24,6 +23,7 @@ spec =
     , testCase "Module definition with dots" testModuleDefinitionWithDots
     , testCase "Parenthesised expression" testParenthesisedExpression
     , testCase "Record declaration" testRecordDeclaration
+    , testCase "Nested let bindings" testNestedLetBindings
     ]
 
 testFunctionDefinition :: Assertion
@@ -139,3 +139,29 @@ testRecordDeclaration = do
         ]
     ]
     result.typeDeclarations
+
+testNestedLetBindings :: Assertion
+testNestedLetBindings = do
+  input <- BS.readFile "./examples/nested-let-bindings.bor"
+  parsed <- TreeSitter.parse input
+  result <- RawCore.runRawCore $ RawCore.transformModule parsed
+
+  assertEqualExpr
+    [ Fun
+        "adder"
+        ["x"]
+        (Call "+" [Var "x", Literal 1])
+    , Fun
+        "main"
+        []
+        ( Let
+            "a"
+            (Literal 1)
+            ( Let
+                "y"
+                (Call "adder" [Var "a"])
+                (Call "*" [Var "a", Literal 2])
+            )
+        )
+    ]
+    result.topLevelFunctions

@@ -41,6 +41,11 @@
     }
   },
   {
+    "type": "argument",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "binary_operation",
     "named": true,
     "fields": {},
@@ -144,6 +149,21 @@
     }
   },
   {
+    "type": "function_application",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "function_body",
     "named": true,
     "fields": {
@@ -208,11 +228,25 @@
       "required": true,
       "types": [
         {
-          "type": "identifier",
+          "type": "argument",
+          "named": true
+        },
+        {
+          "type": "function_name",
           "named": true
         }
       ]
     }
+  },
+  {
+    "type": "function_name",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "identifier",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "let_binding",
@@ -350,7 +384,7 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "function_application",
           "named": true
         },
         {
@@ -459,10 +493,6 @@
   },
   {
     "type": "constructor",
-    "named": true
-  },
-  {
-    "type": "identifier",
     "named": true
   },
   {

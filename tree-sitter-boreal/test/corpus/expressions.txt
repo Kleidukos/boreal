@@ -13,10 +13,10 @@ expr x = x * 2 + 3
     (module_name))
   (top_level_declarations
     (function_declaration
-      (function_head
-        (identifier)
-        (identifier))
-      (function_body
+      head: (function_head
+        (function_name)
+        (argument))
+      body: (function_body
         (simple_expression
           (binary_operation
             (simple_expression

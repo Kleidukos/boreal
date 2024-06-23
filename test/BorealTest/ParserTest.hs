@@ -48,6 +48,11 @@ spec =
         diffCmd
         "./test/golden/cst/record-type.hs"
         testRecordParser
+    , goldenVsStringDiff
+        "nested let bindings with function application"
+        diffCmd
+        "./test/golden/cst/nested-let-bindings.hs"
+        testNestedLetBindings
     ]
 
 testFunctionDefinitionParser :: IO LazyByteString
@@ -83,5 +88,11 @@ testSumParser = do
 testRecordParser :: IO LazyByteString
 testRecordParser = do
   input <- BS.readFile "./examples/record-declaration.bor"
+  result <- TreeSitter.parse input
+  pure . Text.encodeUtf8 $ pShowNoColor result
+
+testNestedLetBindings :: IO LazyByteString
+testNestedLetBindings = do
+  input <- BS.readFile "./examples/nested-let-bindings.bor"
   result <- TreeSitter.parse input
   pure . Text.encodeUtf8 $ pShowNoColor result

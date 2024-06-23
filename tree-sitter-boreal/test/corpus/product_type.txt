@@ -13,8 +13,8 @@ type Vector = { size : Int }
     (module_name))
   (top_level_declarations
     (datatype_declaration
-      (datatype_head
-        (constructor))
+      head: (datatype_head
+        name: (constructor))
       (record_body
         (record_member
           (identifier)

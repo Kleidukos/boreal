@@ -4,11 +4,12 @@ Let-bindings
 
 module LetIn where
 
-otherfunction = 
-  let x = 3 in
-  let y = x + 1 in
-  y * 3
+adder x = x + 1
 
+main = 
+  let a = 1 in
+  let y = adder a in
+  a
 
 --------------------------------------------------------------------------------
 
@@ -17,26 +18,30 @@ otherfunction =
     (module_name))
   (top_level_declarations
     (function_declaration
-      (function_head
-        (identifier))
-      (function_body
+      head: (function_head
+        (function_name)
+        (argument))
+      body: (function_body
+        (simple_expression
+          (binary_operation
+            (simple_expression
+              (identifier))
+            (simple_expression
+              (identifier))))))
+    (function_declaration
+      head: (function_head
+        (function_name))
+      body: (function_body
         (let_binding
-          (identifier)
-          (simple_expression
+          binding_name: (identifier)
+          binding_value: (simple_expression
             (identifier))
-          (let_binding_body
+          binding_body: (let_binding_body
             (let_binding
-              (identifier)
-              (simple_expression
-                (binary_operation
-                  (simple_expression
-                    (identifier))
-                  (simple_expression
-                    (identifier))))
-              (let_binding_body
+              binding_name: (identifier)
+              binding_value: (simple_expression
+                (identifier)
+                (identifier))
+              binding_body: (let_binding_body
                 (simple_expression
-                  (binary_operation
-                    (simple_expression
-                      (identifier))
-                    (simple_expression
-                      (identifier))))))))))))
+                  (identifier))))))))))

@@ -15,21 +15,21 @@ expr x =
     (module_name))
   (top_level_declarations
     (function_declaration
-      (function_head
-        (identifier)
-        (identifier))
-      (function_body
-        (case_expression
-          (simple_expression
+      head: (function_head
+        (function_name)
+        (argument))
+      body: (function_body
+        case_expression: (case_expression
+          conditional: (simple_expression
             (identifier))
-          (alternatives
+          alternatives: (alternatives
             (alternative
-              (pattern
+              pattern: (pattern
                 (constructor))
-              (simple_expression
+              rhs: (simple_expression
                 (constructor)))
             (alternative
-              (pattern
+              pattern: (pattern
                 (constructor))
-              (simple_expression
+              rhs: (simple_expression
                 (constructor)))))))))
