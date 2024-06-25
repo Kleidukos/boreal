@@ -35,7 +35,7 @@ import Boreal.Frontend.Syntax
 import Boreal.Frontend.Types
 import Boreal.SourceInfo qualified as SourceInfo
 
-foreign import capi unsafe "parser.h tree_sitter_boreal"
+foreign import ccall unsafe "tree_sitter_boreal"
   tree_sitter_boreal :: ConstPtr Language
 
 parse :: StrictByteString -> IO Syntax

@@ -7,7 +7,7 @@ extra-source-files:
   ChangeLog.md
   README.md
 
-tested-with:        GHC ==9.6.3
+tested-with:        GHC ==9.6.5
 
 common rts-options
   ghc-options: -rtsopts
