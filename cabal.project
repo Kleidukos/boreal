@@ -9,11 +9,9 @@ packages:
 
 active-repositories: hackage.haskell.org
 
-with-compiler: ghc-9.6.5
+with-compiler: ghc-9.6
 
 tests: True
-
-test-show-details: direct
 
 documentation: true
 
@@ -28,5 +26,5 @@ source-repository-package
 source-repository-package
   type: git
   location: https://github.com/tree-sitter/haskell-tree-sitter.git
-  tag: 011482f
+  tag: 798550645a28c78b58212d3c45d76824323918d5
   subdir: tree-sitter 
