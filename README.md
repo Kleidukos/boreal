@@ -20,7 +20,7 @@ and its most advanced backend produces Lua code:
 
 ```lua
 -- Expressions
-local prelude = dofile("/home/hecate/Code/boreal/build_/libs/Stdlib/Prelude.lua")
+local prelude = dofile("/home/hecate/Code/boreal/_build/libs/Stdlib/Prelude.lua")
 
 -- Sum types are created as tables with keys
 local MyBool = {MyTrue = {}, MyFalse = {}}
@@ -46,9 +46,9 @@ A rudimentary CLI is available.
 
 ```bash
 $ cabal run boreal -- build tree-sitter-boreal/datatype-declaration.bor
-$ cat build_/libs/Expressions.lua
+$ cat _build/libs/Expressions.lua
 -- Expressions
-prelude = require("./build_/libs/Stdlib/prelude")
+prelude = require("./_build/libs/Stdlib/prelude")
 
 local Optimisation = {O1 = {},
                       O2 = {}}

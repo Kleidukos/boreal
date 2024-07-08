@@ -2,6 +2,7 @@ module Driver where
 
 import Control.Monad (void, when)
 import Data.Function ((&))
+import Data.IORef
 import Data.Text (Text)
 import Data.Text.Encoding qualified as Text
 import Effectful
@@ -15,6 +16,7 @@ import Text.Pretty.Simple
 import Boreal.Backend.Lua qualified as Lua
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
 import Boreal.IR.ANFCore qualified as ANFCore
+import Boreal.IR.ANFCore.Types (ANFCore)
 import Boreal.IR.RawCore (RawCore)
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types (Module (..), moduleNameToPath)
@@ -22,6 +24,35 @@ import Boreal.ScopeEnvironment
 import Driver.BuildFlags
 import Driver.Cache qualified as Cache
 import Driver.DebugFlags
+import Driver.Query (Query (..))
+import Driver.Rules (rules)
+import Rock qualified
+
+runQuery :: FilePath -> Query a -> IO a
+runQuery buildDir query = do
+  memoVar <- newIORef mempty
+  Rock.runTask (Rock.memoise memoVar (rules buildDir)) (Rock.fetch query)
+
+parseFile
+  :: FilePath
+  -> FilePath
+  -> IO (Module RawCore)
+parseFile buildDir sourceFilePath = do
+  runQuery buildDir (ParseFile sourceFilePath)
+
+compileANF
+  :: FilePath
+  -> FilePath
+  -> IO (Module ANFCore)
+compileANF buildDir sourceFilePath = do
+  runQuery buildDir (CompileANF sourceFilePath)
+
+emitLua
+  :: FilePath
+  -> FilePath
+  -> IO ()
+emitLua buildDir sourceFilePath = do
+  runQuery buildDir (EmitLua sourceFilePath)
 
 runBuildEffects :: Eff [FileSystem, IOE] a -> IO a
 runBuildEffects action =
@@ -38,7 +69,7 @@ buildModule
   -> Eff es ()
 buildModule debugFlags buildFlags filePath withCache = do
   currentDir <- FileSystem.getCurrentDirectory
-  let libsDir = currentDir </> "build_" </> "libs"
+  let libsDir = currentDir </> "_build" </> "libs"
   FileSystem.createDirectoryIfMissing True libsDir
   input <- EBS.readFile filePath
   parsedResult <- liftIO $ TreeSitter.parse input
