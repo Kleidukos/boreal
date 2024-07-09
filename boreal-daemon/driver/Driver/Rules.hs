@@ -5,9 +5,16 @@ module Driver.Rules
   , runBuild
   ) where
 
-import Effectful.FileSystem qualified as FileSystem
-import Effectful.FileSystem.IO.ByteString qualified as EBS
 import System.FilePath ((<.>), (</>))
+import Effectful
+import Rock qualified
+import System.FilePath qualified as FilePath
+import Effectful.Log (Logger, Log, LogLevel (..))
+import qualified Effectful.Log as Log
+import Effectful.FileSystem (FileSystem)
+import qualified Data.ByteString as BS
+import qualified System.Directory as Directory
+import qualified Effectful.FileSystem as FileSystem
 
 import Boreal.Backend.Lua qualified as Lua
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
@@ -18,19 +25,15 @@ import Boreal.ScopeEnvironment (newScopeEnvironment)
 import Data.Function ((&))
 import Data.Text.Encoding qualified as Text
 import Driver.Query
-import Effectful
-import Effectful.FileSystem (FileSystem)
-import Rock qualified
-import System.FilePath qualified as FilePath
 
 rules
-  :: FilePath
-  -> Rock.Rules Query
-rules buildDir query = do
+  :: Query a
+  -> Rock.Task Query a
+rules query = do
   liftIO $ putStrLn $ "Fetching " <> show query
   case query of
     ParseFile sourceFilePath -> do
-      input <- liftIO $ runBuild $ EBS.readFile sourceFilePath
+      input <- liftIO $ BS.readFile sourceFilePath
       parsedResult <- liftIO $ TreeSitter.parse input
       liftIO $ RawCore.runRawCore $ RawCore.transformModule parsedResult
     CompileANF sourceFilePath -> do
@@ -41,18 +44,23 @@ rules buildDir query = do
             (ANFCore.runANFCore newScopeEnvironment)
             rawModule.topLevelFunctions
       pure $ rawModule{topLevelFunctions = anfDecls}
-    EmitLua sourceFilePath -> do
+    EmitLua buildDir sourceFilePath -> do
       anfModule <- Rock.fetch (CompileANF sourceFilePath)
       let outputFile = moduleNameToPath anfModule.moduleName <.> ".lua"
       let outputPath = buildDir </> outputFile
       let moduleDir = FilePath.takeDirectory outputPath
       generated <- liftIO $ Lua.runLua buildDir anfModule
-      liftIO $ runBuild $ do
-        FileSystem.createDirectoryIfMissing True moduleDir
-        EBS.writeFile outputPath (Text.encodeUtf8 generated)
+      liftIO $ Directory.createDirectoryIfMissing True moduleDir
+      liftIO $ BS.writeFile outputPath (Text.encodeUtf8 generated)
+      pure outputPath
+    CleanProject buildDir ->
+      liftIO $ Directory.removeDirectoryRecursive buildDir
+    PurgeCache cacheDirectory ->
+      liftIO $ Directory.removeDirectoryRecursive cacheDirectory
 
-runBuild :: Eff [FileSystem, IOE] a -> IO a
-runBuild action =
+runBuild :: Logger -> Eff [Log, FileSystem, IOE] a -> IO a
+runBuild logger action =
   action
+    & Log.runLog "" logger LogInfo 
     & FileSystem.runFileSystem
     & runEff

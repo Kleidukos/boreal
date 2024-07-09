@@ -1,0 +1,65 @@
+cabal-version:      3.6
+name:               boreal-api
+version:            0.1.0.0
+build-type:         Simple
+extra-source-files: README.md
+tested-with:        GHC ==9.6.6
+
+common rts-options
+  ghc-options: -rtsopts -threaded "-with-rtsopts=-N -T"
+
+common ghc-options
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
+    -fhide-source-paths -Wno-unused-do-bind -fshow-hole-constraints
+    -Wno-unticked-promoted-constructors -fdicts-strict
+    -fmax-worker-args=16 -fspec-constr-recursive=16
+
+  cc-options:         -g
+
+  -- -Wunused-packages
+
+  default-language:   GHC2021
+  default-extensions:
+    ApplicativeDo
+    BangPatterns
+    CApiFFI
+    DataKinds
+    DerivingStrategies
+    DerivingVia
+    FlexibleInstances
+    FunctionalDependencies
+    GeneralizedNewtypeDeriving
+    LambdaCase
+    MultiParamTypeClasses
+    NamedFieldPuns
+    OverloadedRecordDot
+    OverloadedStrings
+    PatternGuards
+    TupleSections
+    ViewPatterns
+
+library
+  import:          ghc-options
+  hs-source-dirs:  src
+
+  -- cabal-fmt: expand src/
+  exposed-modules:
+    Boreal.Protocol.BuildFlags
+    Boreal.Protocol.DebugFlags
+    Boreal.Protocol.Request
+    Boreal.Protocol.Response
+    Boreal.Protocol.Session
+    Boreal.Protocol.Types
+
+  build-depends:
+    , aeson
+    , base            >=4.18 && <5
+    , bytestring
+    , containers
+    , directory
+    , effectful
+    , effectful-core
+    , filepath
+    , text

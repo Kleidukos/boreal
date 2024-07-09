@@ -2,7 +2,6 @@ module Driver where
 
 import Control.Monad (void, when)
 import Data.Function ((&))
-import Data.IORef
 import Data.Text (Text)
 import Data.Text.Encoding qualified as Text
 import Effectful
@@ -12,6 +11,7 @@ import Effectful.FileSystem.IO.ByteString qualified as EBS
 import System.FilePath ((<.>), (</>))
 import System.FilePath qualified as FilePath
 import Text.Pretty.Simple
+import qualified Rock
 
 import Boreal.Backend.Lua qualified as Lua
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
@@ -20,39 +20,52 @@ import Boreal.IR.ANFCore.Types (ANFCore)
 import Boreal.IR.RawCore (RawCore)
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types (Module (..), moduleNameToPath)
+import Boreal.Protocol.BuildFlags
+import Boreal.Protocol.DebugFlags
 import Boreal.ScopeEnvironment
-import Driver.BuildFlags
 import Driver.Cache qualified as Cache
-import Driver.DebugFlags
 import Driver.Query (Query (..))
 import Driver.Rules (rules)
-import Rock qualified
 
-runQuery :: FilePath -> Query a -> IO a
-runQuery buildDir query = do
-  memoVar <- newIORef mempty
-  Rock.runTask (Rock.memoise memoVar (rules buildDir)) (Rock.fetch query)
+runQuery :: (IOE :> es) => Query a -> Eff es a
+runQuery query = liftIO $ 
+  Rock.runTask rules $ Rock.fetch query
 
 parseFile
-  :: FilePath
-  -> FilePath
-  -> IO (Module RawCore)
-parseFile buildDir sourceFilePath = do
-  runQuery buildDir (ParseFile sourceFilePath)
+  :: (IOE :> es)
+  => FilePath
+  -> Eff es (Module RawCore)
+parseFile sourceFilePath = do
+  runQuery (ParseFile sourceFilePath)
 
 compileANF
-  :: FilePath
-  -> FilePath
-  -> IO (Module ANFCore)
-compileANF buildDir sourceFilePath = do
-  runQuery buildDir (CompileANF sourceFilePath)
+  :: (IOE :> es)
+  => FilePath
+  -> Eff es (Module ANFCore)
+compileANF sourceFilePath = do
+  runQuery (CompileANF sourceFilePath)
 
 emitLua
-  :: FilePath
+  :: (IOE :> es)
+  => FilePath
   -> FilePath
-  -> IO ()
+  -> Eff es FilePath
 emitLua buildDir sourceFilePath = do
-  runQuery buildDir (EmitLua sourceFilePath)
+  runQuery (EmitLua buildDir sourceFilePath)
+
+cleanProject
+  :: (IOE :> es)
+  => FilePath
+  -> Eff es ()
+cleanProject buildDir = do
+  runQuery (CleanProject buildDir)
+
+purgeCache
+  :: (IOE :> es)
+  => FilePath
+  -> Eff es ()
+purgeCache cachePath = do
+  runQuery (PurgeCache cachePath)
 
 runBuildEffects :: Eff [FileSystem, IOE] a -> IO a
 runBuildEffects action =

@@ -1,13 +1,12 @@
 cabal-version:      3.6
-name:               boreal
+name:               boreal-daemon
 version:            0.1.0.0
-license-file:       LICENSE
 build-type:         Simple
-extra-source-files:
-  ChangeLog.md
-  README.md
-
+extra-source-files: README.md
 tested-with:        GHC ==9.6.6
+extra-source-files:
+  tree-sitter-boreal/src/parser.c
+  tree-sitter-boreal/src/tree_sitter/parser.h
 
 common rts-options
   ghc-options: -rtsopts -threaded "-with-rtsopts=-N -T"
@@ -31,6 +30,7 @@ common ghc-options
     CApiFFI
     DataKinds
     DerivingStrategies
+    DerivingVia
     FlexibleInstances
     FunctionalDependencies
     GeneralizedNewtypeDeriving
@@ -42,6 +42,43 @@ common ghc-options
     PatternGuards
     TupleSections
     ViewPatterns
+
+library driver
+  import:          ghc-options
+  build-depends:
+    , atomic-counter
+    , base
+    , boreal-api
+    , boreal-daemon
+    , bytestring
+    , containers
+    , dependent-hashmap
+    , dependent-sum-template
+    , directory
+    , effectful
+    , filepath
+    , hashable
+    , log-base
+    , log-effectful
+    , optparse-applicative
+    , pretty-simple
+    , rock
+    , sel
+    , some
+    , text
+    , transformers
+
+  hs-source-dirs:  driver
+
+  -- cabal-fmt: expand driver/
+  exposed-modules:
+    Driver
+    Driver.Cache
+    Driver.CLI
+    Driver.Logging
+    Driver.Query
+    Driver.Rules
+    Driver.Session
 
 library
   import:           ghc-options
@@ -60,22 +97,17 @@ library
     Boreal.IR.Types
     Boreal.ScopeEnvironment
     Boreal.SourceInfo
-    Driver
-    Driver.BuildFlags
-    Driver.Cache
-    Driver.DebugFlags
-    Driver.Query
-    Driver.Rules
 
-  other-modules:    Paths_boreal
-  includes:         ./tree-sitter-boreal/src/parser.c
-  include-dirs:     ./tree-sitter-boreal/src/tree_sitter
-  install-includes: ./tree-sitter-boreal/src/tree_sitter.h
-  cxx-sources:      ./tree-sitter-boreal/src/parser.c
+  other-modules:    Paths_boreal_daemon
+  include-dirs:     tree-sitter-boreal/src
+  includes:         tree_sitter/parser.h
+  install-includes: tree_sitter/parser.h
+  cxx-sources:      tree-sitter-boreal/src/parser.c
   hs-source-dirs:   compiler
   build-depends:
     , atomic-counter
     , base                         >=4.18 && <5
+    , boreal-api
     , bytestring
     , containers
     , dependent-sum-template
@@ -86,6 +118,8 @@ library
     , filepath
     , hashable
     , language-lua
+    , log-base
+    , log-effectful
     , pretty-simple
     , prettyprinter
     , prettyprinter-ansi-terminal
@@ -100,22 +134,29 @@ library
     , vector
     , zenc
 
-  default-language: GHC2021
-
-executable boreal
+executable boreald
   import:         ghc-options
   import:         rts-options
-  hs-source-dirs: app/boreal/
+  hs-source-dirs: app
   main-is:        Main.hs
-  other-modules:  CLI.Types
   build-depends:
-    , base                  >=4.18 && <5
-    , boreal
+    , aeson
+    , atomic-counter
+    , base                                   >=4.18 && <5
+    , boreal-api
+    , boreal-daemon:{boreal-daemon, driver}
     , bytestring
+    , containers
     , directory
     , effectful
     , effectful-core
+    , exceptions
+    , filelock
     , filepath
+    , hdaemonize
+    , log-base
+    , log-effectful
+    , network
     , optparse-applicative
     , sel
     , text
@@ -135,8 +176,8 @@ test-suite boreal-test
 
   hs-source-dirs: test
   build-depends:
-    , base           >=4.18 && <5
-    , boreal
+    , base                                   >=4.18 && <5
+    , boreal-daemon:{boreal-daemon, driver}
     , bytestring
     , containers
     , effectful

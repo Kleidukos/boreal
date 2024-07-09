@@ -14,7 +14,14 @@ import Boreal.IR.Types
 data Query a where
   ParseFile :: FilePath -> Query (Module RawCore)
   CompileANF :: FilePath -> Query (Module ANFCore)
-  EmitLua :: FilePath -> Query ()
+  EmitLua
+    :: FilePath 
+      -- ^ Build directory
+    -> FilePath
+      -- ^ Source file path
+    -> Query FilePath
+  CleanProject :: FilePath -> Query ()
+  PurgeCache :: FilePath -> Query ()
 
 deriving instance Eq (Query a)
 deriving instance Show (Query a)
@@ -26,6 +33,8 @@ instance Hashable (Query a) where
       ParseFile{} -> hashWithSalt salt (0 :: Int)
       CompileANF{} -> hashWithSalt salt (1 :: Int)
       EmitLua{} -> hashWithSalt salt (2 :: Int)
+      CleanProject{} -> hashWithSalt salt (3 :: Int)
+      PurgeCache{} -> hashWithSalt salt (4 :: Int)
 
 instance Hashable (Some Query) where
   hashWithSalt salt (Some query) = hashWithSalt salt query

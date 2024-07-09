@@ -17,9 +17,9 @@ jobs:
         id: set-matrix
         uses: kleidukos/get-tested@v0.1.7.0
         with:
-          cabal-file: boreal.cabal
-          ubuntu: true
-          version: 0.1.6.0
+          cabal-file: boreal-daemon/boreal-daemon.cabal
+          ubuntu-version: latest
+          version: 0.1.7.0
   tests:
     name: ${{ matrix.ghc }} on ${{ matrix.os }}
     needs: generate-matrix
@@ -39,7 +39,7 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: 'latest'
       - name: Configure
-        run: cabal new-configure --enable-tests
+        run: cabal configure --enable-tests
       - name: Cache
         uses: actions/cache@v4.0.2
         with:

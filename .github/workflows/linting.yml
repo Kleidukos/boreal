@@ -15,9 +15,12 @@ jobs:
       with:
         version: "0.14.1.0"
         pattern: |
-          app/**/*.hs
-          compiler/**/*.hs
-          test/BorealTest/**/*.hs
+        boreal-client/**/*.hs
+        boreal-api/**/*.hs 
+        boreal-daemon/app/**/*.hs
+        boreal-daemon/compiler/**/*.hs 
+        boreal-daemon/test/BorealTest/**/*.hs
+        boreal-daemon/test/*.hs 
 
   hlint:
     runs-on: ubuntu-latest
@@ -32,5 +35,5 @@ jobs:
     - name: 'Run HLint'
       uses: haskell-actions/hlint-run@v2
       with:
-        path: '["app/", "compiler/", "test/BorealTest/"]'
+        path: '["boreal-client", "boreal-api", "boreal-daemon/app", "boreal-daemon/compiler", "boreal-daemon/test/BorealTest", "boreal-daemon/test/*.hs"]'
         fail-on: warning
