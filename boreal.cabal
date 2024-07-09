@@ -7,7 +7,7 @@ extra-source-files:
   ChangeLog.md
   README.md
 
-tested-with:        GHC ==9.6.5
+tested-with:        GHC ==9.6.6
 
 common rts-options
   ghc-options: -rtsopts -threaded "-with-rtsopts=-N -T"
@@ -64,6 +64,8 @@ library
     Driver.BuildFlags
     Driver.Cache
     Driver.DebugFlags
+    Driver.Query
+    Driver.Rules
 
   other-modules:    Paths_boreal
   includes:         ./tree-sitter-boreal/src/parser.c
@@ -76,17 +78,21 @@ library
     , base                         >=4.18 && <5
     , bytestring
     , containers
+    , dependent-sum-template
     , directory
     , effectful
     , effectful-core
     , extra
     , filepath
+    , hashable
     , language-lua
     , pretty-simple
     , prettyprinter
     , prettyprinter-ansi-terminal
     , PyF
+    , rock
     , sel
+    , some
     , text
     , text-display
     , tree-sitter
@@ -133,6 +139,8 @@ test-suite boreal-test
     , boreal
     , bytestring
     , containers
+    , effectful
+    , filepath
     , pretty-simple
     , PyF
     , sel

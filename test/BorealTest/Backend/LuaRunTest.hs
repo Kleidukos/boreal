@@ -1,23 +1,15 @@
 module BorealTest.Backend.LuaRunTest where
 
-import Data.ByteString qualified as BS
+import Control.Monad.IO.Class
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Char (isSpace)
-import Data.Text.IO qualified as Text
+import Effectful.FileSystem qualified as FileSystem
+import System.FilePath ((</>))
 import System.Process.Typed
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Boreal.Backend.Lua qualified as Lua
-import Boreal.Frontend.TreeSitter qualified as TreeSitter
-import Boreal.IR.ANFCore qualified as ANFCore
-import Boreal.IR.RawCore qualified as RawCore
-import Boreal.IR.Types
-import Boreal.ScopeEnvironment
 import Driver qualified
-import Driver.BuildFlags
-import Driver.DebugFlags
-import Utils
 
 spec :: TestTree
 spec =
@@ -29,9 +21,11 @@ spec =
 testArithmeticExpression :: Assertion
 testArithmeticExpression = do
   Driver.runBuildEffects $ do
-    Driver.buildModule emptyDebugFlags (BuildFlags O1) "stdlib/Prelude.bor" False
-    Driver.buildModule emptyDebugFlags (BuildFlags O1) "./test/run-test/boreal/arithmetic-expression.bor" False
-  (_, result) <- readProcessStdout "lua -e 'print(require(\"build_/libs/Mod\").main())'"
+    currentDir <- FileSystem.getCurrentDirectory
+    let buildDir = currentDir </> "_build" </> "libs"
+    liftIO $ Driver.emitLua buildDir "stdlib/Prelude.bor"
+    liftIO $ Driver.emitLua buildDir "./test/run-test/boreal/arithmetic-expression.bor"
+  (_, result) <- readProcessStdout "lua -e 'print(require(\"_build/libs/Mod\").main())'"
   assertEqual
     "Expected result"
     "43"

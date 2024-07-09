@@ -12,4 +12,4 @@ tags.mtime
 tags
 tags.lock
 cabal.project.local
-build_
+_build

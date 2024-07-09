@@ -26,5 +26,5 @@ source-repository-package
 source-repository-package
   type: git
   location: https://github.com/tree-sitter/haskell-tree-sitter.git
-  tag: 798550645a28c78b58212d3c45d76824323918d5
+  tag: 52a264127cfe3644b1df0939abfa4fded128a73b
   subdir: tree-sitter 

@@ -26,6 +26,9 @@ style: ## Run the code styler (stylish-haskell)
 	@cabal-fmt -i *.cabal
 	@find app compiler test/BorealTest test/*.hs -name "*.hs" | xargs -P $(PROCS) -I {} fourmolu -q --mode inplace {}
 
+tags: ## Run ghc-tags for CTAGS
+	@ghc-tags -c app compiler test/BorealTest test/*.hs
+
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.* ?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
