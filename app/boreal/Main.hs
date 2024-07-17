@@ -1,16 +1,15 @@
 module Main where
 
-import Effectful
-import Effectful.FileSystem qualified as FileSystem
-import Options.Applicative hiding (action)
-import Sel
-
 import CLI.Types
 import Control.Monad (when)
 import Driver qualified
 import Driver.BuildFlags
 import Driver.Cache (getCachePath)
 import Driver.DebugFlags
+import Effectful
+import Effectful.FileSystem qualified as FileSystem
+import Options.Applicative hiding (action)
+import Sel
 import System.FilePath ((</>))
 
 main :: IO ()

@@ -5,24 +5,24 @@ module Driver.Rules
   , runBuild
   ) where
 
-import Effectful.FileSystem qualified as FileSystem
-import Effectful.FileSystem.IO.ByteString qualified as EBS
-import System.FilePath ((<.>), (</>))
-
-import Boreal.Backend.Lua qualified as Lua
-import Boreal.Frontend.TreeSitter qualified as TreeSitter
-import Boreal.IR.ANFCore qualified as ANFCore
-import Boreal.IR.RawCore qualified as RawCore
-import Boreal.IR.Types (Module (..), moduleNameToPath)
-import Boreal.ScopeEnvironment (newScopeEnvironment)
 import Data.Function ((&))
 import Data.Text.Encoding qualified as Text
 import Driver.Query
 import Effectful
 import Effectful.FileSystem (FileSystem)
+import Effectful.FileSystem qualified as FileSystem
+import Effectful.FileSystem.IO.ByteString qualified as EBS
 import Rock qualified
+import System.FilePath ((<.>), (</>))
 import System.FilePath qualified as FilePath
+
+import Boreal.Backend.Lua qualified as Lua
 import Boreal.Effect.Rock
+import Boreal.Frontend.TreeSitter qualified as TreeSitter
+import Boreal.IR.ANFCore qualified as ANFCore
+import Boreal.IR.RawCore qualified as RawCore
+import Boreal.IR.Types (Module (..), moduleNameToPath)
+import Boreal.ScopeEnvironment (newScopeEnvironment)
 
 rules
   :: (IOE :> es, Rock :> es, FileSystem :> es)

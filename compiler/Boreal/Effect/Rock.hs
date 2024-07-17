@@ -11,7 +11,8 @@ import Rock qualified
 
 data Rock :: Effect where
   RunTask :: Rock.Task f a -> Rock m a
-  Fetch :: f a
+  Fetch
+    :: f a
     -> Rock m a
     -- ^ f ~ Query in boreal
 
