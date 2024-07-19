@@ -5,7 +5,6 @@ module BorealTest.RawCoreTest where
 import Data.ByteString qualified as BS
 import Test.Tasty
 import Test.Tasty.HUnit
-import Text.Pretty.Simple (pPrint)
 import Utils
 
 import Boreal.Frontend.TreeSitter qualified as TreeSitter

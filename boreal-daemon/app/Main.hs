@@ -14,6 +14,7 @@ import Data.Function ((&))
 import Data.Set qualified as Set
 import Data.Text (Text)
 import Data.Text qualified as Text
+import Data.Text.Display
 import Effectful
 import Effectful.Concurrent (Concurrent)
 import Effectful.Concurrent qualified as Concurrent
@@ -23,21 +24,23 @@ import Effectful.Reader.Static (Reader)
 import Effectful.Reader.Static qualified as Reader
 import Effectful.State.Static.Shared (State)
 import Effectful.State.Static.Shared qualified as State
-import Log
+import Log (Logger)
 import Network.Socket (AddrInfo (..), Family (..), SockAddr (..), Socket, SocketOption (..), SocketType (..))
 import Network.Socket qualified as Socket
 import Network.Socket.ByteString qualified as Socket
 import Options.Applicative hiding (action)
 import System.Directory qualified as Directory
 import System.Exit qualified as System
-import System.FileLock (FileLock, SharedExclusive (..))
+import System.FileLock (SharedExclusive (..))
 import System.FileLock qualified as FileLock
+import System.FilePath ((</>))
 import System.Posix.Daemonize (daemonize)
 
 import Driver qualified
 import Driver.CLI
 import Driver.Logging qualified as Logging
 import Driver.Session
+import Driver.Shutdown (monitorSessionTable, shutdownServer)
 
 main :: IO ()
 main = do
@@ -47,7 +50,10 @@ main = do
 runOptions :: CLIOptions -> IO ()
 runOptions CLIOptions{daemon} = do
   if daemon
-    then daemonize (Logging.withFileBackend "logs.txt" $ \logger -> runDaemon logger runServer)
+    then do
+      logDirectory <- Directory.getXdgDirectory Directory.XdgState "boreal-daemon"
+      Directory.createDirectoryIfMissing True logDirectory
+      daemonize (Logging.withFileBackend (logDirectory </> "logs.txt") $ \logger -> runDaemon logger runServer)
     else Logging.withStdoutBackend $ \logger -> runDaemon logger runServer
 
 runServer
@@ -59,11 +65,19 @@ runServer
      )
   => Eff es ()
 runServer = do
-  logInfo_ "Starting boreald"
+  mainThreadId <- Concurrent.myThreadId
+  Log.logInfo_ "Starting boreald…"
+  monitorThreadId <- Concurrent.forkIO $ monitorSessionTable mainThreadId
+  Log.logTrace
+    "Starting monitor"
+    $ object
+      [ "monitor_thread_id" .= display (show monitorThreadId)
+      , "main_thread_id" .= display (show mainThreadId)
+      ]
   lockStatus <- liftIO $ FileLock.tryLockFile "/tmp/boreald.lock" Exclusive
   case lockStatus of
     Nothing -> do
-      logInfo_ "Lockfile at /tmp/boreald.lock is already present, which means that boreald is already running"
+      Log.logInfo_ "Lockfile at /tmp/boreald.lock is already present, which means that boreald is already running"
       liftIO $ System.die "Exiting now…"
     Just fileLock -> do
       let addrInfo =
@@ -75,15 +89,15 @@ runServer = do
               (SockAddrUnix "/tmp/boreal.sock")
               Nothing
       (C.bracket :: Eff es a -> (a -> Eff es c) -> (a -> Eff es b) -> Eff es b)
-        (open fileLock addrInfo)
-        (\socket -> shutdown fileLock socket)
-        (\socket -> loop fileLock socket)
+        (open addrInfo)
+        (\socket -> shutdownServer fileLock socket)
+        (\socket -> loop socket)
   where
-    open :: (Log :> es, IOE :> es) => FileLock -> AddrInfo -> Eff es Socket
-    open fileLock addrInfo =
+    open :: (Log :> es, IOE :> es) => AddrInfo -> Eff es Socket
+    open addrInfo =
       (C.bracketOnError :: Eff es a -> (a -> Eff es c) -> (a -> Eff es b) -> Eff es b)
         (liftIO $ Socket.openSocket addrInfo)
-        (\socket -> shutdown fileLock socket)
+        (\socket -> liftIO $ Socket.close socket)
         ( \sock -> do
             liftIO $ do
               Socket.setSocketOption sock ReuseAddr 1
@@ -91,7 +105,7 @@ runServer = do
               Socket.bind sock (SockAddrUnix "/tmp/boreal.sock")
               Socket.listen sock 1024
             do
-              logInfo_ "Starting to listen on at /tmp/boreal.sock"
+              Log.logInfo_ "Starting to listen on at /tmp/boreal.sock"
               pure sock
         )
     loop
@@ -101,14 +115,13 @@ runServer = do
          , State SessionTable :> es
          , Log :> es
          )
-      => FileLock
-      -> Socket
+      => Socket
       -> Eff es ()
-    loop fileLock socket =
+    loop socket =
       forever $
         (C.bracketOnError :: Eff es a -> (a -> Eff es c) -> (a -> Eff es b) -> Eff es b)
           (liftIO $ Socket.accept socket)
-          (\(socket, _) -> shutdown fileLock socket)
+          (\(s, _) -> liftIO $ Socket.close s)
           ( \(conn, _peer) ->
               void $
                 Concurrent.forkFinally
@@ -116,11 +129,12 @@ runServer = do
                   (const $ liftIO $ Socket.gracefulClose conn 5000)
           )
 
-shutdown :: (IOE :> es) => FileLock -> Socket -> Eff es ()
-shutdown fileLock socket = liftIO $ do
-  Socket.close socket
-  Directory.removeFile "/tmp/boreal.sock"
-  liftIO $ FileLock.unlockFile fileLock
+closeHandler
+  :: (IOE :> es)
+  => Socket
+  -> Eff es ()
+closeHandler socket = do
+  liftIO $ Socket.close socket
 
 server
   :: ( IOE :> es
@@ -169,7 +183,7 @@ respondClientRegistered socket sessionId = do
 
 respondProtocolMismatchError :: (Log :> es, IOE :> es) => Socket -> Word -> Word -> Eff es ()
 respondProtocolMismatchError socket expectedVersion actualVersion = do
-  logInfo_ "Protocol mismatch error"
+  Log.logInfo_ "Protocol mismatch error"
   let payload = ProtocolMismatch expectedVersion actualVersion
   let response = BS.toStrict $ encode $ Response currentVersion payload
   liftIO $ Socket.sendAll socket response
@@ -207,7 +221,7 @@ runDaemon logger action = do
   counter <- liftIO $ Counter.new 0
   action
     & Concurrent.runConcurrent
-    & Log.runLog "boreald" logger Log.defaultLogLevel
+    & Log.runLog "boreald" logger Log.LogTrace
     & State.evalState Set.empty
     & Reader.runReader counter
     & runEff

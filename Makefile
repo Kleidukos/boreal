@@ -34,7 +34,8 @@ style: ## Run the code styler (stylish-haskell)
 			| xargs -P $(PROCS) -I {} fourmolu -q --mode inplace {}
 
 tags: ## Run ghc-tags for CTAGS
-	@ghc-tags -c boreal-daemon/app boreal-daemon/compiler boreal-daemon/test/BorealTest boreal-daemon/test/*.hs 
+	@ghc-tags -c boreal-daemon/app boreal-daemon/compiler boreal-daemon/driver boreal-daemon/test/BorealTest \
+			boreal-daemon/test/*.hs boreal-client boreal-api
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.* ?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

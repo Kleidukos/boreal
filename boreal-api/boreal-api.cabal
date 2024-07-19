@@ -63,3 +63,4 @@ library
     , effectful-core
     , filepath
     , text
+    , text-display
