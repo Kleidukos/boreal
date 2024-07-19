@@ -28,7 +28,7 @@ spec =
 
 testFunctionDefinition :: Assertion
 testFunctionDefinition = do
-  input <- BS.readFile "./examples/function-definition.bor"
+  input <- BS.readFile "../examples/function-definition.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -48,7 +48,7 @@ testFunctionDefinition = do
 
 testLetBinding :: Assertion
 testLetBinding = do
-  input <- BS.readFile "./examples/let-in.bor"
+  input <- BS.readFile "../examples/let-in.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -68,7 +68,7 @@ testLetBinding = do
 
 testCaseExpression :: Assertion
 testCaseExpression = do
-  input <- BS.readFile "./examples/case-expression.bor"
+  input <- BS.readFile "../examples/case-expression.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -87,7 +87,7 @@ testCaseExpression = do
 
 testDatatypeDeclaration :: Assertion
 testDatatypeDeclaration = do
-  input <- BS.readFile "./examples/datatype-declaration.bor"
+  input <- BS.readFile "../examples/datatype-declaration.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -97,7 +97,7 @@ testDatatypeDeclaration = do
 
 testModuleDefinitionWithDots :: Assertion
 testModuleDefinitionWithDots = do
-  input <- BS.readFile "./stdlib/Prelude.bor"
+  input <- BS.readFile "../stdlib/Prelude.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -107,7 +107,7 @@ testModuleDefinitionWithDots = do
 
 testParenthesisedExpression :: Assertion
 testParenthesisedExpression = do
-  input <- BS.readFile "./examples/parentheses.bor"
+  input <- BS.readFile "../examples/parentheses.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -126,7 +126,7 @@ testParenthesisedExpression = do
 
 testRecordDeclaration :: Assertion
 testRecordDeclaration = do
-  input <- BS.readFile "./examples/record-declaration.bor"
+  input <- BS.readFile "../examples/record-declaration.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 

@@ -1,5 +1,7 @@
 packages: 
-  ./
+  boreal-api
+  boreal-client
+  boreal-daemon
 
 -- profiling: True
 
@@ -14,6 +16,8 @@ with-compiler: ghc-9.6
 tests: True
 
 documentation: true
+
+multi-repl: True
 
 source-repository-package
     type: git

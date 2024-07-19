@@ -1,4 +1,4 @@
-module Driver.BuildFlags where
+module Boreal.Protocol.BuildFlags where
 
 import Data.ByteString (StrictByteString)
 import Data.ByteString.Char8 qualified as BSC

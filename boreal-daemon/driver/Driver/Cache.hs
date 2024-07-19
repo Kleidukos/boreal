@@ -8,7 +8,6 @@ where
 
 import Data.ByteString (StrictByteString)
 import Data.ByteString.Char8 qualified as BSC
-import Driver.BuildFlags
 import Effectful
 import Effectful.FileSystem (FileSystem, XdgDirectory (..))
 import Effectful.FileSystem qualified as FileSystem
@@ -17,6 +16,8 @@ import Sel.Hashing qualified as Sel
 import System.Directory qualified as Directory
 import System.FilePath ((<.>), (</>))
 import System.FilePath qualified as FilePath
+
+import Boreal.Protocol.BuildFlags
 
 getCachePath :: (FileSystem :> es) => Eff es FilePath
 getCachePath = do

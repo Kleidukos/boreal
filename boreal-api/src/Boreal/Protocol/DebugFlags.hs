@@ -1,4 +1,4 @@
-module Driver.DebugFlags where
+module Boreal.Protocol.DebugFlags where
 
 data DebugFlags = DebugFlags
   { dumpSyntax :: Bool
