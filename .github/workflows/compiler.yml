@@ -9,7 +9,7 @@ on:
 jobs:
   generate-matrix:
     name: "Generate matrix from cabal"
-    outputs: 
+    outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     runs-on: ubuntu-latest
     steps:
@@ -29,13 +29,9 @@ jobs:
     steps:
       - name: Checkout base repo
         uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "latest"
       - name: "Install tools"
         run: |
            sudo apt install libsodium-dev lua5.1
-           npm install tree-sitter-cli
       - name: Set up Haskell
         id: setup-haskell
         uses: haskell-actions/setup@v2
@@ -50,7 +46,13 @@ jobs:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
           key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+      - name: "Generate tree-sitter"
+        uses: tree-sitter/setup-action@v1
+        with:
+          install-lib: false
+      - run: |
+          cd boreal-daemon/tree-sitter-boreal && tree-sitter generate
       - name: Build
-        run: make build
+        run: cabal build all
       - name: Test
         run: make test
