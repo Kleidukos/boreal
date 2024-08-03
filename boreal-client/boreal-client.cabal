@@ -37,23 +37,39 @@ common ghc-options
     TupleSections
     ViewPatterns
 
+library
+  import:          ghc-options
+  import:          rts-options
+  hs-source-dirs:  src
+  exposed-modules: Boreal.Client
+  build-depends:
+    , aeson
+    , base        >=4.18 && <5
+    , boreal-api
+    , bytestring
+    , effectful
+    , network
+
 executable boreal
   import:         ghc-options
   import:         rts-options
   hs-source-dirs: app
   main-is:        Main.hs
-  other-modules:  Client
   build-depends:
     , aeson
     , base                  >=4.18 && <5
     , boreal-api
+    , boreal-client
     , bytestring
     , directory
     , effectful
     , effectful-core
     , filepath
+    , log-base
+    , log-effectful
     , network
     , optparse-applicative
     , sel
     , text
+    , text-display
     , typed-process

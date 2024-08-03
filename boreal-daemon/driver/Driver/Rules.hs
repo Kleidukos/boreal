@@ -44,10 +44,11 @@ rules query = do
             (ANFCore.runANFCore newScopeEnvironment)
             rawModule.topLevelFunctions
       pure $ rawModule{topLevelFunctions = anfDecls}
-    EmitLua buildDir sourceFilePath -> do
+    EmitLua sourceFilePath buildDir -> do
       anfModule <- Rock.fetch (CompileANF sourceFilePath)
       let outputFile = moduleNameToPath anfModule.moduleName <.> ".lua"
       let outputPath = buildDir </> outputFile
+      liftIO $ putStrLn $ "Build artefact at: " <> outputPath
       let moduleDir = FilePath.takeDirectory outputPath
       generated <- liftIO $ Lua.runLua buildDir anfModule
       liftIO $ Directory.createDirectoryIfMissing True moduleDir

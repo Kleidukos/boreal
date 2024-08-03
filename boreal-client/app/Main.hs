@@ -1,23 +1,23 @@
 module Main where
 
-import Boreal.Protocol.BuildFlags
-import Boreal.Protocol.DebugFlags
 import Control.Monad (when)
 import Data.Function ((&))
 import Effectful
+import Effectful.Concurrent (Concurrent)
+import Effectful.Concurrent qualified as Concurrent
 import Effectful.FileSystem (FileSystem, XdgDirectory (..))
 import Effectful.FileSystem qualified as Directory
 import Effectful.FileSystem qualified as FileSystem
 import Effectful.Process (Process)
 import Effectful.Process qualified as Process
-import Options.Applicative hiding (action)
+import Options.Applicative
 import Sel
 import System.FilePath ((</>))
-
-import Client qualified
-import Effectful.Concurrent (Concurrent)
-import Effectful.Concurrent qualified as Concurrent
 import System.IO
+
+import Boreal.Client qualified as Client
+import Boreal.Protocol.BuildFlags
+import Boreal.Protocol.DebugFlags
 
 data CLICommand
   = Build DebugFlags BuildFlags FilePath
@@ -43,7 +43,7 @@ parseBuildCommand =
   Build
     <$> parseDebugFlags
     <*> pure (BuildFlags O0)
-    <*> argument str (metavar "FILE")
+    <*> argument str (metavar "FILE" <> action "file")
 
 parseDebugFlags :: Parser DebugFlags
 parseDebugFlags =
@@ -59,25 +59,33 @@ parsePurgeCommand :: Parser CLICommand
 parsePurgeCommand = pure Purge
 
 runOptions :: CLICommand -> IO ()
-runOptions (Build _ _ filePath) = runBuild $ do
+runOptions (Build _ _ relativeFilePath) = runBuild $ do
   checkForDaemon
-  Concurrent.threadDelay 30000
+  currentDir <- FileSystem.getCurrentDirectory
+  filePath <- Directory.makeAbsolute relativeFilePath
   buildDir <- do
+    liftIO $ putStrLn "Getting cache path"
     cachePath <- getCachePath
+    liftIO $ putStrLn "Creating cache path if needed"
     FileSystem.createDirectoryIfMissing True cachePath
-    currentDir <- FileSystem.getCurrentDirectory
+    liftIO $ putStrLn "Getting current directory"
     Directory.makeAbsolute (currentDir </> "_build" </> "libs")
+  stdlibDir <- Directory.makeAbsolute "stdlib"
   Client.withSession $ \_ -> do
-    Client.compileToLua buildDir "../stdlib/Prelude.bor"
+    liftIO $ putStrLn "Compiling Prelude"
+    Client.compileToLua buildDir $ stdlibDir </> "Prelude.bor"
+    liftIO $ putStrLn $ "Compiling " <> filePath
     Client.compileToLua buildDir filePath
 runOptions Clean = runBuild $ do
   checkForDaemon
+  liftIO $ putStrLn "Checking build directory exists"
   buildDirExists <- FileSystem.doesDirectoryExist "_build"
   when buildDirExists $
     Client.withSession $ \_ -> do
       liftIO $ putStrLn "[+] Cleaning the project"
       buildDir <- Directory.makeAbsolute "_build"
       Client.cleanProject buildDir
+      liftIO $ putStrLn "Project cleaned"
 runOptions Purge = runBuild $ do
   checkForDaemon
   cacheDirectory <- getCachePath
@@ -96,14 +104,20 @@ getCachePath = do
   pure $ prefix </> "boreal/store"
 
 runBuild :: Eff '[Concurrent, Process, FileSystem, IOE] a -> IO a
-runBuild action =
-  action
+runBuild cliAction =
+  cliAction
     & Concurrent.runConcurrent
     & Process.runProcess
     & FileSystem.runFileSystem
     & runEff
 
-checkForDaemon :: (Process :> es, FileSystem :> es, IOE :> es) => Eff es ()
+checkForDaemon
+  :: ( Process :> es
+     , FileSystem :> es
+     , IOE :> es
+     , Concurrent :> es
+     )
+  => Eff es ()
 checkForDaemon = do
   lockExists <- FileSystem.doesFileExist "/tmp/boreald.lock"
   if lockExists
@@ -112,4 +126,5 @@ checkForDaemon = do
     else do
       liftIO $ putStrLn "Starting boreald…"
       Process.callProcess "boreald" ["--daemon"]
+      Concurrent.threadDelay 3_000_000
       liftIO $ putStrLn "boreald started"

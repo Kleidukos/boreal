@@ -23,8 +23,8 @@ testArithmeticExpression = Driver.runBuildEffects $ do
   currentDir <- FileSystem.getCurrentDirectory
   let buildDir = currentDir </> ".." </> "_build" </> "libs"
   FileSystem.createDirectoryIfMissing True buildDir
-  Driver.emitLua buildDir "../stdlib/Prelude.bor"
-  Driver.emitLua buildDir "./test/run-test/boreal/arithmetic-expression.bor"
+  Driver.emitLua "../stdlib/Prelude.bor" buildDir
+  Driver.emitLua "./test/run-test/boreal/arithmetic-expression.bor" buildDir
   (_, result) <- readProcessStdout $ shell $ "lua -e 'print(dofile(\"" <> buildDir <> "/Mod.lua\").main())'"
   liftIO $
     assertEqual

@@ -56,16 +56,19 @@ library driver
     , dependent-sum-template
     , directory
     , effectful
+    , filelock
     , filepath
     , hashable
     , log-base
     , log-effectful
+    , network
     , optparse-applicative
     , pretty-simple
     , rock
     , sel
     , some
     , text
+    , text-display
     , transformers
 
   hs-source-dirs:  driver
@@ -79,6 +82,7 @@ library driver
     Driver.Query
     Driver.Rules
     Driver.Session
+    Driver.Shutdown
 
 library
   import:           ghc-options
@@ -142,9 +146,10 @@ executable boreald
   build-depends:
     , aeson
     , atomic-counter
-    , base                                   >=4.18 && <5
+    , base                  >=4.18 && <5
     , boreal-api
-    , boreal-daemon:{boreal-daemon, driver}
+    , boreal-daemon
+    , boreal-daemon:driver
     , bytestring
     , containers
     , directory
@@ -160,6 +165,7 @@ executable boreald
     , optparse-applicative
     , sel
     , text
+    , text-display
 
 test-suite boreal-test
   import:         ghc-options
@@ -176,8 +182,9 @@ test-suite boreal-test
 
   hs-source-dirs: test
   build-depends:
-    , base                                   >=4.18 && <5
-    , boreal-daemon:{boreal-daemon, driver}
+    , base                  >=4.18 && <5
+    , boreal-daemon
+    , boreal-daemon:driver
     , bytestring
     , containers
     , effectful

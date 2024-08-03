@@ -48,10 +48,12 @@ compileANF sourceFilePath = do
 emitLua
   :: (IOE :> es)
   => FilePath
+      -- ^ Source file path
   -> FilePath
+      -- ^ Build dir
   -> Eff es FilePath
-emitLua buildDir sourceFilePath = do
-  runQuery (EmitLua buildDir sourceFilePath)
+emitLua sourceFilePath buildDir  = do
+  runQuery (EmitLua sourceFilePath buildDir )
 
 cleanProject
   :: (IOE :> es)
