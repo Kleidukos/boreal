@@ -3,11 +3,11 @@ packages:
   boreal-client
   boreal-daemon
 
--- profiling: True
+profiling: True
 
--- package boreal
---  profiling-detail: late
---  ghc-options: +RTS -pj
+package *
+  profiling-detail: late
+  ghc-options: -finfo-table-map -fdistinct-constructor-tables -j
 
 active-repositories: hackage.haskell.org
 

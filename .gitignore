@@ -13,3 +13,6 @@ tags
 tags.lock
 cabal.project.local
 _build
+*.eventlog
+*.eventlog.html
+*.hp

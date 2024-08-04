@@ -9,7 +9,7 @@ extra-source-files:
   tree-sitter-boreal/src/tree_sitter/parser.h
 
 common rts-options
-  ghc-options: -rtsopts -threaded "-with-rtsopts=-N -T"
+  ghc-options: -rtsopts -threaded "-with-rtsopts=-N -T -l -hi -i0.5"
 
 common ghc-options
   ghc-options:
@@ -18,10 +18,10 @@ common ghc-options
     -fhide-source-paths -Wno-unused-do-bind -fshow-hole-constraints
     -Wno-unticked-promoted-constructors -fdicts-strict
     -fmax-worker-args=16 -fspec-constr-recursive=16
+    -Wunused-packages
 
   cc-options:         -g
 
-  -- -Wunused-packages
 
   default-language:   GHC2021
   default-extensions:

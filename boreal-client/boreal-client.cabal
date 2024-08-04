@@ -6,7 +6,7 @@ extra-source-files: README.md
 tested-with:        GHC ==9.6.6
 
 common rts-options
-  ghc-options: -rtsopts -threaded "-with-rtsopts=-N -T"
+  ghc-options: -rtsopts -threaded "-with-rtsopts=-N -T -l -hi -i0.5"
 
 common ghc-options
   ghc-options:

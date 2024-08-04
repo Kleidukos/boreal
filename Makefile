@@ -13,7 +13,7 @@ repl: ## Start a REPL
 	@cabal repl --enable-multi-repl all
 
 watch: ## Start a reloading REPL
-	@ghcid -c "cabal repl all --enable-multi-repl all"
+	@./scripts/watch.sh
 
 test: ## Run the test suite
 	@cd boreal-daemon/tree-sitter-boreal && tree-sitter t
