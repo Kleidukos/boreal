@@ -215,6 +215,22 @@
     }
   },
   {
+    "type": "import_declaration",
+    "named": true,
+    "fields": {
+      "module": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "module_name",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "let_binding",
     "named": true,
     "fields": {
@@ -409,6 +425,10 @@
         {
           "type": "function_declaration",
           "named": true
+        },
+        {
+          "type": "import_declaration",
+          "named": true
         }
       ]
     }
@@ -464,6 +484,10 @@
   {
     "type": "identifier",
     "named": true
+  },
+  {
+    "type": "import",
+    "named": false
   },
   {
     "type": "in",

@@ -186,4 +186,4 @@ addTopLevelFunction functionDeclaration = State.modify @(Module RawCore) $ \m ->
 
 addModuleName :: Name -> RawCoreEff ()
 addModuleName name = State.modify @(Module RawCore) $ \m ->
-  m{moduleName = Text.strip name}
+  m{moduleName = name}

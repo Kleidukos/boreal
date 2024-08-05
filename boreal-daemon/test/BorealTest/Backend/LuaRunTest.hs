@@ -11,20 +11,20 @@ import Test.Tasty.HUnit
 import Control.Monad.IO.Class (liftIO)
 import Driver qualified
 
-spec :: TestTree
-spec =
+spec :: FilePath -> TestTree
+spec topDir =
   testGroup
     "Lua run"
-    [ testCase "Arithmetic expression returns correct result" testArithmeticExpression
+    [ testCase "Arithmetic expression returns correct result" $ testArithmeticExpression topDir
     ]
 
-testArithmeticExpression :: Assertion
-testArithmeticExpression = Driver.runBuildEffects $ do
+testArithmeticExpression :: FilePath -> Assertion
+testArithmeticExpression topDir = Driver.runBuildEffects $ do
   currentDir <- FileSystem.getCurrentDirectory
   let buildDir = currentDir </> ".." </> "_build" </> "libs"
   FileSystem.createDirectoryIfMissing True buildDir
-  Driver.emitLua "../stdlib/Prelude.bor" buildDir
-  Driver.emitLua "./test/run-test/boreal/arithmetic-expression.bor" buildDir
+  Driver.emitLua (topDir </> "../stdlib/Prelude.bor") buildDir
+  Driver.emitLua "test/run-test/boreal/arithmetic-expression.bor" buildDir
   (_, result) <- readProcessStdout $ shell $ "lua -e 'print(dofile(\"" <> buildDir <> "/Mod.lua\").main())'"
   liftIO $
     assertEqual
