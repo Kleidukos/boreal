@@ -33,13 +33,17 @@
     },
     "module_name": {
       "type": "PATTERN",
-      "value": "[A-Za-z]+(?:.[A-Za-z]+)* "
+      "value": "[A-Za-z]+(?:\\.[A-Za-z]+)*"
     },
     "top_level_declarations": {
       "type": "REPEAT1",
       "content": {
         "type": "CHOICE",
         "members": [
+          {
+            "type": "SYMBOL",
+            "name": "import_declaration"
+          },
           {
             "type": "SYMBOL",
             "name": "datatype_declaration"
@@ -50,6 +54,23 @@
           }
         ]
       }
+    },
+    "import_declaration": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "import"
+        },
+        {
+          "type": "FIELD",
+          "name": "module",
+          "content": {
+            "type": "SYMBOL",
+            "name": "module_name"
+          }
+        }
+      ]
     },
     "datatype_declaration": {
       "type": "SEQ",

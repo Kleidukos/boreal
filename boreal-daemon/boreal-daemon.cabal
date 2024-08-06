@@ -8,6 +8,8 @@ extra-source-files:
   tree-sitter-boreal/src/parser.c
   tree-sitter-boreal/src/tree_sitter/parser.h
 
+data-dir:           ../examples
+
 common rts-options
   ghc-options: -rtsopts -threaded "-with-rtsopts=-N -T -l -hi -i0.5"
 
@@ -156,6 +158,7 @@ test-suite boreal-test
     BorealTest.Backend.LuaRunTest
     BorealTest.ParserTest
     BorealTest.RawCoreTest
+    Paths_boreal_daemon
     Utils
 
   hs-source-dirs: test

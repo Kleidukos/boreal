@@ -13,12 +13,18 @@ module.exports = grammar({
       "where"
     ),
 
-    module_name: $ => /[A-Za-z]+(?:.[A-Za-z]+)* /,
+    module_name: $ => /[A-Za-z]+(?:\.[A-Za-z]+)*/,
 
     top_level_declarations: $ => repeat1(choice(
+      $.import_declaration,
       $.datatype_declaration,
       $.function_declaration,
     )),
+
+    import_declaration: $ => seq(
+      "import",
+      field("module", $.module_name),
+    ),
 
     datatype_declaration: $ => seq(
       field("head", $.datatype_head),

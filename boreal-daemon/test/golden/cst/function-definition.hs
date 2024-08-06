@@ -42,10 +42,10 @@ BorealNode
                     }
                 , end = TSPoint
                     { pointRow = 0
-                    , pointColumn = 19
+                    , pointColumn = 18
                     }
                 }
-            ) "Expressions "
+            ) "Expressions"
         , BorealAtom
             ( Original
                 { start = TSPoint

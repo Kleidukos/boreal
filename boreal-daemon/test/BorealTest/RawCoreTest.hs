@@ -11,23 +11,24 @@ import Boreal.Frontend.TreeSitter qualified as TreeSitter
 import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types
+import System.FilePath ((</>))
 
-spec :: TestTree
-spec =
+spec :: FilePath -> TestTree
+spec topDir =
   testGroup
     "RawCore"
-    [ testCase "Function definition syntax to RawCore" testFunctionDefinition
-    , testCase "Let-binding syntax to RawCore" testLetBinding
-    , testCase "Case expression syntax to RawCore" testCaseExpression
-    , testCase "Sum type declaration" testDatatypeDeclaration
-    , testCase "Module definition with dots" testModuleDefinitionWithDots
-    , testCase "Parenthesised expression" testParenthesisedExpression
-    , testCase "Record declaration" testRecordDeclaration
+    [ testCase "Function definition syntax to RawCore" $ testFunctionDefinition topDir
+    , testCase "Let-binding syntax to RawCore" $ testLetBinding topDir
+    , testCase "Case expression syntax to RawCore" $ testCaseExpression topDir
+    , testCase "Sum type declaration" $ testDatatypeDeclaration topDir
+    , testCase "Module definition with dots" $ testModuleDefinitionWithDots topDir
+    , testCase "Parenthesised expression" $ testParenthesisedExpression topDir
+    , testCase "Record declaration" $ testRecordDeclaration topDir
     ]
 
-testFunctionDefinition :: Assertion
-testFunctionDefinition = do
-  input <- BS.readFile "../examples/function-definition.bor"
+testFunctionDefinition :: FilePath -> Assertion
+testFunctionDefinition topDir = do
+  input <- BS.readFile $ topDir </> "function-definition.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -45,9 +46,9 @@ testFunctionDefinition = do
     ]
     result.topLevelFunctions
 
-testLetBinding :: Assertion
-testLetBinding = do
-  input <- BS.readFile "../examples/let-in.bor"
+testLetBinding :: FilePath -> Assertion
+testLetBinding topDir = do
+  input <- BS.readFile $ topDir </> "let-in.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -65,9 +66,9 @@ testLetBinding = do
     ]
     result.topLevelFunctions
 
-testCaseExpression :: Assertion
-testCaseExpression = do
-  input <- BS.readFile "../examples/case-expression.bor"
+testCaseExpression :: FilePath -> Assertion
+testCaseExpression topDir = do
+  input <- BS.readFile $ topDir </> "case-expression.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -84,9 +85,9 @@ testCaseExpression = do
     ]
     result.topLevelFunctions
 
-testDatatypeDeclaration :: Assertion
-testDatatypeDeclaration = do
-  input <- BS.readFile "../examples/datatype-declaration.bor"
+testDatatypeDeclaration :: FilePath -> Assertion
+testDatatypeDeclaration topDir = do
+  input <- BS.readFile $ topDir </> "datatype-declaration.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -94,9 +95,9 @@ testDatatypeDeclaration = do
     [SumTypeDeclaration "Optimisation" ["O1", "O2"]]
     result.typeDeclarations
 
-testModuleDefinitionWithDots :: Assertion
-testModuleDefinitionWithDots = do
-  input <- BS.readFile "../stdlib/Prelude.bor"
+testModuleDefinitionWithDots :: FilePath -> Assertion
+testModuleDefinitionWithDots topDir = do
+  input <- BS.readFile $ ".." </> "stdlib/Prelude.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -104,9 +105,9 @@ testModuleDefinitionWithDots = do
     "Stdlib.Prelude"
     result.moduleName
 
-testParenthesisedExpression :: Assertion
-testParenthesisedExpression = do
-  input <- BS.readFile "../examples/parentheses.bor"
+testParenthesisedExpression :: FilePath -> Assertion
+testParenthesisedExpression topDir = do
+  input <- BS.readFile $ topDir </> "parentheses.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -123,9 +124,9 @@ testParenthesisedExpression = do
     ]
     result.topLevelFunctions
 
-testRecordDeclaration :: Assertion
-testRecordDeclaration = do
-  input <- BS.readFile "../examples/record-declaration.bor"
+testRecordDeclaration :: FilePath -> Assertion
+testRecordDeclaration topDir = do
+  input <- BS.readFile $ topDir </> "record-declaration.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 

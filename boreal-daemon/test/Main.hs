@@ -8,16 +8,18 @@ import BorealTest.Backend.LuaGoldenTest qualified as LuaGoldenTest
 import BorealTest.Backend.LuaRunTest qualified as LuaRunTest
 import BorealTest.ParserTest qualified as ParserTest
 import BorealTest.RawCoreTest qualified as RawCoreTest
+import Paths_boreal_daemon
 
 main :: IO ()
 main = secureMain $ do
-  defaultMain . testGroup "Boréal Tests" $ specs
+  topDir <- getDataDir
+  defaultMain . testGroup "Boréal Tests" $ specs topDir
 
-specs :: [TestTree]
-specs =
-  [ ParserTest.spec
-  , RawCoreTest.spec
+specs :: FilePath -> [TestTree]
+specs topDir =
+  [ ParserTest.spec topDir
+  , RawCoreTest.spec topDir
   , ANFTest.spec
   , LuaGoldenTest.spec
-  , LuaRunTest.spec
+  , LuaRunTest.spec topDir
   ]
