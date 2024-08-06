@@ -1,0 +1,72 @@
+cabal-version:      3.6
+name:               testsuite
+version:            0.1.0.0
+build-type:         Simple
+extra-source-files: README.md
+
+data-dir:           ../examples
+
+common rts-options
+  ghc-options: -rtsopts -threaded "-with-rtsopts=-N -T -l -hi -i0.5"
+
+common ghc-options
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
+    -fhide-source-paths -Wno-unused-do-bind -fshow-hole-constraints
+    -Wno-unticked-promoted-constructors -fdicts-strict
+    -fmax-worker-args=16 -fspec-constr-recursive=16 -Wunused-packages
+
+  default-language:   GHC2021
+  default-extensions:
+    ApplicativeDo
+    BangPatterns
+    CApiFFI
+    DataKinds
+    DerivingStrategies
+    DerivingVia
+    FlexibleInstances
+    FunctionalDependencies
+    GeneralizedNewtypeDeriving
+    LambdaCase
+    MultiParamTypeClasses
+    NamedFieldPuns
+    OverloadedRecordDot
+    OverloadedStrings
+    PatternGuards
+    TupleSections
+    ViewPatterns
+
+test-suite boreal-test
+  import:         ghc-options
+  import:         rts-options
+  type:           exitcode-stdio-1.0
+  main-is:        Main.hs
+  other-modules:
+    BorealTest.ANFTest
+    BorealTest.Backend.LuaGoldenTest
+    BorealTest.Backend.LuaRunTest
+    BorealTest.ParserTest
+    BorealTest.RawCoreTest
+    Paths_testsuite
+    Utils
+
+  hs-source-dirs: test
+  build-depends:
+    , base                  >=4.18 && <5
+    , boreal-daemon
+    , boreal-daemon:driver
+    , bytestring
+    , effectful
+    , filepath
+    , pretty-simple
+    , PyF
+    , sel
+    , tasty
+    , tasty-golden
+    , tasty-hunit
+    , text
+    , tree-diff
+    , tree-sitter
+    , typed-process
+    , vector

@@ -8,7 +8,7 @@ import BorealTest.Backend.LuaGoldenTest qualified as LuaGoldenTest
 import BorealTest.Backend.LuaRunTest qualified as LuaRunTest
 import BorealTest.ParserTest qualified as ParserTest
 import BorealTest.RawCoreTest qualified as RawCoreTest
-import Paths_boreal_daemon
+import Paths_testsuite
 
 main :: IO ()
 main = secureMain $ do

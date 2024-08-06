@@ -2,6 +2,7 @@ packages:
   boreal-api
   boreal-client
   boreal-daemon
+  testsuite
 
 profiling: True
 

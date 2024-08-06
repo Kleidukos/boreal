@@ -67,7 +67,7 @@ BorealNode
                 }
             , end = TSPoint
                 { pointRow = 2
-                , pointColumn = 10
+                , pointColumn = 15
                 }
             }
         ) "top_level_declarations"
@@ -79,7 +79,7 @@ BorealNode
                     }
                 , end = TSPoint
                     { pointRow = 2
-                    , pointColumn = 10
+                    , pointColumn = 15
                     }
                 }
             ) "import_declaration"
@@ -103,10 +103,10 @@ BorealNode
                         }
                     , end = TSPoint
                         { pointRow = 2
-                        , pointColumn = 10
+                        , pointColumn = 15
                         }
                     }
-                ) "Lol"
+                ) "Lol.Haha"
             ]
         ]
     ]

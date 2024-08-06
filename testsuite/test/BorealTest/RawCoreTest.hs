@@ -24,6 +24,7 @@ spec topDir =
     , testCase "Module definition with dots" $ testModuleDefinitionWithDots topDir
     , testCase "Parenthesised expression" $ testParenthesisedExpression topDir
     , testCase "Record declaration" $ testRecordDeclaration topDir
+    , testCase "Import statement" $ testImportStatement topDir
     ]
 
 testFunctionDefinition :: FilePath -> Assertion
@@ -97,7 +98,7 @@ testDatatypeDeclaration topDir = do
 
 testModuleDefinitionWithDots :: FilePath -> Assertion
 testModuleDefinitionWithDots topDir = do
-  input <- BS.readFile $ ".." </> "stdlib/Prelude.bor"
+  input <- BS.readFile $ topDir </> ".." </> "stdlib/Prelude.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
@@ -139,3 +140,14 @@ testRecordDeclaration topDir = do
         ]
     ]
     result.typeDeclarations
+
+testImportStatement :: FilePath -> Assertion
+testImportStatement topDir = do
+  input <- BS.readFile $ topDir </> "import-statement.bor"
+  parsed <- TreeSitter.parse input
+  result <- RawCore.runRawCore $ RawCore.transformModule parsed
+
+  assertEqual
+    "Record declaration"
+    [ImportStatement{importedModule = "Lol.Haha"}]
+    result.imports

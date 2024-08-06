@@ -10,6 +10,7 @@ data Module a = Module
   { moduleName :: Name
   , topLevelFunctions :: Vector a
   , typeDeclarations :: Vector TypeDeclaration
+  , imports :: Vector ImportStatement
   }
   deriving stock (Eq, Ord, Show)
 
@@ -25,6 +26,11 @@ data TypeDeclaration
 data RecordMember = RecordMember
   { memberName :: Name
   , memberType :: Name
+  }
+  deriving stock (Eq, Show, Ord, Generic)
+
+data ImportStatement = ImportStatement
+  { importedModule :: Name
   }
   deriving stock (Eq, Show, Ord, Generic)
 
