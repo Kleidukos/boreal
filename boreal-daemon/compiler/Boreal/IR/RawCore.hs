@@ -12,7 +12,6 @@ import Effectful
 import Effectful.State.Static.Local (State)
 import Effectful.State.Static.Local qualified as State
 import GHC.Generics (Generic)
-import Text.Pretty.Simple (pPrint)
 
 import Boreal.Frontend.Syntax
 import Boreal.IR.Types

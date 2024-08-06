@@ -17,12 +17,9 @@ common ghc-options
     -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
     -fhide-source-paths -Wno-unused-do-bind -fshow-hole-constraints
     -Wno-unticked-promoted-constructors -fdicts-strict
-    -fmax-worker-args=16 -fspec-constr-recursive=16
-    -Wunused-packages
+    -fmax-worker-args=16 -fspec-constr-recursive=16 -Wunused-packages
 
   cc-options:         -g
-
-
   default-language:   GHC2021
   default-extensions:
     ApplicativeDo
@@ -52,7 +49,6 @@ library driver
     , boreal-daemon
     , bytestring
     , containers
-    , dependent-hashmap
     , dependent-sum-template
     , directory
     , effectful
@@ -69,7 +65,6 @@ library driver
     , some
     , text
     , text-display
-    , transformers
 
   hs-source-dirs:  driver
 
@@ -110,31 +105,16 @@ library
   hs-source-dirs:   compiler
   build-depends:
     , atomic-counter
-    , base                         >=4.18 && <5
-    , boreal-api
+    , base            >=4.18 && <5
     , bytestring
     , containers
-    , dependent-sum-template
-    , directory
-    , effectful
     , effectful-core
-    , extra
     , filepath
-    , hashable
     , language-lua
-    , log-base
-    , log-effectful
     , pretty-simple
-    , prettyprinter
-    , prettyprinter-ansi-terminal
-    , PyF
-    , rock
-    , sel
-    , some
     , text
     , text-display
     , tree-sitter
-    , typed-process
     , vector
     , zenc
 
@@ -148,7 +128,6 @@ executable boreald
     , atomic-counter
     , base                  >=4.18 && <5
     , boreal-api
-    , boreal-daemon
     , boreal-daemon:driver
     , bytestring
     , containers
@@ -163,7 +142,6 @@ executable boreald
     , log-effectful
     , network
     , optparse-applicative
-    , sel
     , text
     , text-display
 
@@ -186,18 +164,15 @@ test-suite boreal-test
     , boreal-daemon
     , boreal-daemon:driver
     , bytestring
-    , containers
     , effectful
     , filepath
     , pretty-simple
     , PyF
     , sel
     , tasty
-    , tasty-focus
     , tasty-golden
     , tasty-hunit
     , text
-    , text-display
     , tree-diff
     , tree-sitter
     , typed-process
