@@ -44,7 +44,7 @@ common ghc-options
 
 library driver
   import:          ghc-options
-  visibility: public
+  visibility:      public
   build-depends:
     , atomic-counter
     , base
