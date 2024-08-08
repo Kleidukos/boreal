@@ -4,7 +4,6 @@ module Boreal.IR.RawCore where
 
 import Data.Foldable
 import Data.Function
-import Data.Text qualified as Text
 import Data.Text.Read qualified as Text
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
@@ -58,7 +57,7 @@ type RawCoreEff = Eff '[State (Module RawCore), IOE]
 runRawCore :: RawCoreEff a -> IO (Module RawCore)
 runRawCore action = do
   action
-    & State.execState Module{moduleName = "", topLevelFunctions = mempty, typeDeclarations = mempty}
+    & State.execState Module{moduleName = "", topLevelFunctions = mempty, typeDeclarations = mempty, imports = mempty}
     & runEff
 transformModule
   :: Syntax
@@ -95,6 +94,11 @@ transform (BorealNode _ "datatype_declaration" declaration) = do
   case declaration Vector.! 2 of
     BorealAtom _ "{" -> transformDatatypeDeclaration typeName (declaration Vector.! 3)
     e -> transformDatatypeDeclaration typeName e
+transform (BorealNode _ "import_declaration" declaration) = do
+  let BorealIdent _ "import" = declaration Vector.! 0
+  let BorealIdent _ moduleName = declaration Vector.! 1
+  let importStatement = ImportStatement moduleName
+  addImportedModule importStatement
 transform e = error $ "Unmatched: " <> show e
 
 transformDatatypeDeclaration :: Name -> Syntax -> RawCoreEff ()
@@ -187,3 +191,8 @@ addTopLevelFunction functionDeclaration = State.modify @(Module RawCore) $ \m ->
 addModuleName :: Name -> RawCoreEff ()
 addModuleName name = State.modify @(Module RawCore) $ \m ->
   m{moduleName = name}
+
+addImportedModule :: ImportStatement -> RawCoreEff ()
+addImportedModule importStatement = State.modify @(Module RawCore) $ \m ->
+  let newImportList = Vector.cons importStatement m.imports
+   in m{imports = newImportList}

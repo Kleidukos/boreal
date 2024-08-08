@@ -21,10 +21,11 @@ spec topDir =
 testArithmeticExpression :: FilePath -> Assertion
 testArithmeticExpression topDir = Driver.runBuildEffects $ do
   currentDir <- FileSystem.getCurrentDirectory
+  sourceFilePath <- FileSystem.makeAbsolute "run-test/boreal/arithmetic-expression.bor"
   let buildDir = currentDir </> ".." </> "_build" </> "libs"
   FileSystem.createDirectoryIfMissing True buildDir
   Driver.emitLua (topDir </> "../stdlib/Prelude.bor") buildDir
-  Driver.emitLua "test/run-test/boreal/arithmetic-expression.bor" buildDir
+  Driver.emitLua sourceFilePath buildDir
   (_, result) <- readProcessStdout $ shell $ "lua -e 'print(dofile(\"" <> buildDir <> "/Mod.lua\").main())'"
   liftIO $
     assertEqual

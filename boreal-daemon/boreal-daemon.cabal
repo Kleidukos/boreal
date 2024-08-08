@@ -44,6 +44,7 @@ common ghc-options
 
 library driver
   import:          ghc-options
+  visibility:      public
   build-depends:
     , atomic-counter
     , base
@@ -99,7 +100,6 @@ library
     Boreal.ScopeEnvironment
     Boreal.SourceInfo
 
-  other-modules:    Paths_boreal_daemon
   include-dirs:     tree-sitter-boreal/src
   includes:         tree_sitter/parser.h
   install-includes: tree_sitter/parser.h
@@ -146,37 +146,3 @@ executable boreald
     , optparse-applicative
     , text
     , text-display
-
-test-suite boreal-test
-  import:         ghc-options
-  import:         rts-options
-  type:           exitcode-stdio-1.0
-  main-is:        Main.hs
-  other-modules:
-    BorealTest.ANFTest
-    BorealTest.Backend.LuaGoldenTest
-    BorealTest.Backend.LuaRunTest
-    BorealTest.ParserTest
-    BorealTest.RawCoreTest
-    Paths_boreal_daemon
-    Utils
-
-  hs-source-dirs: test
-  build-depends:
-    , base                  >=4.18 && <5
-    , boreal-daemon
-    , boreal-daemon:driver
-    , bytestring
-    , effectful
-    , filepath
-    , pretty-simple
-    , PyF
-    , sel
-    , tasty
-    , tasty-golden
-    , tasty-hunit
-    , text
-    , tree-diff
-    , tree-sitter
-    , typed-process
-    , vector
