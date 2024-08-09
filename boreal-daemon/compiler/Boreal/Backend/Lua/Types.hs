@@ -8,6 +8,7 @@ import Effectful.State.Static.Local qualified as State
 import Language.Lua qualified as Lua
 
 import Boreal.Frontend.Syntax (Name)
+import Control.Concurrent.Counter (Counter)
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
 
@@ -15,6 +16,7 @@ type LuaEff =
   Eff
     '[ State Environment
      , State FunctionEnvironment
+     , Reader Counter
      , Reader ModuleInfo
      , IOE
      ]

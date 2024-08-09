@@ -25,6 +25,7 @@ spec topDir =
     , testCase "Parenthesised expression" $ testParenthesisedExpression topDir
     , testCase "Record declaration" $ testRecordDeclaration topDir
     , testCase "Import statement" $ testImportStatement topDir
+    , testCase "If-then-else" $ testIfThenElse topDir
     ]
 
 testFunctionDefinition :: FilePath -> Assertion
@@ -152,3 +153,22 @@ testImportStatement topDir = do
     , ImportStatement{importedModule = "Lol.Haha"}
     ]
     result.imports
+
+testIfThenElse :: FilePath -> Assertion
+testIfThenElse topDir = do
+  input <- BS.readFile $ topDir </> "if-then-else.bor"
+  parsed <- TreeSitter.parse input
+  result <- RawCore.runRawCore $ RawCore.transformModule parsed
+
+  assertEqual
+    "If-then-else"
+    [ Fun
+        "fun"
+        ["x"]
+        ( IfThenElse
+            (Call "==" [Var "x", Var "\"lol\""])
+            (Var "blap")
+            (Var "mouarf")
+        )
+    ]
+    result.topLevelFunctions

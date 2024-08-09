@@ -1,0 +1,10 @@
+source_paths:
+- boreal-api/src
+- boreal-daemon/app
+- boreal-daemon/src
+- boreal-daemon/driver
+- boreal-client/app
+- boreal-client/src
+- testsuite/test/BorealTest
+- testsuite/test/Main.hs
+- testsuite/test/Utils.hs

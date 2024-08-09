@@ -1,0 +1,32 @@
+================================================================================
+If Then Else
+================================================================================
+
+module IfThenElse where
+
+fun x =
+  if x < 3
+  then blap
+  else mouarf
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_name))
+  (top_level_declarations
+    (function_declaration
+      (function_head
+        (identifier)
+        (identifier))
+      (function_body
+        (if_then_else
+          (simple_expression
+            (binary_operation
+              (simple_expression
+                (identifier))
+              (simple_expression
+                (identifier))))
+          (simple_expression
+            (identifier))
+          (simple_expression
+            (identifier)))))))

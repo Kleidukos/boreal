@@ -1,0 +1,6 @@
+module IfThenElse where
+
+fun x = 
+  if x == "lol"
+  then blap
+  else mouarf

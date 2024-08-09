@@ -113,7 +113,6 @@ library
     , effectful-core
     , filepath
     , language-lua
-    , pretty-simple
     , text
     , text-display
     , tree-sitter

@@ -1,0 +1,13 @@
+module Colour where
+
+type Colour 
+  = Red
+  | Green
+  | Blue
+
+showcolour colour = 
+  case colour of
+    | Red -> "red"
+    | Green -> "green"
+    | Blue -> "blue"
+

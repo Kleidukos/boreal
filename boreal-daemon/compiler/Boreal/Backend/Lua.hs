@@ -1,5 +1,6 @@
 module Boreal.Backend.Lua where
 
+import Control.Concurrent.Counter qualified as Counter
 import Control.Monad (forM)
 import Data.Function ((&))
 import Data.List qualified as List
@@ -11,21 +12,27 @@ import Data.Vector qualified as Vector
 import Effectful
 import Effectful.Reader.Static qualified as Reader
 import Effectful.State.Static.Local qualified as State
+import Language.Lua (Binop (..), Block (..), Exp (..), FunBody (..), TableField (..))
 import Language.Lua.PrettyPrinter
-import Language.Lua.Syntax
 import Language.Lua.Syntax qualified as Lua
 import System.FilePath ((<.>), (</>))
 import Text.Encoding.Z (zEncodeString)
 
 import Boreal.Backend.Lua.Types
+import Boreal.Frontend.Syntax (Name)
 import Boreal.Frontend.Syntax qualified as Boreal
 import Boreal.IR.ANFCore.Types
+import Boreal.IR.RawCore
 import Boreal.IR.Types
+import Language.Lua.Syntax (Stat (..))
+import Prelude hiding (EQ, GT, LT)
 
 runLua :: FilePath -> Module ANFCore -> IO Text
-runLua libDir anfModule =
+runLua libDir anfModule = do
+  counter <- Counter.new 0
   runEff
     . Reader.runReader (ModuleInfo anfModule.moduleName)
+    . Reader.runReader counter
     . State.evalState emptyFunctionEnvironment
     . State.evalState mempty
     $ do
@@ -100,6 +107,12 @@ complexValueToLua (AApp fun arguments) =
     "-" -> nativeLuaBinOp Sub (arguments Vector.! 0) (arguments Vector.! 1)
     "*" -> nativeLuaBinOp Mul (arguments Vector.! 0) (arguments Vector.! 1)
     "/" -> nativeLuaBinOp Div (arguments Vector.! 0) (arguments Vector.! 1)
+    "<" -> nativeLuaBinOp LT (arguments Vector.! 0) (arguments Vector.! 1)
+    "<=" -> nativeLuaBinOp LTE (arguments Vector.! 0) (arguments Vector.! 1)
+    ">" -> nativeLuaBinOp GT (arguments Vector.! 0) (arguments Vector.! 1)
+    ">=" -> nativeLuaBinOp GTE (arguments Vector.! 0) (arguments Vector.! 1)
+    "==" -> nativeLuaBinOp EQ (arguments Vector.! 0) (arguments Vector.! 1)
+    "!=" -> nativeLuaBinOp NEQ (arguments Vector.! 0) (arguments Vector.! 1)
     e -> error $ "Unmatched: " <> show e
 
 functionDeclarationToLua
@@ -109,25 +122,66 @@ functionDeclarationToLua
   -> LuaEff Lua.Stat
 functionDeclarationToLua name arguments body = do
   bodyInstructions <- functionBodyToBlock body
-  let funArgs = fmap Name arguments
+  let funArgs = fmap Lua.Name arguments
   addNameToEnvironment name
   pure $
     LocalFunAssign
-      (Name name)
+      (Lua.Name name)
       (FunBody (Vector.toList funArgs) False bodyInstructions)
 
 functionBodyToBlock :: ANFCore -> LuaEff Lua.Block
 functionBodyToBlock body = do
-  result <- case body of
-    (ALet name expression letBody) -> letBindingToLua name expression letBody
+  case body of
+    (ALet name expression letBody) -> do
+      stats <- Vector.toList <$> letBindingToLua name expression letBody
+      FunctionEnvironment{returnValue} <- State.get
+      pure $ Block stats (fmap List.singleton returnValue)
     (Halt value) -> do
-      returnValue <- valueToLua value
-      addBlockReturnValue returnValue
-      pure Vector.empty
-    e -> error $ "Didn't match on " <> show e
+      returnValue' <- valueToLua value
+      addBlockReturnValue returnValue'
+      FunctionEnvironment{returnValue} <- State.get
+      pure $ Block mempty (fmap List.singleton returnValue)
+    (ACase expression alternatives) -> do
+      tableName' <- freshName "table"
+      let tableName = Lua.Name tableName'
+      tableFields <- traverse alternativeToTableField alternatives
+      case expression of
+        Terminal terminalValue -> do
+          let lookedUpExpression = terminalValueToLua terminalValue
+          pure $
+            Block
+              [ Lua.LocalAssign
+                  [tableName]
+                  (Just [Lua.TableConst (Vector.toList tableFields)])
+              ]
+              ( Just
+                  [ Lua.PrefixExp $
+                      Lua.PEVar $
+                        Lua.Select (Lua.PEVar (Lua.VarName tableName)) lookedUpExpression
+                  ]
+              )
+        Complex complexValue -> do
+          let lookedUpExpression = complexValueToLua complexValue
+          accessor <- Lua.Name <$> freshName (tableName' <> "_lookup_")
+          pure $
+            Block
+              [ Lua.LocalAssign
+                  [tableName]
+                  (Just [Lua.TableConst (Vector.toList tableFields)])
 
-  FunctionEnvironment{returnValue} <- State.get
-  pure $ Block (Vector.toList result) (fmap List.singleton returnValue)
+              , Lua.LocalAssign
+                  [accessor]
+                  (Just [Lua.EFunDef $ FunBody [] False $ Block [] (Just [lookedUpExpression])])
+              ]
+              ( Just
+                  [ Lua.PrefixExp $
+                      Lua.PEVar $
+                        Lua.Select
+                          (Lua.PEVar (Lua.VarName tableName))
+                          (Lua.PrefixExp (Lua.PEVar (Lua.VarName accessor)))
+                  ]
+              )
+    e -> error $ "Didn't match on " <> show e
 
 letBindingToLua :: Boreal.Name -> Value -> ANFCore -> LuaEff (Vector Lua.Stat)
 letBindingToLua boundName expression body = do
@@ -161,8 +215,28 @@ mkExportList = do
   Environment names <- State.get @Environment
   let fields =
         map
-          (\n -> NamedField (Name n) (PrefixExp (PEVar (VarName (Name n)))))
+          (\n -> NamedField (Lua.Name n) (PrefixExp (Lua.PEVar (Lua.VarName (Lua.Name n)))))
           (Vector.toList names)
   let exports = TableConst fields
   pure $
-    LocalAssign [Name moduleName] (Just [exports])
+    LocalAssign [Lua.Name moduleName] (Just [exports])
+
+alternativeToTableField :: CaseAlternative ANFCore -> LuaEff Lua.TableField
+alternativeToTableField alternative = do
+  let Halt rhs = alternative.rhs
+  luaRHS <- valueToLua rhs
+  case alternative.lhs of
+    Constructor name -> do
+      pure $
+        NamedField
+          (Lua.Name name)
+          luaRHS
+
+alternativePatternToLua :: Pattern -> Lua.Exp
+alternativePatternToLua (Constructor name) = Lua.String name
+
+freshName :: Text -> LuaEff Name
+freshName prefix = do
+  counter <- Reader.ask
+  number <- liftIO $ Counter.add counter 1
+  pure $ prefix <> display number

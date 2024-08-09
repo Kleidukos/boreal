@@ -62,12 +62,14 @@ module.exports = grammar({
     function_head: $ => repeat1($.identifier),
 
     function_body: $ => choice(
+      $.if_then_else,
       field("case_expression", $.case_expression),
       $.let_binding,
       $.simple_expression,
     ),
 
     simple_expression: $ => choice(
+      $.string,
       $.identifier,
       $.constructor,
       $.binary_operation,
@@ -75,6 +77,7 @@ module.exports = grammar({
     ),
 
     let_binding_body: $ => choice(
+      $.if_then_else,
       $.simple_expression,
       $.let_binding,
     ),
@@ -95,6 +98,15 @@ module.exports = grammar({
       field("alternatives", repeat1($.alternatives))
     )),
 
+    if_then_else: $ => seq(
+      "if",
+      field("condition", $.simple_expression),
+      "then",
+      field("true_branch", $.simple_expression),
+      "else",
+      field("false_branch", $.simple_expression),
+    ),
+
     alternatives: $ => prec.right(seq(
       "|",
       sep1("|", $.alternative),
@@ -114,12 +126,19 @@ module.exports = grammar({
 
     identifier: $ => /[a-z_\d]+/,
     constructor: $ => /[A-Z][A-Za-z0-9]+/,
+    string:  $ => /"[^"]*"/,
 
     binary_operation: $ => choice(
       prec.left(1, seq($.simple_expression, "+", $.simple_expression)),
       prec.left(2, seq($.simple_expression, "-", $.simple_expression)),
       prec.left(3, seq($.simple_expression, "*", $.simple_expression)),
       prec.left(4, seq($.simple_expression, "/", $.simple_expression)),
+      prec.left(4, seq($.simple_expression, "==", $.simple_expression)),
+      prec.left(4, seq($.simple_expression, "!=", $.simple_expression)),
+      prec.left(4, seq($.simple_expression, "<", $.simple_expression)),
+      prec.left(4, seq($.simple_expression, ">", $.simple_expression)),
+      prec.left(4, seq($.simple_expression, ">=", $.simple_expression)),
+      prec.left(4, seq($.simple_expression, "<=", $.simple_expression)),
     ),
   }
 })

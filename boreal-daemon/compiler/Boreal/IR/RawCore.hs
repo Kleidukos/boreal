@@ -40,6 +40,13 @@ data RawCore
       -- ^ Expression
       (Vector (CaseAlternative RawCore))
       -- ^ Alternatives
+  | IfThenElse
+      RawCore
+      -- ^ Condition
+      RawCore
+      -- ^ Then branch
+      RawCore
+      -- ^ Else branch
   deriving stock (Eq, Show, Ord, Generic)
 
 data CaseAlternative ir = CaseAlternative
@@ -81,20 +88,8 @@ transformModule (BorealNode _ "source" children) = do
   pure ()
 
 transform :: Syntax -> RawCoreEff ()
-transform (BorealNode _ "function_declaration" rest) = do
-  let BorealNode _ "function_head" functionHead = rest Vector.! 0
-  let BorealIdent _ funName = functionHead Vector.! 0
-  let BorealIdent _ arg = functionHead Vector.! 0
-  let args =
-        functionHead
-          & Vector.tail
-          & Vector.map (\(BorealIdent _ x) -> x)
-  (body :: RawCore) <-
-    case rest Vector.! 2 of
-      (BorealNode _ "function_body" bodyNode) ->
-        transformExpression (bodyNode Vector.! 0)
-      e -> error $ "Unmatched: " <> show e
-  addTopLevelFunction $ Fun funName args body
+transform (BorealNode _ "function_declaration" rest) =
+  transformFunctionDeclaration rest
 transform (BorealNode _ "datatype_declaration" declaration) = do
   let BorealNode _ "datatype_head" datatypeHead = declaration Vector.! 0
   let BorealIdent _ typeName = datatypeHead Vector.! 1
@@ -108,6 +103,21 @@ transform (BorealNode _ "import_declaration" declaration) = do
   addImportedModule importStatement
 transform e = error $ "Unmatched: " <> show e
 
+transformFunctionDeclaration :: Vector Syntax -> RawCoreEff ()
+transformFunctionDeclaration rest = do
+  let BorealNode _ "function_head" functionHead = rest Vector.! 0
+  let BorealIdent _ funName = functionHead Vector.! 0
+  let args =
+        functionHead
+          & Vector.tail
+          & Vector.map (\(BorealIdent _ x) -> x)
+  (body :: RawCore) <-
+    case rest Vector.! 2 of
+      (BorealNode _ "function_body" bodyNode) ->
+        transformExpression (bodyNode Vector.! 0)
+      e -> error $ "Unmatched: " <> show e
+  addTopLevelFunction $ Fun funName args body
+
 transformDatatypeDeclaration :: Name -> Syntax -> RawCoreEff ()
 transformDatatypeDeclaration typeName (BorealNode _ "sumtype_body" rest) = do
   let constructorNames =
@@ -116,7 +126,7 @@ transformDatatypeDeclaration typeName (BorealNode _ "sumtype_body" rest) = do
           & Vector.map (\(BorealIdent _ x) -> x)
   addTypeDeclaration $ SumTypeDeclaration typeName constructorNames
 transformDatatypeDeclaration typeName (BorealNode _ "record_body" members') = do
-  let members = fmap processMember $ Vector.filter (isNamedNode "record_member") members'
+  let members = processMember <$> Vector.filter (isNamedNode "record_member") members'
   addTypeDeclaration $ RecordDeclaration typeName members
 transformDatatypeDeclaration _ e = error $ "Unmatched: " <> show e
 
@@ -125,8 +135,7 @@ transformExpression (BorealNode _ "simple_expression" body) =
   case body of
     [BorealAtom _ "(", expr, BorealAtom _ ")"] -> transformExpression expr
     _ -> transformExpression $ Vector.head body
-transformExpression (BorealNode si "let_binding_body" bindingBody) = do
-  transformExpression (bindingBody Vector.! 0)
+transformExpression (BorealNode si "let_binding_body" bindingBody) = transformExpression (bindingBody Vector.! 0)
 transformExpression (BorealNode si "let_binding" bindings) = do
   let BorealIdent _ bindingName = bindings Vector.! 1
   let BorealNode _ _ beNode' = bindings Vector.! 3
@@ -140,7 +149,7 @@ transformExpression (BorealNode _ "case_expression" expression) = do
   let BorealNode _ "alternatives" alternativesList = expression Vector.! 3
   let alternatives =
         alternativesList
-          & Vector.filter (\syntax -> isNamedNode "alternative" syntax)
+          & Vector.filter (isNamedNode "alternative")
           & Vector.map
             ( \(BorealNode _ _ content) ->
                 let BorealNode _ "pattern" pat = content Vector.! 0
@@ -154,11 +163,21 @@ transformExpression (BorealNode _ "binary_operation" args) = do
   operand1 <- transformExpression $ args Vector.! 0
   operand2 <- transformExpression $ args Vector.! 2
   pure $ Call operation (Vector.fromList [operand1, operand2])
--- transformExpression (BorealNode _ n args) = do
--- liftIO $ putStrLn "============="
--- liftIO $ pPrint args
--- arguments <- traverse transformExpression args
--- pure $ Call n arguments
+transformExpression (BorealNode _ "if_then_else" args) = do
+  let BorealAtom _ "if" = args Vector.! 0
+  let BorealNode _ "simple_expression" [condition] = args Vector.! 1
+  let BorealAtom _ "then" = args Vector.! 2
+  let BorealNode _ "simple_expression" [thenBranch] = args Vector.! 3
+  let BorealAtom _ "else" = args Vector.! 4
+  let BorealNode _ "simple_expression" [elseBranch] = args Vector.! 5
+  transformedCondition <- transformExpression condition
+  transformedThenBranch <- transformExpression thenBranch
+  transformedElseBranch <- transformExpression elseBranch
+  pure $
+    IfThenElse
+      transformedCondition
+      transformedThenBranch
+      transformedElseBranch
 transformExpression (BorealAtom _ a) =
   case takeLiteralFromAtom a of
     (Just l) -> pure $ Literal l

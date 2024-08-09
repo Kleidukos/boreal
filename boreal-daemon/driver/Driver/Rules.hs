@@ -15,6 +15,8 @@ import Effectful.FileSystem (FileSystem)
 import qualified Data.ByteString as BS
 import qualified System.Directory as Directory
 import qualified Effectful.FileSystem as FileSystem
+import Data.Function ((&))
+import Data.Text.Encoding qualified as Text
 
 import Boreal.Backend.Lua qualified as Lua
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
@@ -22,8 +24,6 @@ import Boreal.IR.ANFCore qualified as ANFCore
 import Boreal.IR.RawCore qualified as RawCore
 import Boreal.IR.Types (Module (..), moduleNameToPath)
 import Boreal.ScopeEnvironment (newScopeEnvironment)
-import Data.Function ((&))
-import Data.Text.Encoding qualified as Text
 import Driver.Query
 
 rules

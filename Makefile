@@ -16,10 +16,11 @@ watch: ## Start a reloading REPL
 	@./scripts/watch.sh
 
 test: ## Run the test suite
-	@cd boreal-daemon/tree-sitter-boreal && tree-sitter t
+	@cd boreal-daemon/tree-sitter-boreal && tree-sitter g && tree-sitter t
 	@cabal test all
 
 regen-golden: ## Re-generate the golden tests
+	@cd boreal-daemon/tree-sitter-boreal && tree-sitter g
 	@cabal test boreal-test --test-options="--accept"
 
 lint: ## Run the code linter (HLint)
@@ -32,8 +33,7 @@ style: ## Run the code styler (stylish-haskell)
 			| xargs -P $(PROCS) -I {} fourmolu -q --mode inplace {}
 
 tags: ## Run ghc-tags for CTAGS
-	@ghc-tags -c boreal-daemon/app boreal-daemon/compiler boreal-daemon/driver testsuite/test/BorealTest \
-			testsuite/test/*.hs boreal-client boreal-api
+	@ghc-tags -c
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.* ?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

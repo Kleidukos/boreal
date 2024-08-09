@@ -1,0 +1,6 @@
+module IfThenElse where
+
+main = 
+  if 3 < 2
+  then "seriously??"
+  else "yeah fair."
