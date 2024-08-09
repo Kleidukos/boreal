@@ -39,8 +39,7 @@ testFunctionDeclarationToANFCore = do
             (AApp "*" [AVar "x", ALiteral 2])
         )
         ( Halt
-            ( Complex (AApp "+" [AVar "prim_mul0", ALiteral 2])
-            )
+            (Complex (AApp "+" [AVar "prim_mul0", ALiteral 2]))
         )
     )
     actual

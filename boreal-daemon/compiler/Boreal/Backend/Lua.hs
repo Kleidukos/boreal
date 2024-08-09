@@ -1,6 +1,7 @@
 module Boreal.Backend.Lua where
 
 import Control.Monad (forM)
+import Data.Function ((&))
 import Data.List qualified as List
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -13,7 +14,7 @@ import Effectful.State.Static.Local qualified as State
 import Language.Lua.PrettyPrinter
 import Language.Lua.Syntax
 import Language.Lua.Syntax qualified as Lua
-import System.FilePath ((</>))
+import System.FilePath ((<.>), (</>))
 import Text.Encoding.Z (zEncodeString)
 
 import Boreal.Backend.Lua.Types
@@ -28,6 +29,11 @@ runLua libDir anfModule =
     . State.evalState emptyFunctionEnvironment
     . State.evalState mempty
     $ do
+      let importStatements =
+            Vector.toList $
+              Vector.map
+                (\statement -> Text.unpack $ renderImportStatement libDir statement)
+                anfModule.imports
       luaTypeDeclarations <- forM anfModule.typeDeclarations $ \case
         SumTypeDeclaration name constructors ->
           typeDeclarationToLua name constructors
@@ -37,19 +43,27 @@ runLua libDir anfModule =
       let moduleName = Text.pack $ zEncodeString $ Text.unpack anfModule.moduleName
       exportList' <- mkExportList
       let exportList = show . pprint $ Block (List.singleton exportList') Nothing
-      let preludeImport = "local prelude = dofile(\"" <> libDir </> "Stdlib" </> "Prelude.lua\")\n\n"
       let exportModule = "return " <> Text.unpack moduleName
-      result1 <- codegen libDir luaTypeDeclarations
-      result2 <- codegen libDir luaTopLevelFunctions
+      typeDeclarations <- codegen luaTypeDeclarations
+      topLevelFunctions <- codegen luaTopLevelFunctions
       pure $
         Text.pack $
           mconcat $
             ["-- ", Text.unpack anfModule.moduleName, "\n"]
-              <> [if anfModule.moduleName /= "Stdlib.Prelude" then preludeImport else ""]
-              <> result1
-              <> result2
+              <> importStatements
+              <> typeDeclarations
+              <> topLevelFunctions
               <> ["\n", exportList]
               <> ["\n", exportModule, "\n"]
+
+renderImportStatement :: FilePath -> ImportStatement -> Text
+renderImportStatement libDir importStatement =
+  let modulePath =
+        importStatement.importedModule
+          & Text.replace "." "/"
+          & Text.unpack
+      moduleName = zEncodeString $ Text.unpack importStatement.importedModule
+   in Text.pack $ "local " <> moduleName <> " = dofile(\"" <> libDir </> modulePath <.> "lua\")\n"
 
 typeDeclarationToLua
   :: Boreal.Name
@@ -65,8 +79,8 @@ constructorToTableMember :: Boreal.Name -> Lua.TableField
 constructorToTableMember name =
   Lua.NamedField (Lua.Name name) (Lua.TableConst [])
 
-codegen :: FilePath -> Vector Lua.Stat -> LuaEff [String]
-codegen libDir statements = do
+codegen :: Vector Lua.Stat -> LuaEff [String]
+codegen statements = do
   let prettyPrintedStatements =
         show . pprint $ Block (Vector.toList statements) Nothing
   pure [prettyPrintedStatements]

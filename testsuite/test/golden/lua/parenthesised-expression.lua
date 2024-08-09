@@ -1,6 +1,5 @@
 -- Module
-local prelude = dofile("./Stdlib/Prelude.lua")
-
+local StdlibziPrelude = dofile("./Stdlib/Prelude.lua")
 local function main1()
   local prim_add0 = 2 + 3
   return 1 - prim_add0

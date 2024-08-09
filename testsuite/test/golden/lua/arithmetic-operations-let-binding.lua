@@ -1,6 +1,5 @@
 -- Mod
-local prelude = dofile("./Stdlib/Prelude.lua")
-
+local StdlibziPrelude = dofile("./Stdlib/Prelude.lua")
 local function otherfunction()
   local x = 3
   local y = x + 1

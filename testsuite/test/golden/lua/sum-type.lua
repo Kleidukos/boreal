@@ -1,6 +1,6 @@
 -- Module
-local prelude = dofile("./Stdlib/Prelude.lua")
-
+local StdlibziPrelude = dofile("./Stdlib/Prelude.lua")
+local FirstziSecondziThird = dofile("./First/Second/Third.lua")
 local Ordering = {LT = {},
                   EQ = {}, GT = {}}
 local Module =
