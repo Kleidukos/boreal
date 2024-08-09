@@ -1,6 +1,5 @@
 -- Mod
-local prelude = dofile("./Stdlib/Prelude.lua")
-
+local StdlibziPrelude = dofile("./Stdlib/Prelude.lua")
 local function main()
   return 1 + 2
 end

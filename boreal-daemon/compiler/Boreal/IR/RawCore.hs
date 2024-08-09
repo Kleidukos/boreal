@@ -56,9 +56,16 @@ type RawCoreEff = Eff '[State (Module RawCore), IOE]
 
 runRawCore :: RawCoreEff a -> IO (Module RawCore)
 runRawCore action = do
-  action
-    & State.execState Module{moduleName = "", topLevelFunctions = mempty, typeDeclarations = mempty, imports = mempty}
-    & runEff
+  let defaultImports = Vector.singleton (ImportStatement "Stdlib.Prelude")
+  rawModule <-
+    action
+      & State.execState Module{moduleName = "", topLevelFunctions = mempty, typeDeclarations = mempty, imports = mempty}
+      & runEff
+  if rawModule.moduleName == "Stdlib.Prelude"
+    then pure rawModule
+    else do
+      let newImports = defaultImports <> rawModule.imports
+      pure $ rawModule{imports = newImports}
 transformModule
   :: Syntax
   -- ^ Bit of syntax we're analysing

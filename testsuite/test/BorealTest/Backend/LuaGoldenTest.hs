@@ -133,6 +133,8 @@ emitSumType = do
         [str|
 module Module where
 
+import First.Second.Third
+
 type Ordering = LT | EQ | GT
 
 |]

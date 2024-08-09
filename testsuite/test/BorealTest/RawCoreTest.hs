@@ -61,8 +61,7 @@ testLetBinding topDir = do
         ( Let
             "x"
             (Literal 3)
-            ( Let "y" (Call "+" [Var "x", Literal 1]) (Call "*" [Var "y", Literal 3])
-            )
+            (Let "y" (Call "+" [Var "x", Literal 1]) (Call "*" [Var "y", Literal 3]))
         )
     ]
     result.topLevelFunctions
@@ -148,6 +147,8 @@ testImportStatement topDir = do
   result <- RawCore.runRawCore $ RawCore.transformModule parsed
 
   assertEqual
-    "Record declaration"
-    [ImportStatement{importedModule = "Lol.Haha"}]
+    "Import statement does not match"
+    [ ImportStatement{importedModule = "Stdlib.Prelude"}
+    , ImportStatement{importedModule = "Lol.Haha"}
+    ]
     result.imports
