@@ -17,8 +17,8 @@ import Boreal.Backend.Lua qualified as Lua
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
 import Boreal.IR.ANFCore qualified as ANFCore
 import Boreal.IR.ANFCore.Types (ANFCore)
-import Boreal.IR.RawCore (RawCore)
-import Boreal.IR.RawCore qualified as RawCore
+import Boreal.IR.RawCore.Types (RawCore)
+import Boreal.IR.RawCore.Renamer qualified as RawCore
 import Boreal.IR.Types (Module (..), moduleNameToPath)
 import Boreal.Protocol.BuildFlags
 import Boreal.Protocol.DebugFlags
@@ -91,7 +91,7 @@ buildModule debugFlags buildFlags filePath withCache = do
   when debugFlags.dumpSyntax $
     liftIO $
       pPrint parsedResult
-  rawModule <- liftIO $ RawCore.runRawCore $ RawCore.transformModule parsedResult
+  rawModule <- liftIO $ RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsedResult
   when debugFlags.dumpRawCore $
     liftIO $
       pPrint rawModule

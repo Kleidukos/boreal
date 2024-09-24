@@ -1,24 +1,25 @@
 module Boreal.IR.ANFCore.Types where
 
 import Control.Concurrent.Counter (Counter)
+import Data.Text (Text)
 import Data.Vector (Vector)
 import Effectful
 import Effectful.Reader.Static
 import Effectful.State.Static.Local (State)
 import GHC.Generics (Generic)
 
-import Boreal.Frontend.Syntax (Name)
-import Boreal.IR.RawCore (CaseAlternative)
+import Boreal.IR.RawCore.Types (CaseAlternative)
+import Boreal.IR.Types (Name)
 import Boreal.ScopeEnvironment
 
 type ANFCoreEff =
-  Eff '[Reader Counter, State Bindings, Reader ScopeEnvironment, IOE]
+  Eff '[Reader Counter, State Bindings, State ScopeEnvironment, IOE]
 
-type Bindings = Vector (Name, Value)
+type Bindings = Vector (Text, Value)
 
 data TerminalValue
   = ALiteral Int
-  | AVar Name
+  | AVar Text
   deriving stock (Eq, Show, Ord, Generic)
 
 data ComplexValue
@@ -37,21 +38,21 @@ data Value
 -- | A-Normal Form AST more suitable for code generation.
 data ANFCore
   = ALet
-      Name
+      Text
       -- ^ Name of the binding
       Value
       -- ^ Expression that is bound
       ANFCore
       -- ^ Body
   | AFun
-      Name
-      (Vector Name)
+      Text
+      (Vector Text)
       ANFCore
   | ACase
       Value
       (Vector (CaseAlternative ANFCore))
   | ATypeDeclaration
-      Name
-      (Vector Name)
+      Text
+      (Vector Text)
   | Halt Value
   deriving stock (Eq, Show, Ord, Generic)

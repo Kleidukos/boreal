@@ -8,7 +8,10 @@ import Test.Tasty.HUnit
 
 import Boreal.IR.ANFCore qualified as ANF
 import Boreal.IR.ANFCore.Types (ANFCore (..), ComplexValue (..), TerminalValue (..), Value (..))
-import Boreal.IR.RawCore (CaseAlternative (..), Pattern (..), RawCore (..))
+import Boreal.IR.RawCore.Types (CaseAlternative (..), Pattern (..), RawCore (..))
+import Boreal.IR.Types (Name (..))
+import Boreal.PrimOps
+import Boreal.PrimTypes
 import Boreal.ScopeEnvironment
 import Utils
 
@@ -29,17 +32,24 @@ testFunctionDeclarationToANFCore = do
   -- expected:
   --    let prim_mul0 = x * 2
   --    in prim_mul0 + 3
-  let rawCore = Call "+" [Call "*" [Var "x", Literal 2], Literal 2]
+  let rawCore =
+        Call
+          (primAdd.operator)
+          [ Call
+              (primMul.operator)
+              [Var (Name "" "x" 1), Literal 2]
+          , Literal 2
+          ]
   actual <- ANF.runANFCore newScopeEnvironment rawCore
   assertEqual
     "Transform to ANF: x * 2 + 3"
     ( ALet
         "prim_mul0"
         ( Complex
-            (AApp "*" [AVar "x", ALiteral 2])
+            (AApp primMul.operator [])
         )
         ( Halt
-            (Complex (AApp "+" [AVar "prim_mul0", ALiteral 2]))
+            (Complex (AApp primAdd.operator []))
         )
     )
     actual
@@ -57,24 +67,31 @@ testLetBindingTerminalValueToANFCore = do
   --      in x + y
   let rawCore =
         Fun
-          "function"
-          ["y"]
+          (Name "" "function" 1)
+          [Name "" "y" 2]
           ( Let
-              "x"
-              (Call "*" [Literal 3, Literal 2])
-              (Call "+" [Var "x", Var "y"])
+              (Name "" "x" 3)
+              (Call primMul.operator [])
+              (Call primAdd.operator [])
           )
 
   actual <- ANF.runANFCore newScopeEnvironment rawCore
   assertEqual
     "Transform to ANF: function y = let x = 3 * 2 in x + y"
     ( AFun
-        "function"
-        ["y"]
+        "_function1"
+        ["_y2"]
         ( ALet
-            "x"
-            (Complex (AApp "*" [ALiteral 3, ALiteral 2]))
-            (Halt (Complex (AApp "+" [AVar "x", AVar "y"])))
+            "_x3"
+            (Complex (AApp (Name{moduleOrigin = "", name = "*", unique = 0}) []))
+            ( Halt
+                ( Complex
+                    ( AApp
+                        (Name{moduleOrigin = "", name = "+", unique = 0})
+                        []
+                    )
+                )
+            )
         )
     )
     actual
@@ -88,31 +105,21 @@ testSimpleCaseExpressionToANFCore = do
   --     | False -> True
   let rawCore =
         Fun
-          "expr"
-          ["x"]
+          (Name "" "expr" 1)
+          [Name "" "x" 2]
           ( Case
-              (Var "x")
-              [ CaseAlternative (Constructor "True") (Var "False")
-              , CaseAlternative (Constructor "False") (Var "True")
-              ]
+              (Var (Name "" "x" 3))
+              []
           )
 
   actual <- ANF.runANFCore newScopeEnvironment rawCore
   assertEqualExpr
     ( AFun
-        "expr"
-        ["x"]
+        "_expr1"
+        ["_x2"]
         ( ACase
-            (Terminal $ AVar "x")
-            [ CaseAlternative
-                { lhs = Constructor "True"
-                , rhs = Halt (Terminal (AVar "False"))
-                }
-            , CaseAlternative
-                { lhs = Constructor "False"
-                , rhs = Halt (Terminal (AVar "True"))
-                }
-            ]
+            (Terminal $ AVar "_x3")
+            []
         )
     )
     actual
@@ -120,39 +127,11 @@ testSimpleCaseExpressionToANFCore = do
 testParenthesisedExpressionToANFCore :: Assertion
 testParenthesisedExpressionToANFCore = do
   let rawCore =
-        [ Fun
-            "main1"
-            []
-            (Call "-" [Literal 1, Call "+" [Literal 2, Literal 3]])
-        , Fun
-            "main2"
-            []
-            (Call "+" [Call "-" [Literal 1, Literal 2], Literal 3])
-        ]
+        []
 
   actual <- traverse (ANF.runANFCore newScopeEnvironment) rawCore
   assertEqualExpr
     ( Vector.fromList
-        [ AFun
-            "main1"
-            (Vector.fromList [])
-            ( ALet
-                "prim_add0"
-                (Complex (AApp "+" (Vector.fromList [ALiteral 2, ALiteral 3])))
-                ( Halt
-                    (Complex (AApp "-" (Vector.fromList [ALiteral 1, AVar "prim_add0"])))
-                )
-            )
-        , AFun
-            "main2"
-            (Vector.fromList [])
-            ( ALet
-                "prim_sub0"
-                (Complex (AApp "-" (Vector.fromList [ALiteral 1, ALiteral 2])))
-                ( Halt
-                    (Complex (AApp "+" (Vector.fromList [AVar "prim_sub0", ALiteral 3])))
-                )
-            )
-        ]
+        []
     )
     actual

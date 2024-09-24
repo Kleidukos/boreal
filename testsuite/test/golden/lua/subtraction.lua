@@ -1,7 +1,8 @@
 -- Mod
 local StdlibziPrelude = dofile("./Stdlib/Prelude.lua")
-local function main()
+local function Mod_main0()
   return 1 - 2
 end
-local Mod = {main = main}
+local Mod =
+{Mod_main0 = Mod_main0}
 return Mod

@@ -18,9 +18,10 @@ import System.FilePath ((<.>), (</>))
 import Text.Encoding.Z (zEncodeString)
 
 import Boreal.Backend.Lua.Types
-import Boreal.Frontend.Syntax qualified as Boreal
 import Boreal.IR.ANFCore.Types
 import Boreal.IR.Types
+import Boreal.IR.Types qualified as Boreal
+import Boreal.PrimOps
 
 runLua :: FilePath -> Module ANFCore -> IO Text
 runLua libDir anfModule =
@@ -40,7 +41,7 @@ runLua libDir anfModule =
       luaTopLevelFunctions <- forM anfModule.topLevelFunctions $ \case
         AFun name args body -> do
           functionDeclarationToLua name args body
-      let moduleName = Text.pack $ zEncodeString $ Text.unpack anfModule.moduleName
+      let moduleName = Text.pack $ zEncodeString $ Text.unpack (display anfModule.moduleName)
       exportList' <- mkExportList
       let exportList = show . pprint $ Block (List.singleton exportList') Nothing
       let exportModule = "return " <> Text.unpack moduleName
@@ -49,7 +50,7 @@ runLua libDir anfModule =
       pure $
         Text.pack $
           mconcat $
-            ["-- ", Text.unpack anfModule.moduleName, "\n"]
+            ["-- ", Text.unpack (display anfModule.moduleName), "\n"]
               <> importStatements
               <> typeDeclarations
               <> topLevelFunctions
@@ -59,25 +60,25 @@ runLua libDir anfModule =
 renderImportStatement :: FilePath -> ImportStatement -> Text
 renderImportStatement libDir importStatement =
   let modulePath =
-        importStatement.importedModule
+        display importStatement.importedModule
           & Text.replace "." "/"
           & Text.unpack
-      moduleName = zEncodeString $ Text.unpack importStatement.importedModule
+      moduleName = zEncodeString $ Text.unpack (display importStatement.importedModule)
    in Text.pack $ "local " <> moduleName <> " = dofile(\"" <> libDir </> modulePath <.> "lua\")\n"
 
 typeDeclarationToLua
   :: Boreal.Name
-  -> Vector Boreal.Name
+  -> Vector (Boreal.Name, Vector Boreal.Name)
   -> LuaEff Lua.Stat
 typeDeclarationToLua name constructors = do
   let fields = Vector.toList $ Vector.map constructorToTableMember constructors
-  addNameToEnvironment name
+  addNameToEnvironment (display name)
   pure $
-    Lua.LocalAssign [Lua.Name name] (Just [Lua.TableConst fields])
+    Lua.LocalAssign [Lua.Name (display name)] (Just [Lua.TableConst fields])
 
-constructorToTableMember :: Boreal.Name -> Lua.TableField
-constructorToTableMember name =
-  Lua.NamedField (Lua.Name name) (Lua.TableConst [])
+constructorToTableMember :: (Boreal.Name, Vector Boreal.Name) -> Lua.TableField
+constructorToTableMember (name, _) =
+  Lua.NamedField (Lua.Name (display name)) (Lua.TableConst [])
 
 codegen :: Vector Lua.Stat -> LuaEff [String]
 codegen statements = do
@@ -91,29 +92,28 @@ valueToLua (Complex complexValue) = pure $ complexValueToLua complexValue
 
 terminalValueToLua :: TerminalValue -> Lua.Exp
 terminalValueToLua (ALiteral int) = Lua.Number Lua.IntNum (display int)
-terminalValueToLua (AVar var) = Lua.PrefixExp $ Lua.PEVar (Lua.VarName (Lua.Name var))
+terminalValueToLua (AVar var) = Lua.PrefixExp $ Lua.PEVar (Lua.VarName (Lua.Name (display var)))
 
 complexValueToLua :: ComplexValue -> Exp
-complexValueToLua (AApp fun arguments) =
-  case fun of
-    "+" -> nativeLuaBinOp Add (arguments Vector.! 0) (arguments Vector.! 1)
-    "-" -> nativeLuaBinOp Sub (arguments Vector.! 0) (arguments Vector.! 1)
-    "*" -> nativeLuaBinOp Mul (arguments Vector.! 0) (arguments Vector.! 1)
-    "/" -> nativeLuaBinOp Div (arguments Vector.! 0) (arguments Vector.! 1)
-    e -> error $ "Unmatched: " <> show e
+complexValueToLua (AApp fun arguments)
+  | fun == primAdd.operator = nativeLuaBinOp Add (arguments Vector.! 0) (arguments Vector.! 1)
+  | fun == primSub.operator = nativeLuaBinOp Sub (arguments Vector.! 0) (arguments Vector.! 1)
+  | fun == primMul.operator = nativeLuaBinOp Mul (arguments Vector.! 0) (arguments Vector.! 1)
+  | fun == primDiv.operator = nativeLuaBinOp Div (arguments Vector.! 0) (arguments Vector.! 1)
+  | otherwise = error $ "Unmatched: " <> show fun
 
 functionDeclarationToLua
-  :: Boreal.Name
-  -> Vector Boreal.Name
+  :: Text
+  -> Vector Text
   -> ANFCore
   -> LuaEff Lua.Stat
 functionDeclarationToLua name arguments body = do
   bodyInstructions <- functionBodyToBlock body
-  let funArgs = fmap Name arguments
+  let funArgs = fmap (Lua.Name . display) arguments
   addNameToEnvironment name
   pure $
     LocalFunAssign
-      (Name name)
+      (Lua.Name (display name))
       (FunBody (Vector.toList funArgs) False bodyInstructions)
 
 functionBodyToBlock :: ANFCore -> LuaEff Lua.Block
@@ -129,7 +129,7 @@ functionBodyToBlock body = do
   FunctionEnvironment{returnValue} <- State.get
   pure $ Block (Vector.toList result) (fmap List.singleton returnValue)
 
-letBindingToLua :: Boreal.Name -> Value -> ANFCore -> LuaEff (Vector Lua.Stat)
+letBindingToLua :: Text -> Value -> ANFCore -> LuaEff (Vector Lua.Stat)
 letBindingToLua boundName expression body = do
   expressionInstructions <- valueToLua expression
   bodyInstructions <- letBodyToBlock body
@@ -157,12 +157,12 @@ nativeLuaBinOp binop operand1 operand2 =
 mkExportList :: LuaEff Lua.Stat
 mkExportList = do
   moduleInfo <- Reader.ask @ModuleInfo
-  let moduleName = Text.pack $ zEncodeString $ Text.unpack moduleInfo.name
-  Environment names <- State.get @Environment
+  let moduleName = Text.pack $ zEncodeString $ Text.unpack (display moduleInfo.name)
+  LuaEnvironment names <- State.get
   let fields =
         map
-          (\n -> NamedField (Name n) (PrefixExp (PEVar (VarName (Name n)))))
-          (Vector.toList names)
+          (\n -> NamedField (Lua.Name n) (PrefixExp (PEVar (VarName (Lua.Name n)))))
+          (Vector.toList (fmap display names))
   let exports = TableConst fields
   pure $
-    LocalAssign [Name moduleName] (Just [exports])
+    LocalAssign [Lua.Name moduleName] (Just [exports])

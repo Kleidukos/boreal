@@ -15,15 +15,15 @@ import Effectful.FileSystem (FileSystem)
 import qualified Data.ByteString as BS
 import qualified System.Directory as Directory
 import qualified Effectful.FileSystem as FileSystem
+import Data.Function ((&))
+import Data.Text.Encoding qualified as Text
 
 import Boreal.Backend.Lua qualified as Lua
 import Boreal.Frontend.TreeSitter qualified as TreeSitter
 import Boreal.IR.ANFCore qualified as ANFCore
-import Boreal.IR.RawCore qualified as RawCore
+import Boreal.IR.RawCore.Renamer qualified as RawCore
 import Boreal.IR.Types (Module (..), moduleNameToPath)
 import Boreal.ScopeEnvironment (newScopeEnvironment)
-import Data.Function ((&))
-import Data.Text.Encoding qualified as Text
 import Driver.Query
 
 rules
@@ -35,7 +35,7 @@ rules query = do
     ParseFile sourceFilePath -> do
       input <- liftIO $ BS.readFile sourceFilePath
       parsedResult <- liftIO $ TreeSitter.parse input
-      liftIO $ RawCore.runRawCore $ RawCore.transformModule parsedResult
+      liftIO $ RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsedResult
     CompileANF sourceFilePath -> do
       rawModule <- Rock.fetch (ParseFile sourceFilePath)
       anfDecls <-

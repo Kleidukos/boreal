@@ -9,9 +9,9 @@ import Effectful
 import Effectful.Reader.Static qualified as Reader
 import Effectful.State.Static.Local qualified as State
 
-import Boreal.Frontend.Syntax
 import Boreal.IR.ANFCore.Types
-import Boreal.IR.RawCore (CaseAlternative (..), RawCore (..))
+import Boreal.IR.RawCore.Types (CaseAlternative (..), RawCore (..))
+import Boreal.IR.Types
 import Boreal.ScopeEnvironment (ScopeEnvironment, lookupIdentifierName)
 import Data.Text qualified as Text
 
@@ -24,14 +24,14 @@ runANFCore scopeEnvironment inputCore = do
         action body
           & Reader.runReader counter
           & State.evalState Vector.empty
-          & Reader.runReader scopeEnvironment
+          & State.evalState scopeEnvironment
           & runEff
-      pure $ AFun name arguments result
+      pure $ AFun (display name) (fmap display arguments) result
     e ->
       action e
         & Reader.runReader counter
         & State.evalState Vector.empty
-        & Reader.runReader scopeEnvironment
+        & State.evalState scopeEnvironment
         & runEff
   where
     action :: RawCore -> ANFCoreEff ANFCore
@@ -39,19 +39,19 @@ runANFCore scopeEnvironment inputCore = do
       result <- transform input
       finaliseTransformation result
 
-freshName :: Text -> ANFCoreEff Name
-freshName prefix = do
+newIntermediateName :: Text -> ANFCoreEff Text
+newIntermediateName prefix = do
   counter <- Reader.ask
   number <- liftIO $ Counter.add counter 1
   mCleanPrefix <- lookupIdentifierName prefix
   case mCleanPrefix of
     Nothing -> error $ "Could not find " <> Text.unpack prefix <> " in scope environment"
     Just cleanPrefix ->
-      pure $ cleanPrefix <> display number
+      pure $ display cleanPrefix <> display number
 
-addBinding :: (Name, Value) -> ANFCoreEff ()
-addBinding binding =
-  State.modify (\state -> Vector.cons binding state)
+addBinding :: Text -> Value -> ANFCoreEff ()
+addBinding prefix value = do
+  State.modify (Vector.cons (prefix, value))
 
 transformName :: RawCore -> ANFCoreEff TerminalValue
 transformName core = do
@@ -63,9 +63,9 @@ transformName core = do
     ACase{} -> error "Cannot normalise a case expression as a terminal value"
     Halt (Terminal val) -> pure val
     Halt v@(Complex val) -> do
-      newName <- freshName (getName val)
-      addBinding (newName, v)
-      pure $ AVar newName
+      newIdentifier <- newIntermediateName (display $ getName val)
+      addBinding newIdentifier v
+      pure $ AVar newIdentifier
 
 transform
   :: RawCore
@@ -75,11 +75,11 @@ transform = \case
     transformedExpression <- transform boundExpression
     case transformedExpression of
       Halt val -> do
-        addBinding (bindingName, val)
+        addBinding (display bindingName) val
         transform body
       _ -> error "Not a terminal value in transformedExpression"
   Literal i -> pure $ Halt $ Terminal $ ALiteral i
-  Var i -> pure $ Halt $ Terminal $ AVar i
+  Var i -> pure $ Halt $ Terminal $ AVar (display i)
   Call funName arguments -> do
     transformedArguments <- traverse transformName arguments
     pure $ Halt $ Complex $ AApp funName transformedArguments
@@ -87,8 +87,8 @@ transform = \case
     processedBody <- transform body
     pure $
       AFun
-        name
-        arguments
+        (display name)
+        (fmap display arguments)
         processedBody
   Case expression alternatives -> do
     transform expression >>= \case
@@ -101,15 +101,14 @@ transform = \case
 
 finaliseTransformation :: ANFCore -> ANFCoreEff ANFCore
 finaliseTransformation anf = do
-  bindings <- State.get
+  bindings <- State.get @Bindings
   State.modify @Bindings (const Vector.empty)
   pure $
     Vector.foldr mkLet anf $
       Vector.reverse bindings
   where
-    mkLet :: (Name, Value) -> ANFCore -> ANFCore
-    mkLet (var, value) body =
-      ALet var value body
+    mkLet :: (Text, Value) -> ANFCore -> ANFCore
+    mkLet (var, value) = ALet var value
 
 transformAlternative :: CaseAlternative RawCore -> ANFCoreEff (CaseAlternative ANFCore)
 transformAlternative caseAlternative = do

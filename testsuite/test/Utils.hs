@@ -11,8 +11,9 @@ import TreeSitter.Node
 
 import Boreal.Frontend.Syntax
 import Boreal.IR.ANFCore.Types
-import Boreal.IR.RawCore
+import Boreal.IR.RawCore.Types
 import Boreal.IR.Types
+import Boreal.PrimTypes
 import Boreal.SourceInfo
 
 assertRight :: (HasCallStack) => Either a b -> IO b
@@ -30,19 +31,21 @@ assertEqualExpr actual expected =
   unless
     (actual == expected)
     ( Test.assertFailure
-        ( show $ ppEditExpr ansiWlPretty $ ediff actual expected
-        )
+        (show $ ppEditExpr ansiWlPretty $ ediff actual expected)
     )
 
-instance ToExpr Syntax
-instance ToExpr Pattern
 instance (ToExpr ir) => ToExpr (CaseAlternative ir)
-instance ToExpr RawCore
-instance ToExpr TerminalValue
-instance ToExpr ComplexValue
-instance ToExpr Value
 instance ToExpr ANFCore
+instance ToExpr ComplexValue
+instance ToExpr ModuleName
+instance ToExpr Name
+instance ToExpr BorealConstructor
+instance ToExpr Pattern
+instance ToExpr RawCore
 instance ToExpr RecordMember
 instance ToExpr SourceInfo
+instance ToExpr Syntax
 instance ToExpr TSPoint
+instance ToExpr TerminalValue
 instance ToExpr TypeDeclaration
+instance ToExpr Value
