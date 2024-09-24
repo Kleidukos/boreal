@@ -58,6 +58,9 @@ isTextAtom t =
         , ")"
         , "{"
         , "}"
+        , "if"
+        , "then"
+        , "else"
         ]
 
 isNamedNode :: Name -> Syntax -> Bool

@@ -54,6 +54,11 @@ spec topDir =
         diffCmd
         "test/golden/cst/import-statement.hs"
         (testImportParser topDir)
+    , goldenVsStringDiff
+        "If-then-else"
+        diffCmd
+        "test/golden/cst/if-then-else.hs"
+        (testIfThenElse topDir)
     ]
 
 testFunctionDefinitionParser :: FilePath -> IO LazyByteString
@@ -95,5 +100,11 @@ testRecordParser topDir = do
 testImportParser :: FilePath -> IO LazyByteString
 testImportParser topDir = do
   input <- BS.readFile $ topDir </> "import-statement.bor"
+  result <- TreeSitter.parse input
+  pure . Text.encodeUtf8 $ pShowNoColor result
+
+testIfThenElse :: FilePath -> IO LazyByteString
+testIfThenElse topDir = do
+  input <- BS.readFile $ topDir </> "if-then-else.bor"
   result <- TreeSitter.parse input
   pure . Text.encodeUtf8 $ pShowNoColor result

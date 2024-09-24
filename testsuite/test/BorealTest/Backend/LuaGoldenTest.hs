@@ -53,6 +53,16 @@ spec =
         diffCmd
         "./test/golden/lua/sum-type.lua"
         emitSumType
+    , goldenVsStringDiff
+        "Emit case expression"
+        diffCmd
+        "./test/golden/lua/case-expression.lua"
+        emitCaseExpression
+    , goldenVsStringDiff
+        "Emit if-then-else expression"
+        diffCmd
+        "./test/golden/lua/if-then-else.lua"
+        emitIfThenElseExpression
     ]
 
 emitAddition :: IO LazyByteString
@@ -137,6 +147,46 @@ import First.Second.Third
 
 type Ordering = LT | EQ | GT
 
+|]
+  parsed <- TreeSitter.parse input
+  rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
+  generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
+  pure . Text.encodeUtf8 . Text.fromStrict $ generated
+
+emitCaseExpression :: IO LazyByteString
+emitCaseExpression = do
+  let input =
+        [str|
+module Module where
+
+type Colour 
+  = Red
+  | Green
+  | Blue
+
+showcolour colour = 
+  case colour of
+    | Red -> "red"
+    | Green -> "green"
+    | Blue -> "blue"
+|]
+  parsed <- TreeSitter.parse input
+  rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed
+  anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
+  generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
+  pure . Text.encodeUtf8 . Text.fromStrict $ generated
+
+emitIfThenElseExpression :: IO LazyByteString
+emitIfThenElseExpression = do
+  let input =
+        [str|
+module Module where
+
+main = 
+  if 3 < 2
+  then "incoherent??"
+  else "yea fair."
 |]
   parsed <- TreeSitter.parse input
   rawModule <- RawCore.runRawCore $ RawCore.transformModule parsed

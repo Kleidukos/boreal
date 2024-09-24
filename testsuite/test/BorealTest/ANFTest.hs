@@ -20,6 +20,7 @@ spec =
     , testCase "Let-binding of RawCore terminal value to ANFCore" testLetBindingTerminalValueToANFCore
     , testCase "Case expression to ANFCore" testSimpleCaseExpressionToANFCore
     , testCase "Parenthesised expression in ANF" testParenthesisedExpressionToANFCore
+    , testCase "If-then-else becomes Case" testRawIfThenElseToCase
     ]
 
 testFunctionDeclarationToANFCore :: Assertion
@@ -154,5 +155,36 @@ testParenthesisedExpressionToANFCore = do
                 )
             )
         ]
+    )
+    actual
+
+testRawIfThenElseToCase :: Assertion
+testRawIfThenElseToCase = do
+  let rawCore =
+        Fun
+          "fun"
+          ["x"]
+          ( IfThenElse
+              (Call "==" [Var "x", Var "\"lol\""])
+              (Var "blap")
+              (Var "mouarf")
+          )
+  actual <- ANF.runANFCore newScopeEnvironment rawCore
+  assertEqualExpr
+    ( AFun
+        "fun"
+        ["x"]
+        ( ACase
+            (Complex (AApp "==" (Vector.fromList [AVar "x", AVar "\"lol\""])))
+            [ CaseAlternative
+                { lhs = Constructor "True"
+                , rhs = Halt (Terminal (AVar "blap"))
+                }
+            , CaseAlternative
+                { lhs = Constructor "False"
+                , rhs = Halt (Terminal (AVar "mouarf"))
+                }
+            ]
+        )
     )
     actual

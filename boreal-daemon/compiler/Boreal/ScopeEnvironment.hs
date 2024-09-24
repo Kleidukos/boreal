@@ -27,6 +27,12 @@ newScopeEnvironment =
           , ("-", "prim_sub")
           , ("*", "prim_mul")
           , ("/", "prim_div")
+          , ("<", "prim_lt")
+          , ("<=", "prim_lte")
+          , (">", "prim_gt")
+          , (">=", "prim_gte")
+          , ("==", "prim_eq")
+          , ("!=", "prim_neq")
           ]
     }
 
@@ -41,8 +47,7 @@ lookupFunctionName functionName = do
 lookupOperatorName :: (Reader ScopeEnvironment :> es) => Name -> Eff es (Maybe Name)
 lookupOperatorName operatorName = do
   ScopeEnvironment{operators} <- Reader.ask
-  pure $
-    Map.lookup operatorName operators
+  pure $ Map.lookup operatorName operators
 
 lookupIdentifierName :: (Reader ScopeEnvironment :> es) => Name -> Eff es (Maybe Name)
 lookupIdentifierName identifierName =

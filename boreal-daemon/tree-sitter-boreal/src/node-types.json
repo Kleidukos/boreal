@@ -163,6 +163,10 @@
       "required": false,
       "types": [
         {
+          "type": "if_then_else",
+          "named": true
+        },
+        {
           "type": "let_binding",
           "named": true
         },
@@ -212,6 +216,42 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "if_then_else",
+    "named": true,
+    "fields": {
+      "condition": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "simple_expression",
+            "named": true
+          }
+        ]
+      },
+      "false_branch": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "simple_expression",
+            "named": true
+          }
+        ]
+      },
+      "true_branch": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "simple_expression",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -274,6 +314,10 @@
       "multiple": false,
       "required": true,
       "types": [
+        {
+          "type": "if_then_else",
+          "named": true
+        },
         {
           "type": "let_binding",
           "named": true
@@ -372,6 +416,10 @@
         {
           "type": "simple_expression",
           "named": true
+        },
+        {
+          "type": "string",
+          "named": true
         }
       ]
     }
@@ -434,6 +482,10 @@
     }
   },
   {
+    "type": "!=",
+    "named": false
+  },
+  {
     "type": "(",
     "named": false
   },
@@ -470,7 +522,27 @@
     "named": false
   },
   {
+    "type": "<",
+    "named": false
+  },
+  {
+    "type": "<=",
+    "named": false
+  },
+  {
     "type": "=",
+    "named": false
+  },
+  {
+    "type": "==",
+    "named": false
+  },
+  {
+    "type": ">",
+    "named": false
+  },
+  {
+    "type": ">=",
     "named": false
   },
   {
@@ -482,8 +554,16 @@
     "named": true
   },
   {
+    "type": "else",
+    "named": false
+  },
+  {
     "type": "identifier",
     "named": true
+  },
+  {
+    "type": "if",
+    "named": false
   },
   {
     "type": "import",
@@ -507,6 +587,14 @@
   },
   {
     "type": "of",
+    "named": false
+  },
+  {
+    "type": "string",
+    "named": true
+  },
+  {
+    "type": "then",
     "named": false
   },
   {
