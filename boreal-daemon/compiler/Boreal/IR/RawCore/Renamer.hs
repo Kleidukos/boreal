@@ -24,15 +24,18 @@ import Boreal.PrimOps
 import Boreal.ScopeEnvironment (ScopeEnvironment, logEnvironment)
 import Boreal.ScopeEnvironment qualified as ScopeEnvironment
 
-runRawCore :: ScopeEnvironment -> RawCoreEff a -> IO (Module RawCore)
+runRawCore
+  :: ScopeEnvironment
+  -> RawCoreEff ScopeEnvironment
+  -> IO (Module RawCore, ScopeEnvironment)
 runRawCore environment action = do
   let defaultImports = Vector.singleton (ImportStatement (ModuleName "Stdlib.Prelude"))
   counter <- Counter.new 0
-  rawModule <-
+  (env, rawModule) <-
     action
-      & State.runState environment
+      & State.evalState environment
       & Reader.runReader counter
-      & State.execState
+      & State.runState
         Module
           { Module.moduleName = ModuleName ""
           , topLevelFunctions = mempty
@@ -41,24 +44,24 @@ runRawCore environment action = do
           }
       & runEff
   if rawModule.moduleName == ModuleName "Stdlib.Prelude"
-    then pure rawModule
+    then pure (rawModule, env)
     else do
       let newImports = defaultImports <> rawModule.imports
-      pure $ rawModule{imports = newImports}
+      pure (rawModule{imports = newImports}, env)
 
 transformModule
   :: Syntax
   -- ^ Bit of syntax we're analysing
-  -> RawCoreEff ()
+  -> RawCoreEff (Module RawCore)
 transformModule (BorealNode _ "source" children) = do
   let (BorealNode _ "module_declaration" moduleDeclaration) = children Vector.! 0
   let topLevelDeclarations = children Vector.! 1
   let (BorealIdent _ moduleName) = moduleDeclaration Vector.! 1
   addModuleName moduleName
   case topLevelDeclarations of
-    BorealNode _ "top_level_declarations" decls ->
+    BorealNode _ "top_level_declarations" decls -> do
       traverse_ transform decls
-  pure ()
+      State.get
 
 transform :: Syntax -> RawCoreEff ()
 transform (BorealNode _ "function_declaration" rest) = do
@@ -149,10 +152,9 @@ transformExpression (BorealNode _ "binary_operation" args) = do
       ScopeEnvironment.logEnvironment
       error $ Text.unpack $ "Cannot find operator " <> operation <> " in scope"
     Just qualifiedOperationName -> pure qualifiedOperationName
-
   operand1 <- transformExpression $ args Vector.! 0
   operand2 <- transformExpression $ args Vector.! 2
-  pure $ Call qualifiedOperationName (Vector.fromList [operand1, operand2])
+  pure $ BinOpCall qualifiedOperationName operand1 operand2
 transformExpression (BorealAtom _ a) =
   case takeLiteralFromAtom a of
     (Just l) -> pure $ Literal l

@@ -10,6 +10,7 @@ import GHC.Generics (Generic)
 
 import Boreal.IR.RawCore.Types (CaseAlternative)
 import Boreal.IR.Types (Name)
+import Boreal.PrimOps (BinOp)
 import Boreal.ScopeEnvironment
 
 type ANFCoreEff =
@@ -28,6 +29,13 @@ data ComplexValue
       -- ^ Function we are applying
       (Vector TerminalValue)
       -- ^ Arguments that need no further evaluation
+  | ABinOp
+      BinOp
+      -- ^ Operator
+      TerminalValue
+      -- ^ Left operand
+      TerminalValue
+      -- ^ Right operand
   deriving stock (Eq, Show, Ord, Generic)
 
 data Value

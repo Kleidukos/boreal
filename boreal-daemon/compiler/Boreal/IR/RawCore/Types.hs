@@ -17,6 +17,13 @@ data RawCore
   = Literal Int
   | Var Name
   | Call Name (Vector RawCore)
+  | BinOpCall
+      Name
+      -- ^ Operator
+      RawCore
+      -- ^ Left operand
+      RawCore
+      -- ^ Right operand
   | Fun
       Name
       -- ^ Binding name

@@ -32,6 +32,10 @@ spec topDir =
 
 testFunctionDefinition :: FilePath -> Assertion
 testFunctionDefinition topDir = do
+  preludeFile <- BS.readFile $ topDir </> ".." </> "stdlib/Prelude.bor"
+  parsedPrelude <- TreeSitter.parse preludeFile
+  preludeModule <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsedPrelude
+
   input <- BS.readFile $ topDir </> "function-definition.bor"
   parsed <- TreeSitter.parse input
   result <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
@@ -41,15 +45,14 @@ testFunctionDefinition topDir = do
     [ Fun
         (Name{moduleOrigin = "Expressions", name = "expr", unique = 2})
         [Name{moduleOrigin = "Expressions", name = "x", unique = 0}]
-        ( Call
+        ( BinOpCall
             (Name{moduleOrigin = "", name = "+", unique = 0})
-            [ Call
+            ( BinOpCall
                 (Name{moduleOrigin = "", name = "*", unique = 0})
-                [ Var (Name{moduleOrigin = "Expressions", name = "x", unique = 1})
-                , Literal 2
-                ]
-            , Literal 3
-            ]
+                (Var (Name{moduleOrigin = "Expressions", name = "x", unique = 1}))
+                (Literal 2)
+            )
+            (Literal 3)
         )
     ]
     result.topLevelFunctions
@@ -70,13 +73,15 @@ testLetBinding topDir = do
             (Literal 3)
             ( Let
                 (Name{moduleOrigin = "LetIn", name = "y", unique = 1})
-                ( Call
+                ( BinOpCall
                     (Name{moduleOrigin = "", name = "+", unique = 0})
-                    [Var (Name{moduleOrigin = "LetIn", name = "x", unique = 0}), Literal 1]
+                    (Var (Name{moduleOrigin = "LetIn", name = "x", unique = 0}))
+                    (Literal 1)
                 )
-                ( Call
+                ( BinOpCall
                     (Name{moduleOrigin = "", name = "*", unique = 0})
-                    [Var (Name{moduleOrigin = "LetIn", name = "y", unique = 1}), Literal 3]
+                    (Var (Name{moduleOrigin = "LetIn", name = "y", unique = 1}))
+                    (Literal 3)
                 )
             )
         )

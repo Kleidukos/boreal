@@ -37,6 +37,12 @@ newScopeEnvironment =
     , bindings = Map.empty
     }
 
+-- augmentScopeEnvironment :: ScopeEnvironment -> Module a -> ScopeEnvironment
+-- augmentScopeEnvironment environment module =
+--   let newFunctions = flip fmap module.topLevelFunctions $ \case
+--         Fun name _ _ -> name
+--   in environment{newFunctions}
+
 freshName
   :: (Reader Counter :> es, IOE :> es)
   => ModuleName

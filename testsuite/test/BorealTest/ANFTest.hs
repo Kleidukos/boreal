@@ -44,12 +44,20 @@ testFunctionDeclarationToANFCore = do
   assertEqual
     "Transform to ANF: x * 2 + 3"
     ( ALet
-        "prim_mul0"
+        "_*00"
         ( Complex
-            (AApp primMul.operator [])
+            ( AApp
+                (Name{moduleOrigin = "", name = "*", unique = 0})
+                [AVar "_x1", ALiteral 2]
+            )
         )
         ( Halt
-            (Complex (AApp primAdd.operator []))
+            ( Complex
+                ( AApp
+                    (Name{moduleOrigin = "", name = "+", unique = 0})
+                    [AVar "_*00", ALiteral 2]
+                )
+            )
         )
     )
     actual

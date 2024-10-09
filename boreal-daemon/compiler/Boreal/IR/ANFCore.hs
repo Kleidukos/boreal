@@ -12,7 +12,8 @@ import Effectful.State.Static.Local qualified as State
 import Boreal.IR.ANFCore.Types
 import Boreal.IR.RawCore.Types (CaseAlternative (..), RawCore (..))
 import Boreal.IR.Types
-import Boreal.ScopeEnvironment (ScopeEnvironment, lookupIdentifierName)
+import Boreal.ScopeEnvironment (ScopeEnvironment)
+import Boreal.ScopeEnvironment qualified as ScopeEnvironment
 import Data.Text qualified as Text
 
 runANFCore :: ScopeEnvironment -> RawCore -> IO ANFCore
@@ -39,13 +40,15 @@ runANFCore scopeEnvironment inputCore = do
       result <- transform input
       finaliseTransformation result
 
-newIntermediateName :: Text -> ANFCoreEff Text
+newIntermediateName :: Name -> ANFCoreEff Text
 newIntermediateName prefix = do
   counter <- Reader.ask
   number <- liftIO $ Counter.add counter 1
-  mCleanPrefix <- lookupIdentifierName prefix
+  mCleanPrefix <- ScopeEnvironment.lookupIdentifierName (prefix.name)
   case mCleanPrefix of
-    Nothing -> error $ "Could not find " <> Text.unpack prefix <> " in scope environment"
+    Nothing -> do
+      ScopeEnvironment.logEnvironment
+      error $ "Could not find " <> Text.unpack prefix.name <> " in scope environment"
     Just cleanPrefix ->
       pure $ display cleanPrefix <> display number
 
@@ -63,7 +66,7 @@ transformName core = do
     ACase{} -> error "Cannot normalise a case expression as a terminal value"
     Halt (Terminal val) -> pure val
     Halt v@(Complex val) -> do
-      newIdentifier <- newIntermediateName (display $ getName val)
+      newIdentifier <- newIntermediateName (getName val)
       addBinding newIdentifier v
       pure $ AVar newIdentifier
 

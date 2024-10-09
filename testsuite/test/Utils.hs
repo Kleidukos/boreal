@@ -13,6 +13,7 @@ import Boreal.Frontend.Syntax
 import Boreal.IR.ANFCore.Types
 import Boreal.IR.RawCore.Types
 import Boreal.IR.Types
+import Boreal.PrimOps
 import Boreal.PrimTypes
 import Boreal.SourceInfo
 
@@ -36,6 +37,7 @@ assertEqualExpr actual expected =
 
 instance (ToExpr ir) => ToExpr (CaseAlternative ir)
 instance ToExpr ANFCore
+instance ToExpr BinOp
 instance ToExpr ComplexValue
 instance ToExpr ModuleName
 instance ToExpr Name
