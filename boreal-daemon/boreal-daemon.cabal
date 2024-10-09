@@ -95,8 +95,11 @@ library
     Boreal.Frontend.Types
     Boreal.IR.ANFCore
     Boreal.IR.ANFCore.Types
-    Boreal.IR.RawCore
+    Boreal.IR.RawCore.Renamer
+    Boreal.IR.RawCore.Types
     Boreal.IR.Types
+    Boreal.PrimOps
+    Boreal.PrimTypes
     Boreal.ScopeEnvironment
     Boreal.SourceInfo
 

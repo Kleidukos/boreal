@@ -1,19 +1,19 @@
 module Boreal.Backend.Lua.Types where
 
-import Data.Text (Text)
+import Data.Vector (Vector)
+import Data.Vector qualified as Vector
 import Effectful
 import Effectful.Reader.Static (Reader)
 import Effectful.State.Static.Local (State)
 import Effectful.State.Static.Local qualified as State
 import Language.Lua qualified as Lua
 
-import Boreal.Frontend.Syntax (Name)
-import Data.Vector (Vector)
-import Data.Vector qualified as Vector
+import Boreal.IR.Types (ModuleName)
+import Data.Text (Text)
 
 type LuaEff =
   Eff
-    '[ State Environment
+    '[ State LuaEnvironment
      , State FunctionEnvironment
      , Reader ModuleInfo
      , IOE
@@ -22,11 +22,11 @@ type LuaEff =
 type Offset = Int
 
 data ModuleInfo = ModuleInfo
-  { name :: Text
+  { name :: ModuleName
   }
   deriving stock (Eq, Ord, Show)
 
-newtype Environment = Environment (Vector Name)
+newtype LuaEnvironment = LuaEnvironment (Vector Text)
   deriving newtype (Eq, Ord, Show, Semigroup, Monoid)
 
 data FunctionEnvironment = FunctionEnvironment
@@ -34,9 +34,9 @@ data FunctionEnvironment = FunctionEnvironment
   }
   deriving stock (Eq, Show)
 
-addNameToEnvironment :: Name -> LuaEff ()
+addNameToEnvironment :: Text -> LuaEff ()
 addNameToEnvironment name = do
-  State.modify (\(Environment names) -> Environment $ Vector.cons name names)
+  State.modify (\(LuaEnvironment names) -> LuaEnvironment $ Vector.cons name names)
 
 emptyFunctionEnvironment :: FunctionEnvironment
 emptyFunctionEnvironment = FunctionEnvironment Nothing
