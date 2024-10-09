@@ -162,7 +162,7 @@ mkExportList = do
   let fields =
         map
           (\n -> NamedField (Lua.Name n) (PrefixExp (PEVar (VarName (Lua.Name n)))))
-          (Vector.toList (fmap display names))
+          (Vector.toList names)
   let exports = TableConst fields
   pure $
     LocalAssign [Lua.Name moduleName] (Just [exports])

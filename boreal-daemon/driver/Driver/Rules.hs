@@ -35,9 +35,9 @@ rules query = do
     ParseFile sourceFilePath -> do
       input <- liftIO $ BS.readFile sourceFilePath
       parsedResult <- liftIO $ TreeSitter.parse input
-      liftIO $ RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsedResult
+      liftIO $ RawCore.runRawCore newScopeEnvironment (RawCore.transformModule parsedResult)
     CompileANF sourceFilePath -> do
-      rawModule <- Rock.fetch (ParseFile sourceFilePath)
+      (rawModule, environment) <- Rock.fetch (ParseFile sourceFilePath)
       anfDecls <-
         liftIO $
           traverse

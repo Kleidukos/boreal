@@ -13,7 +13,6 @@ import Boreal.Frontend.TreeSitter qualified as TreeSitter
 import Boreal.IR.RawCore.Renamer qualified as RawCore
 import Boreal.IR.RawCore.Types
 import Boreal.IR.Types
-import Boreal.PrimOps
 import Boreal.ScopeEnvironment
 
 spec :: FilePath -> TestTree
@@ -38,7 +37,7 @@ testFunctionDefinition topDir = do
 
   input <- BS.readFile $ topDir </> "function-definition.bor"
   parsed <- TreeSitter.parse input
-  result <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (result, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
 
   assertEqual
     "Function definition is transformed from Syntax to RawCore"
@@ -61,7 +60,7 @@ testLetBinding :: FilePath -> Assertion
 testLetBinding topDir = do
   input <- BS.readFile $ topDir </> "let-in.bor"
   parsed <- TreeSitter.parse input
-  result <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (result, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
 
   assertEqual
     "Let binding is transformed from Syntax to RawCore"
@@ -92,7 +91,7 @@ testCaseExpression :: FilePath -> Assertion
 testCaseExpression topDir = do
   input <- BS.readFile $ topDir </> "case-expression.bor"
   parsed <- TreeSitter.parse input
-  result <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (result, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
 
   assertEqualExpr
     []
@@ -102,7 +101,7 @@ testDatatypeDeclaration :: FilePath -> Assertion
 testDatatypeDeclaration topDir = do
   input <- BS.readFile $ topDir </> "datatype-declaration.bor"
   parsed <- TreeSitter.parse input
-  result <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (result, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
 
   assertEqualExpr
     ( Vector.fromList
@@ -139,7 +138,7 @@ testModuleDefinitionWithDots :: FilePath -> Assertion
 testModuleDefinitionWithDots topDir = do
   input <- BS.readFile $ topDir </> ".." </> "stdlib/Prelude.bor"
   parsed <- TreeSitter.parse input
-  result <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (result, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
 
   assertEqualExpr
     "Stdlib.Prelude"
@@ -149,27 +148,25 @@ testParenthesisedExpression :: FilePath -> Assertion
 testParenthesisedExpression topDir = do
   input <- BS.readFile $ topDir </> "parentheses.bor"
   parsed <- TreeSitter.parse input
-  result <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (result, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
 
   assertEqual
     "Function definition is transformed from Syntax to RawCore"
     [ Fun
         (Name{moduleOrigin = "Module", name = "main1", unique = 0})
         []
-        ( Call
+        ( BinOpCall
             (Name{moduleOrigin = "", name = "-", unique = 0})
-            [ Literal 1
-            , Call
-                (Name{moduleOrigin = "", name = "+", unique = 0})
-                [Literal 2, Literal 3]
-            ]
+            (Literal 1)
+            (BinOpCall (Name{moduleOrigin = "", name = "+", unique = 0}) (Literal 2) (Literal 3))
         )
     , Fun
         (Name{moduleOrigin = "Module", name = "main2", unique = 1})
         []
-        ( Call
+        ( BinOpCall
             (Name{moduleOrigin = "", name = "+", unique = 0})
-            [Call (Name{moduleOrigin = "", name = "-", unique = 0}) [Literal 1, Literal 2], Literal 3]
+            (BinOpCall (Name{moduleOrigin = "", name = "-", unique = 0}) (Literal 1) (Literal 2))
+            (Literal 3)
         )
     ]
     result.topLevelFunctions
@@ -178,7 +175,7 @@ testRecordDeclaration :: FilePath -> Assertion
 testRecordDeclaration topDir = do
   input <- BS.readFile $ topDir </> "record-declaration.bor"
   parsed <- TreeSitter.parse input
-  result <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (result, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
 
   assertEqual
     "Record declaration"
@@ -189,7 +186,7 @@ testImportStatement :: FilePath -> Assertion
 testImportStatement topDir = do
   input <- BS.readFile $ topDir </> "import-statement.bor"
   parsed <- TreeSitter.parse input
-  result <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (result, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
 
   assertEqual
     "Import statement does not match"

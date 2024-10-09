@@ -14,7 +14,6 @@ import Boreal.Frontend.TreeSitter qualified as TreeSitter
 import Boreal.IR.ANFCore qualified as ANFCore
 import Boreal.IR.RawCore.Renamer qualified as RawCore
 import Boreal.IR.Types
-import Boreal.PrimOps
 import Boreal.ScopeEnvironment
 
 diffCmd :: String -> String -> [String]
@@ -64,7 +63,7 @@ emitAddition = do
     main = 1 + 2
   |]
   parsed <- TreeSitter.parse input
-  rawModule <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (rawModule, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
   anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
   generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
@@ -77,7 +76,7 @@ emitSubtraction = do
     main = 1 - 2
   |]
   parsed <- TreeSitter.parse input
-  rawModule <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (rawModule, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
   anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
   generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
@@ -90,7 +89,7 @@ emitArithmeticOperations = do
     main = 42 + 1 + 1 - 1
 |]
   parsed <- TreeSitter.parse input
-  rawModule <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (rawModule, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
   anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
   generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
@@ -107,7 +106,7 @@ emitLetBinding = do
       y * 3
 |]
   parsed <- TreeSitter.parse input
-  rawModule <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (rawModule, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
   anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
   generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
@@ -123,7 +122,7 @@ main1 = 1 - (2 + 3)
 main2 = 1 - 2 + 3
 |]
   parsed <- TreeSitter.parse input
-  rawModule <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (rawModule, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
   anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
   generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated
@@ -140,7 +139,7 @@ type Ordering = LT | EQ | GT
 
 |]
   parsed <- TreeSitter.parse input
-  rawModule <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
+  (rawModule, _environment) <- RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsed
   anfDecls <- traverse (ANFCore.runANFCore newScopeEnvironment) rawModule.topLevelFunctions
   generated <- Lua.runLua "." rawModule{topLevelFunctions = anfDecls}
   pure . Text.encodeUtf8 . Text.fromStrict $ generated

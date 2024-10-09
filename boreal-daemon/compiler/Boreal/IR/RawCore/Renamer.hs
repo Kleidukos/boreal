@@ -26,16 +26,16 @@ import Boreal.ScopeEnvironment qualified as ScopeEnvironment
 
 runRawCore
   :: ScopeEnvironment
-  -> RawCoreEff ScopeEnvironment
+  -> RawCoreEff (Module RawCore)
   -> IO (Module RawCore, ScopeEnvironment)
 runRawCore environment action = do
   let defaultImports = Vector.singleton (ImportStatement (ModuleName "Stdlib.Prelude"))
   counter <- Counter.new 0
-  (env, rawModule) <-
+  (rawModule :: Module RawCore, env :: ScopeEnvironment) <-
     action
-      & State.evalState environment
+      & State.runState environment
       & Reader.runReader counter
-      & State.runState
+      & State.evalState
         Module
           { Module.moduleName = ModuleName ""
           , topLevelFunctions = mempty

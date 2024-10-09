@@ -34,7 +34,7 @@ runQuery query = liftIO $
 parseFile
   :: (IOE :> es)
   => FilePath
-  -> Eff es (Module RawCore)
+  -> Eff es (Module RawCore, ScopeEnvironment)
 parseFile sourceFilePath = do
   runQuery (ParseFile sourceFilePath)
 
@@ -91,7 +91,7 @@ buildModule debugFlags buildFlags filePath withCache = do
   when debugFlags.dumpSyntax $
     liftIO $
       pPrint parsedResult
-  rawModule <- liftIO $ RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsedResult
+  (rawModule, environment) <- liftIO $ RawCore.runRawCore newScopeEnvironment $ RawCore.transformModule parsedResult
   when debugFlags.dumpRawCore $
     liftIO $
       pPrint rawModule
