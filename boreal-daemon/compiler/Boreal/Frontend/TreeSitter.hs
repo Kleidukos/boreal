@@ -12,7 +12,6 @@ import Data.Text.IO qualified as Text
 import Data.Vector qualified as Vector
 import Data.Word (Word32)
 
--- import Debug.Trace
 import Foreign.C.ConstPtr
 import Foreign.C.String
 import Foreign.Marshal.Alloc

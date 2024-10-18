@@ -7,12 +7,13 @@ import Data.GADT.Compare.TH (deriveGEq)
 import Data.Hashable
 import Data.Some
 
+import Boreal.ScopeEnvironment
 import Boreal.IR.ANFCore.Types (ANFCore)
-import Boreal.IR.RawCore (RawCore)
+import Boreal.IR.RawCore.Types (RawCore)
 import Boreal.IR.Types
 
 data Query a where
-  ParseFile :: FilePath -> Query (Module RawCore)
+  ParseFile :: FilePath -> Query (Module RawCore, ScopeEnvironment)
   CompileANF :: FilePath -> Query (Module ANFCore)
   EmitLua
     :: FilePath 
