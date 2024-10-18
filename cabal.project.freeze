@@ -1,6 +1,6 @@
 active-repositories: hackage.haskell.org:merge
-constraints: any.Cabal ==3.10.3.0,
-             any.Cabal-syntax ==3.10.3.0,
+constraints: any.Cabal ==3.12.0.0,
+             any.Cabal-syntax ==3.12.0.0,
              any.OneTuple ==0.4.2,
              any.PyF ==0.11.3.0,
              PyF -python_test,
