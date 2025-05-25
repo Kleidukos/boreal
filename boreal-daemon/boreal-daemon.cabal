@@ -89,6 +89,7 @@ library
   exposed-modules:
     Boreal.Backend.Lua
     Boreal.Backend.Lua.Types
+    Boreal.Frontend.ImportResolution
     Boreal.Frontend.Source
     Boreal.Frontend.Syntax
     Boreal.Frontend.TreeSitter
