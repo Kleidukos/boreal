@@ -89,14 +89,18 @@ library
   exposed-modules:
     Boreal.Backend.Lua
     Boreal.Backend.Lua.Types
+    Boreal.Frontend.ImportResolution
     Boreal.Frontend.Source
     Boreal.Frontend.Syntax
     Boreal.Frontend.TreeSitter
     Boreal.Frontend.Types
     Boreal.IR.ANFCore
     Boreal.IR.ANFCore.Types
-    Boreal.IR.RawCore
+    Boreal.IR.RawCore.Renamer
+    Boreal.IR.RawCore.Types
     Boreal.IR.Types
+    Boreal.PrimOps
+    Boreal.PrimTypes
     Boreal.ScopeEnvironment
     Boreal.SourceInfo
 

@@ -7,22 +7,21 @@ import Data.Vector (Vector)
 import GHC.Generics (Generic)
 import GHC.Records
 
+import Boreal.IR.Types
 import Boreal.SourceInfo
-
-type Name = Text
 
 data Syntax
   = BorealNode
       SourceInfo
-      Name
+      UnqualifiedName
       -- ^ Name
       (Vector Syntax)
       -- ^ Arguments
   | -- | Bits of syntax that do not need to be looked up in environment,
     -- (like parentheses, syntactic keyword, commas, equal), or
     -- literal numbers
-    BorealAtom SourceInfo Name
-  | BorealIdent SourceInfo Name
+    BorealAtom SourceInfo UnqualifiedName
+  | BorealIdent SourceInfo UnqualifiedName
   | Missing
   deriving stock (Eq, Show, Generic)
 
@@ -60,10 +59,10 @@ isTextAtom t =
         , "}"
         ]
 
-isNamedNode :: Name -> Syntax -> Bool
+isNamedNode :: UnqualifiedName -> Syntax -> Bool
 isNamedNode name (BorealNode _ name' _) = name == name'
 isNamedNode _ _ = False
 
-isNamedAtom :: Name -> Syntax -> Bool
+isNamedAtom :: UnqualifiedName -> Syntax -> Bool
 isNamedAtom name (BorealAtom _ name') = name == name'
 isNamedAtom _ _ = False

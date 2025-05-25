@@ -20,15 +20,16 @@ test: ## Run the test suite
 	@cabal test all
 
 regen-golden: ## Re-generate the golden tests
-	@cabal test boreal-test --test-options="--accept"
+	@cabal test boreal-test --test-options='-p "Parser Golden Tests" --accept'
+	@cabal test boreal-test --test-options='-p "Lua Golden Tests" --accept'
 
 lint: ## Run the code linter (HLint)
-	@find boreal-client boreal-api boreal-daemon/app boreal-daemon/compiler testsuite/test/BorealTest -name "*.hs" \
+	@find boreal-client boreal-api boreal-daemon/app boreal-daemon/compiler testsuite/test/BorealTest testsuite/test/Utils.hs -name "*.hs" \
 			| xargs -P $(PROCS) -I {} hlint --refactor-options="-i" --refactor {}
 
 style: ## Run the code styler (stylish-haskell)
 	@cabal-fmt -i boreal-*/*.cabal
-	@find boreal-client boreal-api boreal-daemon/app boreal-daemon/compiler testsuite/test/BorealTest -name "*.hs" \
+	@find boreal-client boreal-api boreal-daemon/app boreal-daemon/compiler testsuite/test/BorealTest testsuite/test/Utils.hs -name "*.hs" \
 			| xargs -P $(PROCS) -I {} fourmolu -q --mode inplace {}
 
 tags: ## Run ghc-tags for CTAGS
